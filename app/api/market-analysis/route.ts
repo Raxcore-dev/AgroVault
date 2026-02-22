@@ -1,45 +1,42 @@
-import { generateText } from 'ai'
-import { createGroq } from '@ai-sdk/groq'
-import type { MarketData } from '@/lib/mock-data'
+import { RaxAI } from 'rax-ai';
+import type { MarketData } from '@/lib/data/kenya-market-data';
 
-const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-})
+const rax = new RaxAI({ apiKey: process.env.RAX_API_KEY });
 
 export async function POST(request: Request) {
   try {
-    const { county, marketData } = await request.json()
+    const { county, marketData } = await request.json();
 
-    const prompt = `You are an agricultural market analyst. Analyze the following crop market data for ${county} and provide actionable insights for farmers.
+    const systemPrompt = `You are a helpful agricultural market analyst. Analyze the provided crop market data and provide actionable insights for farmers in Kenya. Keep the analysis concise, comprehensive, and use clear language suitable for farmers. Provide Market overview, recommendations (Buy/Hold/Sell) and risk factors.`;
+
+    const userPrompt = `Analyze the following crop market data for ${county}:
 
 Market Data:
 ${marketData
-  .map(
-    (item: MarketData) =>
-      `- ${item.crop}: KES ${item.price} (${item.trend === 'up' ? '↑' : item.trend === 'down' ? '↓' : '→'} ${Math.abs(item.priceChange)} from previous)`
-  )
-  .join('\n')}
+        .map(
+          (item: MarketData) =>
+            `- ${item.crop}: KES ${item.price} (${item.trend === 'up' ? '↑' : item.trend === 'down' ? '↓' : '→'} ${Math.abs(item.priceChange)} from previous)`
+        )
+        .join('\n')}`;
 
-Please provide:
-1. Market overview and trends
-2. Specific recommendations for each crop (Buy/Hold/Sell)
-3. Risk factors to consider
-4. Optimal timing for market transactions
+    const response = await rax.chat({
+      model: 'rax-4.0',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ]
+    });
 
-Keep the analysis concise but comprehensive. Use clear language suitable for farmers.`
+    const analysisText = response.choices[0]?.message?.content || "No analysis generated.";
 
-    const { text } = await generateText({
-      model: groq('mixtral-8x7b-32768'),
-      prompt,
-      maxTokens: 1024,
-    })
+    console.log('[AgroVault] Tokens used by RaxAI:', response.usage?.total_tokens);
 
-    return Response.json({ analysis: text })
+    return Response.json({ analysis: analysisText });
   } catch (error) {
-    console.error('[v0] Market analysis error:', error)
+    console.error('[AgroVault] Market analysis error:', error);
     return Response.json(
       { error: 'Failed to generate market analysis' },
       { status: 500 }
-    )
+    );
   }
 }
