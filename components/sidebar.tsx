@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, Home, Thermometer, TrendingUp, AlertTriangle } from 'lucide-react'
+import { BarChart3, Home, Thermometer, TrendingUp, AlertTriangle, Droplets } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -17,12 +17,17 @@ const navItems = [
     label: 'Temperature',
   },
   {
-    href: '/market-analysis',
+    href: '/humidity',
+    icon: Droplets,
+    label: 'Humidity',
+  },
+  {
+    href: '/market',
     icon: TrendingUp,
     label: 'Market Analysis',
   },
   {
-    href: '/risk-assessment',
+    href: '/risk',
     icon: AlertTriangle,
     label: 'Risk Assessment',
   },

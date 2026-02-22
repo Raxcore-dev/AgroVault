@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, Home, Thermometer, TrendingUp, AlertTriangle } from 'lucide-react'
+import { Home, Thermometer, TrendingUp, AlertTriangle, Droplets } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
   {
     href: '/',
     icon: Home,
-    label: 'Dashboard',
+    label: 'Home',
   },
   {
     href: '/temperature',
@@ -17,12 +17,17 @@ const navItems = [
     label: 'Temp',
   },
   {
-    href: '/market-analysis',
+    href: '/humidity',
+    icon: Droplets,
+    label: 'Humidity',
+  },
+  {
+    href: '/market',
     icon: TrendingUp,
     label: 'Market',
   },
   {
-    href: '/risk-assessment',
+    href: '/risk',
     icon: AlertTriangle,
     label: 'Risk',
   },
