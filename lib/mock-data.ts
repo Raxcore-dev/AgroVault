@@ -37,6 +37,15 @@ export interface RiskData {
   recommendation: string
 }
 
+// Stable market prices - do not change on each call
+const STABLE_PRICES: Record<string, { price: number; trend: 'up' | 'down' | 'stable'; change: number }> = {
+  'Maize': { price: 8500, trend: 'up', change: 150 },
+  'Beans': { price: 12500, trend: 'down', change: -200 },
+  'Wheat': { price: 15000, trend: 'up', change: 250 },
+  'Rice': { price: 18000, trend: 'stable', change: 0 },
+  'Sorghum': { price: 6500, trend: 'up', change: 100 },
+}
+
 export function generateSensorData(): SensorData[] {
   return storages.map((storage) => ({
     storageId: storage.id,
@@ -47,19 +56,13 @@ export function generateSensorData(): SensorData[] {
 }
 
 export function generateMarketData(county: string): MarketData[] {
-  const crops = ['Maize', 'Beans', 'Wheat', 'Rice', 'Sorghum']
-  return crops.map((crop) => {
-    const basePrice = Math.random() * 3000 + 1000
-    const trend = Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable'
-    const priceChange = Math.random() * 200 - 100
-    return {
-      crop,
-      price: basePrice,
-      trend,
-      priceChange,
-      county: county === 'all' ? 'National Average' : county,
-    }
-  })
+  return Object.entries(STABLE_PRICES).map(([crop, data]) => ({
+    crop,
+    price: data.price,
+    trend: data.trend,
+    priceChange: data.change,
+    county: county === 'all' ? 'National Average' : county,
+  }))
 }
 
 export function generateRiskData(sensorData: SensorData[]): RiskData[] {

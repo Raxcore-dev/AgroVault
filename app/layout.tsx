@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { Sidebar } from '@/components/sidebar'
+import { MobileNav } from '@/components/mobile-nav'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -37,7 +39,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        {children}
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <main className="flex-1 overflow-auto pb-20 md:pb-0">
+            {children}
+          </main>
+        </div>
+        <MobileNav />
         <Analytics />
       </body>
     </html>
