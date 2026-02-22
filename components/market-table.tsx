@@ -1,47 +1,71 @@
-import type { MarketData } from '@/lib/mock-data'
+import type { MarketData } from '@/lib/data/kenya-market-data'
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 
 interface MarketTableProps {
   data: MarketData[]
 }
 
 export function MarketTable({ data }: MarketTableProps) {
+  // Sort data alphabetically by crop
+  const sortedData = [...data].sort((a, b) => a.crop.localeCompare(b.crop))
+
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
-      <table className="w-full">
+    <div className="w-full overflow-x-auto">
+      <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="border-b border-border bg-muted">
-            <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">Crop</th>
-            <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">Current Price</th>
-            <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">Change</th>
-            <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">Trend</th>
+          <tr className="border-b border-border bg-muted/30">
+            <th className="px-6 py-4 text-sm font-semibold text-muted-foreground">Commodity</th>
+            <th className="px-6 py-4 text-sm font-semibold text-muted-foreground">Current Price</th>
+            <th className="px-6 py-4 text-sm font-semibold text-muted-foreground">Change</th>
+            <th className="px-6 py-4 text-sm font-semibold text-muted-foreground">Market Trend</th>
           </tr>
         </thead>
         <tbody>
-          {data.map((item) => (
-            <tr key={item.crop} className="border-b border-border hover:bg-muted">
-              <td className="px-4 py-3 text-sm text-foreground">{item.crop}</td>
-              <td className="px-4 py-3 text-sm font-semibold text-foreground">KES {item.price.toFixed(0)}</td>
-              <td className="px-4 py-3 text-sm">
-                <span
-                  className={`font-semibold ${
-                    item.priceChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                  }`}
-                >
-                  {item.priceChange >= 0 ? '+' : ''}{item.priceChange.toFixed(0)}
+          {sortedData.map((item, index) => (
+            <tr
+              key={item.crop}
+              className={`group transition-colors hover:bg-muted/10 ${index !== sortedData.length - 1 ? 'border-b border-border' : ''}`}
+            >
+              <td className="px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shadow-inner border border-primary/20">
+                    {item.crop.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-foreground">{item.crop}</div>
+                    <div className="text-xs text-muted-foreground">Per {item.unit}</div>
+                  </div>
+                </div>
+              </td>
+              <td className="px-6 py-4">
+                <span className="font-bold text-foreground">
+                  {new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(item.price)}
                 </span>
               </td>
-              <td className="px-4 py-3 text-sm">
+              <td className="px-6 py-4">
                 <span
-                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${
-                    item.trend === 'up'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
-                      : item.trend === 'down'
-                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
-                  }`}
+                  className={`inline-flex items-center font-semibold ${item.priceChange > 0
+                    ? 'text-emerald-500'
+                    : item.priceChange < 0
+                      ? 'text-red-500'
+                      : 'text-muted-foreground'
+                    }`}
                 >
-                  {item.trend === 'up' ? '↑' : item.trend === 'down' ? '↓' : '→'} {item.trend}
+                  {item.priceChange > 0 ? '+' : ''}{item.priceChange !== 0 ? item.priceChange.toFixed(0) : '-'}
                 </span>
+              </td>
+              <td className="px-6 py-4">
+                <div
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border ${item.trend === 'up'
+                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                    : item.trend === 'down'
+                      ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                      : 'bg-muted/50 text-muted-foreground border-border/50'
+                    }`}
+                >
+                  {item.trend === 'up' ? <TrendingUp className="h-3 w-3" /> : item.trend === 'down' ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+                  <span className="capitalize">{item.trend}</span>
+                </div>
               </td>
             </tr>
           ))}

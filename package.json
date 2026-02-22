@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "ai": "^6.0.0",
-    "@ai-sdk/groq": "^0.0.6",
+    "@ai-sdk/groq": "^3.0.24",
     "@hookform/resolvers": "^3.9.1",
     "@vercel/analytics": "1.6.1",
     "@radix-ui/react-accordion": "1.2.12",
