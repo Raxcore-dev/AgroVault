@@ -12,9 +12,11 @@ interface AIMarketAnalysisProps {
 export function AIMarketAnalysis({ county, marketData }: AIMarketAnalysisProps) {
   const [analysis, setAnalysis] = useState<string>('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string>('')
 
   const generateAnalysis = async () => {
     setLoading(true)
+    setError('')
     try {
       const response = await fetch('/api/market-analysis', {
         method: 'POST',
@@ -25,13 +27,17 @@ export function AIMarketAnalysis({ county, marketData }: AIMarketAnalysisProps) 
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to generate analysis')
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Server error: ${response.status}`)
+      }
 
       const data = await response.json()
       setAnalysis(data.analysis)
-    } catch (error) {
-      console.error('[AgroVault] Error generating analysis:', error)
-      setAnalysis('Unable to generate analysis at this time. Please try again later.')
+    } catch (err) {
+      console.error('[AgroVault] Error generating analysis:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -54,6 +60,11 @@ export function AIMarketAnalysis({ county, marketData }: AIMarketAnalysisProps) 
         <div>
           {!analysis && !loading ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center py-8 animate-in fade-in duration-500">
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
               <p className="text-muted-foreground text-sm mb-6 max-w-xs">
                 Generate a comprehensive analysis of the current market conditions and strategic advice for farmers.
               </p>
