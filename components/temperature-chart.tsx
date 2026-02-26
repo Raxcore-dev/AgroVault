@@ -8,7 +8,6 @@ interface TemperatureChartProps {
 }
 
 export function TemperatureChart({ sensorData }: TemperatureChartProps) {
-  // Generate time series data
   const hours = Array.from({ length: 24 }, (_, i) => {
     const date = new Date()
     date.setHours(date.getHours() - (23 - i))
@@ -22,15 +21,22 @@ export function TemperatureChart({ sensorData }: TemperatureChartProps) {
     <div className="w-full h-80">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={hours}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="time" stroke="currentColor" />
-          <YAxis stroke="currentColor" />
-          <Tooltip />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+          <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+          <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'white',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            }}
+          />
           <Legend />
           <Line
             type="monotone"
             dataKey="avg"
-            stroke="hsl(var(--primary))"
+            stroke="#2E7D32"
             name="Avg Temperature (°C)"
             dot={false}
             strokeWidth={2}

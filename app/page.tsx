@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Thermometer, Droplets, AlertTriangle, TrendingUp, Activity, ArrowRight } from 'lucide-react'
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart,
+} from 'recharts'
+import { TrendingUp, TrendingDown, ArrowRight, ShoppingCart, BarChart3, Wheat, Activity } from 'lucide-react'
 import { storages } from '@/lib/mock-data'
 import type { SensorData, MarketData, RiskData } from '@/lib/mock-data'
 
@@ -20,16 +23,14 @@ export default function Dashboard() {
           fetch('/api/market'),
           fetch('/api/risk'),
         ])
-
         if (sensorsRes.ok) setSensorData(await sensorsRes.json())
         if (marketRes.ok) setMarketData(await marketRes.json())
         if (riskRes.ok) setRiskData(await riskRes.json())
         setLastUpdated(new Date())
       } catch (error) {
-        console.error('[v0] Error fetching data:', error)
+        console.error('[AgroVault] Error fetching data:', error)
       }
     }
-
     fetchData()
     const interval = setInterval(fetchData, 10000)
     return () => clearInterval(interval)
@@ -43,181 +44,244 @@ export default function Dashboard() {
     : '0'
   const highRiskCount = riskData.filter((r) => r.riskLevel === 'high').length
   const topCrop = marketData.length
-    ? marketData.reduce((max, crop) =>
-        crop.price > (max.price || 0) ? crop : max,
-        {} as MarketData
-      )
+    ? marketData.reduce((max, crop) => (crop.price > (max.price || 0) ? crop : max), {} as MarketData)
     : null
 
+  // Generate sparkline data for market trend cards
+  const generateSparkline = (base: number, trend: 'up' | 'down' | 'stable') => {
+    return Array.from({ length: 12 }, (_, i) => ({
+      v: base + (trend === 'up' ? i * 2 : trend === 'down' ? -i * 1.5 : 0) + (Math.random() - 0.5) * base * 0.08,
+    }))
+  }
+
+  // Generate price chart data
+  const priceChartData = Array.from({ length: 24 }, (_, i) => {
+    const hour = String(i).padStart(2, '0') + ':00'
+    return {
+      time: hour,
+      maize: 3200 + Math.sin(i / 3) * 200 + Math.random() * 100,
+      wheat: 4500 + Math.cos(i / 4) * 300 + Math.random() * 150,
+      rice: 8200 + Math.sin(i / 5) * 400 + Math.random() * 200,
+    }
+  })
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-foreground">Welcome to AgroVault</h1>
-          <p className="mt-2 text-lg text-muted-foreground">
-            Agricultural storage and market intelligence platform
-          </p>
-          {lastUpdated && (
-            <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <Activity className="h-4 w-4 text-success" />
-              Last updated: {lastUpdated.toLocaleTimeString()}
+    <div className="min-h-screen bg-background">
+      <div className="px-6 py-6 lg:px-8">
+        {/* Page Header */}
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Welcome back, John.{' '}
+              {lastUpdated && (
+                <span>Last updated {lastUpdated.toLocaleTimeString()}</span>
+              )}
             </p>
-          )}
-        </div>
-
-        {/* Quick Stats Grid */}
-        <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* Temperature */}
-          <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 p-6 shadow-lg backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Average Temperature</p>
-                <p className="mt-2 text-3xl font-bold text-foreground">{avgTemp}°C</p>
-                <p className="mt-1 text-xs text-muted-foreground">Across all storage</p>
-              </div>
-              <Thermometer className="h-8 w-8 text-primary" />
-            </div>
           </div>
-
-          {/* Humidity */}
-          <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 p-6 shadow-lg backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Average Humidity</p>
-                <p className="mt-2 text-3xl font-bold text-foreground">{avgHumidity}%</p>
-                <p className="mt-1 text-xs text-muted-foreground">Across all storage</p>
-              </div>
-              <Droplets className="h-8 w-8 text-primary" />
-            </div>
-          </div>
-
-          {/* Risk Alert */}
-          <div className="rounded-xl border border-danger/20 bg-gradient-to-br from-danger/10 to-danger/5 p-6 shadow-lg backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">High Risk Storage</p>
-                <p className="mt-2 text-3xl font-bold text-danger">{highRiskCount}</p>
-                <p className="mt-1 text-xs text-muted-foreground">Needs attention</p>
-              </div>
-              <AlertTriangle className="h-8 w-8 text-danger" />
-            </div>
-          </div>
-
-          {/* Top Crop */}
-          <div className="rounded-xl border border-accent/20 bg-gradient-to-br from-accent/10 to-accent/5 p-6 shadow-lg backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Highest Price Crop</p>
-                <p className="mt-2 text-3xl font-bold text-foreground">{topCrop?.crop || 'N/A'}</p>
-                <p className="mt-1 text-xs text-muted-foreground">KES {topCrop?.price || '0'}</p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-accent" />
-            </div>
+          <div className="flex gap-3">
+            <Link href="/market" className="btn-cta inline-flex items-center gap-2 text-sm">
+              <ShoppingCart className="h-4 w-4" />
+              Start Trading
+            </Link>
+            <Link href="/risk" className="btn-primary inline-flex items-center gap-2 text-sm">
+              <BarChart3 className="h-4 w-4" />
+              View Analytics
+            </Link>
           </div>
         </div>
 
-        {/* Navigation Cards */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* Temperature Card */}
-          <Link href="/temperature">
-            <div className="group cursor-pointer rounded-xl border border-border bg-card p-8 shadow-md transition-all hover:shadow-xl hover:border-primary/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Thermometer className="h-10 w-10 text-primary" />
-                  <h3 className="mt-4 text-lg font-semibold text-foreground">Temperature</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Monitor 24-hour temperature trends
-                  </p>
-                </div>
+        {/* Stats Overview */}
+        <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="card-elevated rounded-xl p-5">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Avg Temperature</p>
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Activity className="h-4 w-4 text-primary" />
               </div>
-              <ArrowRight className="mt-4 h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
             </div>
-          </Link>
+            <p className="mt-3 text-2xl font-bold text-foreground">{avgTemp}°C</p>
+            <p className="mt-1 text-xs text-muted-foreground">Across {sensorData.length} units</p>
+          </div>
 
-          {/* Humidity Card */}
-          <Link href="/humidity">
-            <div className="group cursor-pointer rounded-xl border border-border bg-card p-8 shadow-md transition-all hover:shadow-xl hover:border-primary/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Droplets className="h-10 w-10 text-primary" />
-                  <h3 className="mt-4 text-lg font-semibold text-foreground">Humidity</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">Track humidity levels in storage</p>
-                </div>
+          <div className="card-elevated rounded-xl p-5">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Avg Humidity</p>
+              <div className="rounded-lg bg-accent/10 p-2">
+                <Activity className="h-4 w-4 text-accent" />
               </div>
-              <ArrowRight className="mt-4 h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
             </div>
-          </Link>
+            <p className="mt-3 text-2xl font-bold text-foreground">{avgHumidity}%</p>
+            <p className="mt-1 text-xs text-muted-foreground">All storage</p>
+          </div>
 
-          {/* Market Intelligence Card */}
-          <Link href="/market">
-            <div className="group cursor-pointer rounded-xl border border-border bg-card p-8 shadow-md transition-all hover:shadow-xl hover:border-primary/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <TrendingUp className="h-10 w-10 text-primary" />
-                  <h3 className="mt-4 text-lg font-semibold text-foreground">Market Analysis</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    AI-powered market insights by county
-                  </p>
-                </div>
+          <div className="card-elevated rounded-xl p-5">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Risk Alerts</p>
+              <div className={`rounded-lg p-2 ${highRiskCount > 0 ? 'bg-danger/10' : 'bg-primary/10'}`}>
+                <Activity className={`h-4 w-4 ${highRiskCount > 0 ? 'text-danger' : 'text-primary'}`} />
               </div>
-              <ArrowRight className="mt-4 h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
             </div>
-          </Link>
+            <p className={`mt-3 text-2xl font-bold ${highRiskCount > 0 ? 'text-danger' : 'text-foreground'}`}>{highRiskCount}</p>
+            <p className="mt-1 text-xs text-muted-foreground">High risk facilities</p>
+          </div>
 
-          {/* Risk Assessment Card */}
-          <Link href="/risk">
-            <div className="group cursor-pointer rounded-xl border border-border bg-card p-8 shadow-md transition-all hover:shadow-xl hover:border-primary/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <AlertTriangle className="h-10 w-10 text-primary" />
-                  <h3 className="mt-4 text-lg font-semibold text-foreground">Risk Assessment</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">Spoilage risk analysis</p>
-                </div>
+          <div className="card-elevated rounded-xl p-5">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-muted-foreground">Top Commodity</p>
+              <div className="rounded-lg bg-secondary/10 p-2">
+                <Wheat className="h-4 w-4 text-secondary" />
               </div>
-              <ArrowRight className="mt-4 h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
             </div>
-          </Link>
+            <p className="mt-3 text-2xl font-bold text-foreground">{topCrop?.crop || 'N/A'}</p>
+            <p className="mt-1 text-xs text-secondary font-medium">KES {topCrop?.price?.toLocaleString() || '0'}</p>
+          </div>
         </div>
 
-        {/* Storage Facilities Overview */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-foreground">Storage Facilities Overview</h2>
-          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Price Chart - takes 2 cols */}
+          <div className="lg:col-span-2 card-elevated rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Price Trends</h2>
+                <p className="text-sm text-muted-foreground">24-hour commodity price movement</p>
+              </div>
+              <div className="flex gap-4 text-xs">
+                <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> Maize</span>
+                <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-accent" /> Wheat</span>
+                <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-secondary" /> Rice</span>
+              </div>
+            </div>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={priceChartData}>
+                  <defs>
+                    <linearGradient id="gradPrimary" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#2E7D32" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#2E7D32" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="gradAccent" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#1976D2" stopOpacity={0.1} />
+                      <stop offset="95%" stopColor="#1976D2" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}`} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    }}
+                  />
+                  <Area type="monotone" dataKey="maize" stroke="#2E7D32" strokeWidth={2} fill="url(#gradPrimary)" dot={false} />
+                  <Area type="monotone" dataKey="wheat" stroke="#1976D2" strokeWidth={2} fill="url(#gradAccent)" dot={false} />
+                  <Line type="monotone" dataKey="rice" stroke="#FB8C00" strokeWidth={2} dot={false} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Market Trend Cards - right column */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground">Market Trends</h2>
+              <Link href="/market" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
+                View all <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            {marketData.slice(0, 5).map((item) => {
+              const isUp = item.priceChange > 0
+              const changePercent = item.price > 0 ? ((item.priceChange / item.price) * 100).toFixed(1) : '0'
+              const sparkData = generateSparkline(item.price, item.trend)
+
+              return (
+                <div key={item.crop} className="card-elevated rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/8 flex items-center justify-center text-primary font-bold text-sm border border-primary/10">
+                        {item.crop.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground text-sm">{item.crop}</p>
+                        <p className="text-xs text-muted-foreground">Per {item.unit}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-foreground">
+                        KES {item.price.toLocaleString()}
+                      </p>
+                      <div className={`flex items-center gap-1 text-xs font-semibold ${isUp ? 'text-primary' : 'text-danger'}`}>
+                        {isUp ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                        {isUp ? '+' : ''}{changePercent}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mini sparkline */}
+                  <div className="mt-3 h-8">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={sparkData}>
+                        <Line
+                          type="monotone"
+                          dataKey="v"
+                          stroke={isUp ? '#2E7D32' : '#D32F2F'}
+                          strokeWidth={1.5}
+                          dot={false}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Storage Facilities Grid */}
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground">Storage Facilities</h2>
+            <Link href="/temperature" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
+              View details <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {storages.map((storage, idx) => {
               const sensor = sensorData[idx]
               const risk = riskData[idx]
               return (
-                <div
-                  key={storage.id}
-                  className="rounded-lg border border-border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <h3 className="font-semibold text-foreground">{storage.name}</h3>
+                <div key={storage.id} className="card-elevated rounded-xl p-5">
+                  <h3 className="font-semibold text-foreground text-sm">{storage.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{storage.location}</p>
                   {sensor && (
-                    <>
-                      <div className="mt-3 flex justify-between text-sm">
-                        <span className="text-muted-foreground">Temp:</span>
-                        <span className="font-medium text-foreground">{sensor.temperature.toFixed(1)}°C</span>
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                      <div className="rounded-lg bg-primary/5 p-2.5">
+                        <p className="text-[11px] text-muted-foreground">Temp</p>
+                        <p className="text-lg font-bold text-primary">{sensor.temperature.toFixed(1)}°C</p>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Humidity:</span>
-                        <span className="font-medium text-foreground">{sensor.humidity.toFixed(1)}%</span>
+                      <div className="rounded-lg bg-accent/5 p-2.5">
+                        <p className="text-[11px] text-muted-foreground">Humidity</p>
+                        <p className="text-lg font-bold text-accent">{sensor.humidity.toFixed(1)}%</p>
                       </div>
-                    </>
+                    </div>
                   )}
                   {risk && (
                     <div className="mt-3">
-                      <p
-                        className={`text-xs font-semibold uppercase ${
-                          risk.riskLevel === 'high'
-                            ? 'text-danger'
-                            : risk.riskLevel === 'medium'
-                              ? 'text-warning'
-                              : 'text-success'
-                        }`}
-                      >
-                        {risk.riskLevel} Risk
-                      </p>
+                      <span className={`inline-block rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                        risk.riskLevel === 'high'
+                          ? 'bg-danger/10 text-danger'
+                          : risk.riskLevel === 'medium'
+                            ? 'bg-warning/10 text-warning'
+                            : 'bg-primary/10 text-primary'
+                      }`}>
+                        {risk.riskLevel.charAt(0).toUpperCase() + risk.riskLevel.slice(1)} Risk
+                      </span>
                     </div>
                   )}
                 </div>

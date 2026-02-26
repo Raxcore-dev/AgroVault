@@ -23,7 +23,7 @@ export default function HumidityPage() {
           setSensorData(await response.json())
         }
       } catch (error) {
-        console.error('[v0] Error fetching sensor data:', error)
+        console.error('[AgroVault] Error fetching sensor data:', error)
       }
     }
 
@@ -47,39 +47,44 @@ export default function HumidityPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const colors = ['#a855f7', '#ec4899', '#06b6d4', '#f59e0b']
+  const colors = ['#2E7D32', '#1976D2', '#FB8C00', '#7B1FA2']
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/30">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen">
+      <div className="px-6 py-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3">
-            <Droplets className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">Humidity Monitoring</h1>
+        <div className="mb-6 flex items-center gap-3">
+          <div className="rounded-lg bg-accent/10 p-2.5">
+            <Droplets className="h-6 w-6 text-accent" />
           </div>
-          <p className="mt-2 text-muted-foreground">
-            24-hour humidity levels across all storage facilities
-          </p>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Humidity Monitoring</h1>
+            <p className="text-sm text-muted-foreground">
+              24-hour humidity levels across all storage facilities
+            </p>
+          </div>
         </div>
 
         {/* Current Humidity Cards */}
-        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {sensorData.map((data, idx) => (
-            <div
-              key={data.storageId}
-              className="rounded-lg border border-border bg-card p-6 shadow-md hover:shadow-lg transition-shadow"
-            >
+            <div key={data.storageId} className="card-elevated rounded-xl p-5">
               <p className="text-sm font-medium text-muted-foreground">
                 {storages[idx]?.name || `Storage ${idx + 1}`}
               </p>
               <div className="mt-2 flex items-end gap-2">
-                <span className="text-3xl font-bold text-primary">
+                <span className="text-3xl font-bold text-foreground">
                   {Math.round(data.humidity)}
                 </span>
-                <span className="text-sm text-muted-foreground">%</span>
+                <span className="text-sm text-muted-foreground mb-1">%</span>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">
+              <p className={`mt-2 text-xs font-semibold ${
+                data.humidity < 60 
+                  ? 'text-primary' 
+                  : data.humidity < 75 
+                    ? 'text-warning' 
+                    : 'text-danger'
+              }`}>
                 {data.humidity < 60 ? '✓ Optimal' : data.humidity < 75 ? '⚠ Caution' : '✕ High Risk'}
               </p>
             </div>
@@ -87,20 +92,20 @@ export default function HumidityPage() {
         </div>
 
         {/* Humidity Trend Chart */}
-        <div className="rounded-lg border border-border bg-card p-6 shadow-lg">
-          <h2 className="mb-6 text-xl font-semibold text-foreground">24-Hour Humidity Trends</h2>
+        <div className="card-elevated rounded-xl p-6">
+          <h2 className="mb-6 text-lg font-semibold text-foreground">24-Hour Humidity Trends</h2>
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" />
-              <YAxis stroke="hsl(var(--muted-foreground))" domain={[0, 100]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+              <YAxis stroke="hsl(var(--muted-foreground))" domain={[0, 100]} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
+                  backgroundColor: 'white',
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 }}
-                labelStyle={{ color: 'hsl(var(--foreground))' }}
               />
               <Legend />
               {storages.map((storage, idx) => (

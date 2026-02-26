@@ -2,34 +2,42 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, Home, Thermometer, TrendingUp, AlertTriangle, Droplets } from 'lucide-react'
+import { LayoutDashboard, TrendingUp, Wheat, ArrowLeftRight, BarChart3, Settings, Thermometer, Droplets, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
   {
     href: '/',
-    icon: Home,
+    icon: LayoutDashboard,
     label: 'Dashboard',
-  },
-  {
-    href: '/temperature',
-    icon: Thermometer,
-    label: 'Temperature',
-  },
-  {
-    href: '/humidity',
-    icon: Droplets,
-    label: 'Humidity',
   },
   {
     href: '/market',
     icon: TrendingUp,
-    label: 'Market Analysis',
+    label: 'Market Trends',
+  },
+  {
+    href: '/temperature',
+    icon: Thermometer,
+    label: 'My Produce',
+  },
+  {
+    href: '/humidity',
+    icon: ArrowLeftRight,
+    label: 'Trading Hub',
   },
   {
     href: '/risk',
-    icon: AlertTriangle,
-    label: 'Risk Assessment',
+    icon: BarChart3,
+    label: 'Analytics',
+  },
+]
+
+const bottomNav = [
+  {
+    href: '#',
+    icon: Settings,
+    label: 'Settings',
   },
 ]
 
@@ -37,17 +45,10 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 border-r border-border bg-card p-6 md:flex md:flex-col">
-      {/* Logo */}
-      <div className="mb-8 flex items-center gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-secondary">
-          <BarChart3 className="h-6 w-6 text-primary-foreground" />
-        </div>
-        <h1 className="text-xl font-bold text-foreground">AgroVault</h1>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex flex-1 flex-col gap-2">
+    <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 border-r border-border bg-white p-4 md:flex md:flex-col">
+      {/* Main Navigation */}
+      <nav className="flex flex-1 flex-col gap-1">
+        <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Menu</p>
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
@@ -56,24 +57,44 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-4 py-3 transition-all duration-200',
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-primary text-primary-foreground shadow-lg'
-                  : 'text-foreground hover:bg-muted'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               )}
             >
-              <Icon className="h-5 w-5" />
-              <span className="font-medium">{item.label}</span>
+              <Icon className={cn('h-[18px] w-[18px]', isActive && 'text-primary')} />
+              <span>{item.label}</span>
+              {isActive && (
+                <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+              )}
             </Link>
           )
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="border-t border-border pt-4">
-        <p className="text-xs text-muted-foreground">
-          Real-time agricultural monitoring system
-        </p>
+      {/* Bottom section */}
+      <div className="border-t border-border pt-3">
+        {bottomNav.map((item) => {
+          const Icon = item.icon
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <Icon className="h-[18px] w-[18px]" />
+              <span>{item.label}</span>
+            </Link>
+          )
+        })}
+        <div className="mt-3 rounded-lg bg-primary/5 border border-primary/10 p-3">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <p className="text-xs font-medium text-primary">Live data active</p>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">All sensors connected</p>
+        </div>
       </div>
     </aside>
   )

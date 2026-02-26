@@ -17,7 +17,7 @@ export function CountyFilter({ selectedCounty, onCountyChange }: CountyFilterPro
         id="county"
         value={selectedCounty}
         onChange={(e) => onCountyChange(e.target.value)}
-        className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+        className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all"
       >
         {counties.map((county) => (
           <option key={county.id} value={county.id}>

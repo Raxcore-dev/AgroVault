@@ -2,42 +2,22 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Thermometer, TrendingUp, AlertTriangle, Droplets } from 'lucide-react'
+import { LayoutDashboard, TrendingUp, Thermometer, ArrowLeftRight, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  {
-    href: '/',
-    icon: Home,
-    label: 'Home',
-  },
-  {
-    href: '/temperature',
-    icon: Thermometer,
-    label: 'Temp',
-  },
-  {
-    href: '/humidity',
-    icon: Droplets,
-    label: 'Humidity',
-  },
-  {
-    href: '/market',
-    icon: TrendingUp,
-    label: 'Market',
-  },
-  {
-    href: '/risk',
-    icon: AlertTriangle,
-    label: 'Risk',
-  },
+  { href: '/', icon: LayoutDashboard, label: 'Home' },
+  { href: '/market', icon: TrendingUp, label: 'Markets' },
+  { href: '/temperature', icon: Thermometer, label: 'Produce' },
+  { href: '/humidity', icon: ArrowLeftRight, label: 'Trade' },
+  { href: '/risk', icon: BarChart3, label: 'Analytics' },
 ]
 
 export function MobileNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 flex border-t border-border bg-card md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 flex border-t border-border bg-white md:hidden z-50">
       {navItems.map((item) => {
         const Icon = item.icon
         const isActive = pathname === item.href
@@ -46,12 +26,17 @@ export function MobileNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              'flex flex-1 flex-col items-center gap-1 py-3 transition-all duration-200',
-              isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'
+              'flex flex-1 flex-col items-center gap-1 py-3 transition-colors',
+              isActive
+                ? 'text-primary'
+                : 'text-muted-foreground'
             )}
           >
+            {isActive && (
+              <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-primary" />
+            )}
             <Icon className="h-5 w-5" />
-            <span className="text-xs font-medium">{item.label}</span>
+            <span className="text-[11px] font-medium">{item.label}</span>
           </Link>
         )
       })}

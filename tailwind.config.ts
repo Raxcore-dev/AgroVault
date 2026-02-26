@@ -1,7 +1,6 @@
 import type { Config } from 'tailwindcss'
 
 const config = {
-  darkMode: ['class'],
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -22,9 +21,10 @@ const config = {
         'accent-foreground': 'hsl(var(--accent-foreground))',
         muted: 'hsl(var(--muted))',
         'muted-foreground': 'hsl(var(--muted-foreground))',
-        'success': 'hsl(var(--success))',
-        'warning': 'hsl(var(--warning))',
-        'danger': 'hsl(var(--danger))',
+        success: 'hsl(var(--success))',
+        warning: 'hsl(var(--warning))',
+        danger: 'hsl(var(--danger))',
+        border: 'hsl(var(--border))',
       },
       borderRadius: {
         lg: 'var(--radius)',

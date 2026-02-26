@@ -11,29 +11,29 @@ export function Alerts({ riskData }: AlertsProps) {
 
   if (highRiskItems.length === 0 && mediumRiskItems.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-card p-6">
+      <div className="card-elevated rounded-xl p-6">
         <h3 className="text-lg font-semibold text-foreground">Alert System</h3>
-        <div className="mt-4 rounded-md bg-green-50 p-4 dark:bg-green-950">
-          <p className="text-sm text-green-800 dark:text-green-100">All storage units are operating within normal parameters. No alerts at this time.</p>
+        <div className="mt-4 rounded-lg bg-success/5 border border-success/15 p-4">
+          <p className="text-sm text-success">All storage units are operating within normal parameters. No alerts at this time.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-6">
+    <div className="card-elevated rounded-xl p-6">
       <h3 className="text-lg font-semibold text-foreground">Alert System</h3>
 
       {highRiskItems.length > 0 && (
         <div className="mt-4">
-          <h4 className="text-sm font-semibold text-red-900 dark:text-red-100">High Priority Alerts</h4>
+          <h4 className="text-sm font-semibold text-danger">High Priority Alerts</h4>
           <div className="mt-2 space-y-2">
             {highRiskItems.map((item) => {
               const storage = storages.find((s) => s.id === item.storageId)
               return (
-                <div key={item.storageId} className="rounded-md bg-red-50 p-3 dark:bg-red-950">
-                  <p className="text-sm font-semibold text-red-900 dark:text-red-100">{storage?.name}</p>
-                  <p className="mt-1 text-xs text-red-800 dark:text-red-200">{item.recommendation}</p>
+                <div key={item.storageId} className="rounded-lg bg-danger/5 border border-danger/15 p-3">
+                  <p className="text-sm font-semibold text-danger">{storage?.name}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{item.recommendation}</p>
                 </div>
               )
             })}
@@ -43,14 +43,14 @@ export function Alerts({ riskData }: AlertsProps) {
 
       {mediumRiskItems.length > 0 && (
         <div className="mt-4">
-          <h4 className="text-sm font-semibold text-yellow-900 dark:text-yellow-100">Medium Priority Alerts</h4>
+          <h4 className="text-sm font-semibold text-warning">Medium Priority Alerts</h4>
           <div className="mt-2 space-y-2">
             {mediumRiskItems.map((item) => {
               const storage = storages.find((s) => s.id === item.storageId)
               return (
-                <div key={item.storageId} className="rounded-md bg-yellow-50 p-3 dark:bg-yellow-950">
-                  <p className="text-sm font-semibold text-yellow-900 dark:text-yellow-100">{storage?.name}</p>
-                  <p className="mt-1 text-xs text-yellow-800 dark:text-yellow-200">{item.recommendation}</p>
+                <div key={item.storageId} className="rounded-lg bg-warning/5 border border-warning/15 p-3">
+                  <p className="text-sm font-semibold text-warning">{storage?.name}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{item.recommendation}</p>
                 </div>
               )
             })}

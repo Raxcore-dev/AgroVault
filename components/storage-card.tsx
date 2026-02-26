@@ -15,32 +15,32 @@ export function StorageCard({ storageId, sensorData, riskData }: StorageCardProp
   const getRiskColor = (level: string) => {
     switch (level) {
       case 'low':
-        return 'bg-green-50 text-green-900 dark:bg-green-900 dark:text-green-50'
+        return 'bg-success/10 text-success border border-success/20'
       case 'medium':
-        return 'bg-yellow-50 text-yellow-900 dark:bg-yellow-900 dark:text-yellow-50'
+        return 'bg-warning/10 text-warning border border-warning/20'
       case 'high':
-        return 'bg-red-50 text-red-900 dark:bg-red-900 dark:text-red-50'
+        return 'bg-danger/10 text-danger border border-danger/20'
       default:
         return ''
     }
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-6">
+    <div className="card-elevated rounded-xl p-6 transition-all hover:shadow-md">
       <h3 className="text-lg font-semibold text-foreground">{storage.name}</h3>
       <p className="mt-1 text-sm text-muted-foreground">{storage.location}</p>
 
       {sensorData && (
         <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="rounded-md bg-blue-50 p-3 dark:bg-blue-950">
-            <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Temperature</p>
-            <p className="mt-1 text-2xl font-bold text-blue-900 dark:text-blue-100">
+          <div className="rounded-lg bg-accent/5 border border-accent/10 p-3">
+            <p className="text-xs font-medium text-accent">Temperature</p>
+            <p className="mt-1 text-2xl font-bold text-accent">
               {sensorData.temperature.toFixed(1)}°C
             </p>
           </div>
-          <div className="rounded-md bg-cyan-50 p-3 dark:bg-cyan-950">
-            <p className="text-xs font-medium text-cyan-600 dark:text-cyan-400">Humidity</p>
-            <p className="mt-1 text-2xl font-bold text-cyan-900 dark:text-cyan-100">
+          <div className="rounded-lg bg-primary/5 border border-primary/10 p-3">
+            <p className="text-xs font-medium text-primary">Humidity</p>
+            <p className="mt-1 text-2xl font-bold text-primary">
               {sensorData.humidity.toFixed(1)}%
             </p>
           </div>
@@ -57,14 +57,14 @@ export function StorageCard({ storageId, sensorData, riskData }: StorageCardProp
               <span className="text-xs font-medium text-muted-foreground">Spoilage Risk</span>
               <span className="text-sm font-bold text-foreground">{riskData.spoilageRisk.toFixed(0)}%</span>
             </div>
-            <div className="mt-1 h-2 w-full rounded-full bg-border">
+            <div className="mt-1 h-1.5 w-full rounded-full bg-muted">
               <div
                 className={`h-full rounded-full transition-all ${
                   riskData.riskLevel === 'low'
-                    ? 'bg-green-500'
+                    ? 'bg-success'
                     : riskData.riskLevel === 'medium'
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
+                      ? 'bg-warning'
+                      : 'bg-danger'
                 }`}
                 style={{ width: `${riskData.spoilageRisk}%` }}
               />

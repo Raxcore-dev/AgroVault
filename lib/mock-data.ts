@@ -28,6 +28,7 @@ export interface MarketData {
   trend: 'up' | 'down' | 'stable'
   priceChange: number
   county: string
+  unit: string
 }
 
 export interface RiskData {
@@ -62,6 +63,7 @@ export function generateMarketData(county: string): MarketData[] {
     trend: data.trend,
     priceChange: data.change,
     county: county === 'all' ? 'National Average' : county,
+    unit: '90kg bag',
   }))
 }
 

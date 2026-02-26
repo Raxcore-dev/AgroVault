@@ -14,7 +14,7 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
-
+    
     const rax = new RaxAI({ apiKey });
     const { county, marketData } = await request.json();
 

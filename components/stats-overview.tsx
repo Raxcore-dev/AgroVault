@@ -12,18 +12,18 @@ export function StatsOverview({ sensorData, riskData }: StatsOverviewProps) {
   const totalStorages = sensorData.length
 
   const stats = [
-    { label: 'Avg Temperature', value: `${avgTemp}°C`, color: 'bg-blue-50 dark:bg-blue-950' }
-,    { label: 'Avg Humidity', value: `${avgHumidity}%`, color: 'bg-cyan-50 dark:bg-cyan-950' },
-    { label: 'High Risk Units', value: highRiskCount, color: highRiskCount > 0 ? 'bg-red-50 dark:bg-red-950' : 'bg-green-50 dark:bg-green-950' },
-    { label: 'Active Storage Units', value: totalStorages, color: 'bg-purple-50 dark:bg-purple-950' },
+    { label: 'Avg Temperature', value: `${avgTemp}°C`, color: 'bg-primary/5 border-primary/10', textColor: 'text-primary' },
+    { label: 'Avg Humidity', value: `${avgHumidity}%`, color: 'bg-accent/5 border-accent/10', textColor: 'text-accent' },
+    { label: 'High Risk Units', value: highRiskCount, color: highRiskCount > 0 ? 'bg-danger/5 border-danger/10' : 'bg-primary/5 border-primary/10', textColor: highRiskCount > 0 ? 'text-danger' : 'text-primary' },
+    { label: 'Active Storage Units', value: totalStorages, color: 'bg-secondary/5 border-secondary/10', textColor: 'text-secondary' },
   ]
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
       {stats.map((stat) => (
-        <div key={stat.label} className={`rounded-lg ${stat.color} p-4`}>
+        <div key={stat.label} className={`rounded-xl border ${stat.color} p-4 transition-all hover:shadow-sm`}>
           <p className="text-xs font-medium text-muted-foreground">{stat.label}</p>
-          <p className="mt-2 text-2xl font-bold text-foreground">{stat.value}</p>
+          <p className={`mt-2 text-2xl font-bold ${stat.textColor}`}>{stat.value}</p>
         </div>
       ))}
     </div>
