@@ -48,7 +48,7 @@ A modern, multi-page agricultural management system with real-time monitoring, m
 pnpm install
 
 # Set up environment variables
-echo "GROQ_API_KEY=your_groq_api_key_here" > .env.local
+echo "RAX_API_KEY=your_rax_api_key_here" > .env.local
 
 # Run development server
 pnpm dev
