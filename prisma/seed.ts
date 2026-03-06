@@ -22,7 +22,11 @@ const prisma = new PrismaClient({ adapter })
 async function main() {
   console.log('🌱 Seeding database...')
 
-  // Clear existing data
+  // Clear existing data (order matters for foreign keys)
+  await prisma.alert.deleteMany()
+  await prisma.storageReading.deleteMany()
+  await prisma.commodity.deleteMany()
+  await prisma.storageUnit.deleteMany()
   await prisma.message.deleteMany()
   await prisma.product.deleteMany()
   await prisma.user.deleteMany()
@@ -269,6 +273,98 @@ async function main() {
   })
 
   console.log('✅ Created sample chat messages')
+
+  // ─── Create Storage Units ───
+  const unit1 = await prisma.storageUnit.create({
+    data: {
+      name: 'Nakuru Warehouse A',
+      location: 'Nakuru',
+      capacity: 500,
+      farmerId: farmer1.id,
+    },
+  })
+
+  const unit2 = await prisma.storageUnit.create({
+    data: {
+      name: 'Nakuru Cold Room',
+      location: 'Nakuru Town',
+      capacity: 200,
+      farmerId: farmer1.id,
+    },
+  })
+
+  const unit3 = await prisma.storageUnit.create({
+    data: {
+      name: 'Nyeri Storage Facility',
+      location: 'Nyeri',
+      capacity: 350,
+      farmerId: farmer2.id,
+    },
+  })
+
+  console.log('✅ Created storage units')
+
+  // ─── Create Commodities ───
+  await prisma.commodity.createMany({
+    data: [
+      { commodityName: 'White Maize', quantity: 200, storageUnitId: unit1.id, expectedStorageDuration: 120 },
+      { commodityName: 'Wheat Grain', quantity: 150, storageUnitId: unit1.id, expectedStorageDuration: 90 },
+      { commodityName: 'Fresh Tomatoes', quantity: 30, storageUnitId: unit2.id, expectedStorageDuration: 14 },
+      { commodityName: 'Hass Avocados', quantity: 20, storageUnitId: unit2.id, expectedStorageDuration: 10 },
+      { commodityName: 'Red Beans', quantity: 100, storageUnitId: unit3.id, expectedStorageDuration: 180 },
+      { commodityName: 'Green Grams', quantity: 80, storageUnitId: unit3.id, expectedStorageDuration: 150 },
+    ],
+  })
+
+  console.log('✅ Created commodities')
+
+  // ─── Create Storage Readings ───
+  const now = new Date()
+  const readingData: Array<{ storageUnitId: string; temperature: number; humidity: number; recordedAt: Date }> = []
+
+  // Generate 24 hours of readings for each unit (every 2 hours)
+  for (let h = 0; h < 24; h += 2) {
+    const time = new Date(now.getTime() - h * 60 * 60 * 1000)
+
+    readingData.push(
+      { storageUnitId: unit1.id, temperature: 22 + Math.random() * 3, humidity: 55 + Math.random() * 10, recordedAt: time },
+      { storageUnitId: unit2.id, temperature: 8 + Math.random() * 4, humidity: 80 + Math.random() * 10, recordedAt: time },
+      { storageUnitId: unit3.id, temperature: 23 + Math.random() * 5, humidity: 50 + Math.random() * 15, recordedAt: time },
+    )
+  }
+
+  await prisma.storageReading.createMany({ data: readingData })
+
+  console.log(`✅ Created ${readingData.length} storage readings`)
+
+  // ─── Create Sample Alerts ───
+  await prisma.alert.createMany({
+    data: [
+      {
+        storageUnitId: unit2.id,
+        alertType: 'HIGH_HUMIDITY',
+        severity: 'warning',
+        message: 'Humidity at 87% in Nakuru Cold Room — above safe threshold of 75%',
+        isRead: false,
+      },
+      {
+        storageUnitId: unit3.id,
+        alertType: 'HIGH_TEMPERATURE',
+        severity: 'warning',
+        message: 'Temperature at 26.5°C in Nyeri Storage Facility — above normal range',
+        isRead: false,
+      },
+      {
+        storageUnitId: unit1.id,
+        alertType: 'CRITICAL_TEMPERATURE',
+        severity: 'danger',
+        message: 'Temperature spike to 29°C in Nakuru Warehouse A — immediate attention needed',
+        isRead: true,
+      },
+    ],
+  })
+
+  console.log('✅ Created sample alerts')
 
   console.log('\n🎉 Seeding complete! Demo accounts:')
   console.log('  Farmer: john@farmer.com / password123')

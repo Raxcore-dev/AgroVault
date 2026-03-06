@@ -1,0 +1,333 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { useAuth } from '@/lib/auth-context'
+import {
+  Package, Wheat, Thermometer, Droplets, ArrowLeft, Plus, X, Trash2,
+} from 'lucide-react'
+
+interface Commodity {
+  id: string
+  commodityName: string
+  quantity: number
+  dateStored: string
+  expectedStorageDuration: number | null
+}
+
+interface StorageReading {
+  id: string
+  temperature: number
+  humidity: number
+  recordedAt: string
+}
+
+interface StorageUnit {
+  id: string
+  name: string
+  location: string
+  capacity: number
+  createdAt: string
+  commodities: Commodity[]
+  readings: StorageReading[]
+}
+
+export default function StorageUnitDetailPage() {
+  const { id } = useParams<{ id: string }>()
+  const { token } = useAuth()
+  const router = useRouter()
+  const [unit, setUnit] = useState<StorageUnit | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [showAddCommodity, setShowAddCommodity] = useState(false)
+  const [commodityForm, setCommodityForm] = useState({
+    commodityName: '',
+    quantity: '',
+    expectedStorageDuration: '',
+  })
+  const [submitting, setSubmitting] = useState(false)
+
+  const fetchUnit = async () => {
+    if (!token || !id) return
+    try {
+      const res = await fetch(`/api/storage-units/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setUnit(data.storageUnit ?? data)
+      } else if (res.status === 404) router.push('/dashboard/storage-units')
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchUnit() }, [token, id])
+
+  const handleAddCommodity = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/storage-units/${id}/commodities`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          commodityName: commodityForm.commodityName,
+          quantity: Number(commodityForm.quantity),
+          expectedStorageDuration: Number(commodityForm.expectedStorageDuration),
+        }),
+      })
+      if (res.ok) {
+        setCommodityForm({ commodityName: '', quantity: '', expectedStorageDuration: '' })
+        setShowAddCommodity(false)
+        await fetchUnit()
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="px-6 py-6 lg:px-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 w-32 rounded bg-muted" />
+          <div className="h-8 w-64 rounded bg-muted" />
+          <div className="h-48 rounded-xl bg-muted" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!unit) {
+    return (
+      <div className="px-6 py-6 lg:px-8 text-center">
+        <p className="text-muted-foreground">Storage unit not found.</p>
+        <Link href="/dashboard/storage-units" className="text-primary hover:underline text-sm mt-2 inline-block">
+          ← Back to units
+        </Link>
+      </div>
+    )
+  }
+
+  const latestReading = unit.readings?.[0]
+  const totalStored = unit.commodities.reduce((sum, c) => sum + c.quantity, 0)
+  const capacityPercent = unit.capacity > 0 ? Math.min(100, (totalStored / unit.capacity) * 100) : 0
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="px-6 py-6 lg:px-8">
+        {/* Back link */}
+        <Link
+          href="/dashboard/storage-units"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to units
+        </Link>
+
+        {/* Unit Header */}
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">{unit.name}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">{unit.location}</p>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="card-elevated rounded-xl p-5">
+            <p className="text-sm font-medium text-muted-foreground">Capacity</p>
+            <p className="mt-2 text-2xl font-bold text-foreground">{unit.capacity} tons</p>
+            <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${capacityPercent > 90 ? 'bg-danger' : capacityPercent > 70 ? 'bg-warning' : 'bg-primary'}`}
+                style={{ width: `${capacityPercent}%` }}
+              />
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{capacityPercent.toFixed(0)}% used ({totalStored} tons)</p>
+          </div>
+
+          <div className="card-elevated rounded-xl p-5">
+            <p className="text-sm font-medium text-muted-foreground">Temperature</p>
+            <p className={`mt-2 text-2xl font-bold ${latestReading && latestReading.temperature > 28 ? 'text-danger' : latestReading && latestReading.temperature > 24 ? 'text-warning' : 'text-primary'}`}>
+              {latestReading ? `${latestReading.temperature.toFixed(1)}°C` : '—'}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">Latest reading</p>
+          </div>
+
+          <div className="card-elevated rounded-xl p-5">
+            <p className="text-sm font-medium text-muted-foreground">Humidity</p>
+            <p className={`mt-2 text-2xl font-bold ${latestReading && (latestReading.humidity > 75 || latestReading.humidity < 40) ? 'text-danger' : 'text-accent'}`}>
+              {latestReading ? `${latestReading.humidity.toFixed(1)}%` : '—'}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">Latest reading</p>
+          </div>
+
+          <div className="card-elevated rounded-xl p-5">
+            <p className="text-sm font-medium text-muted-foreground">Commodities</p>
+            <p className="mt-2 text-2xl font-bold text-foreground">{unit.commodities.length}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Items stored</p>
+          </div>
+        </div>
+
+        {/* Commodities Section */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground">Commodities</h2>
+            <button
+              onClick={() => setShowAddCommodity(true)}
+              className="btn-primary inline-flex items-center gap-2 text-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Add Commodity
+            </button>
+          </div>
+
+          {showAddCommodity && (
+            <div className="card-elevated rounded-xl p-6 mb-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-foreground">Add Commodity</h3>
+                <button onClick={() => setShowAddCommodity(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <form onSubmit={handleAddCommodity} className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Commodity Name</label>
+                  <input
+                    type="text"
+                    value={commodityForm.commodityName}
+                    onChange={(e) => setCommodityForm((p) => ({ ...p, commodityName: e.target.value }))}
+                    placeholder="e.g. Maize"
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Quantity (tons)</label>
+                  <input
+                    type="number"
+                    value={commodityForm.quantity}
+                    onChange={(e) => setCommodityForm((p) => ({ ...p, quantity: e.target.value }))}
+                    placeholder="e.g. 50"
+                    required
+                    min={0.1}
+                    step={0.1}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">
+                    Storage Duration (days)
+                  </label>
+                  <input
+                    type="number"
+                    value={commodityForm.expectedStorageDuration}
+                    onChange={(e) => setCommodityForm((p) => ({ ...p, expectedStorageDuration: e.target.value }))}
+                    placeholder="e.g. 90"
+                    required
+                    min={1}
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+                  />
+                </div>
+                <div className="md:col-span-3 flex gap-3">
+                  <button type="submit" disabled={submitting} className="btn-primary text-sm disabled:opacity-50">
+                    {submitting ? 'Adding...' : 'Add Commodity'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCommodity(false)}
+                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {unit.commodities.length === 0 ? (
+            <div className="card-elevated rounded-xl p-6 text-center">
+              <Wheat className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
+              <p className="text-sm text-muted-foreground">No commodities stored yet.</p>
+            </div>
+          ) : (
+            <div className="card-elevated rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Commodity</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Quantity</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Date Stored</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Duration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {unit.commodities.map((c) => (
+                    <tr key={c.id} className="border-b border-border last:border-0">
+                      <td className="px-4 py-3 font-medium text-foreground">{c.commodityName}</td>
+                      <td className="px-4 py-3 text-foreground">{c.quantity} tons</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {new Date(c.dateStored).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {c.expectedStorageDuration ? `${c.expectedStorageDuration} days` : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Recent Readings */}
+        {unit.readings.length > 0 && (
+          <div>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Recent Readings</h2>
+            <div className="card-elevated rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Temperature</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Humidity</th>
+                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Recorded</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {unit.readings.slice(0, 10).map((r) => (
+                    <tr key={r.id} className="border-b border-border last:border-0">
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1 font-medium ${r.temperature > 28 ? 'text-danger' : r.temperature > 24 ? 'text-warning' : 'text-primary'}`}>
+                          <Thermometer className="h-3.5 w-3.5" />
+                          {r.temperature.toFixed(1)}°C
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1 font-medium ${r.humidity > 75 || r.humidity < 40 ? 'text-danger' : 'text-accent'}`}>
+                          <Droplets className="h-3.5 w-3.5" />
+                          {r.humidity.toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {new Date(r.recordedAt).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

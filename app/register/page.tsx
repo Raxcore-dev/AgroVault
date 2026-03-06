@@ -9,7 +9,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Sprout, UserPlus, Eye, EyeOff, Wheat, ShoppingBag } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
@@ -28,7 +27,6 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { register } = useAuth()
-  const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -55,7 +53,7 @@ export default function RegisterPage() {
         phone: formData.phone || undefined,
         location: formData.location || undefined,
       })
-      router.push('/marketplace')
+      // Role-based redirect is handled by auth-context
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registration failed.')
     } finally {
