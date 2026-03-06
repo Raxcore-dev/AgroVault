@@ -7,5 +7,68 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+}
+
+// ─── User Model ───
+// Stores farmer and buyer accounts. The `role` field distinguishes between them.
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String   // bcrypt-hashed password
+  role      String   @default("buyer") // "farmer" | "buyer"
+  phone     String?
+  location  String?  // county or town name
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  products     Product[]
+  sentMessages Message[] @relation("SentMessages")
+  recvMessages Message[] @relation("RecvMessages")
+}
+
+// ─── Product Model ───
+// Represents a product listed by a farmer on the marketplace.
+model Product {
+  id           String   @id @default(cuid())
+  productName  String   // e.g. "Fresh Maize", "Organic Beans"
+  description  String
+  price        Float    // price in KES
+  quantity     Float    // available quantity (kg, bags, etc.)
+  unit         String   @default("kg") // "kg", "bag", "crate", etc.
+  productImage String?  // URL or base64 of the product image
+  locationName String   // county/town name, e.g. "Nakuru"
+  latitude     Float    // GPS latitude of the farm
+  longitude    Float    // GPS longitude of the farm
+  category     String   @default("general") // crop category for filtering
+  isAvailable  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relation to the farmer who listed the product
+  farmerId String
+  farmer   User      @relation(fields: [farmerId], references: [id])
+  messages Message[]
+}
+
+// ─── Message Model ───
+// Stores chat messages between buyers and farmers for a specific product.
+model Message {
+  id         String   @id @default(cuid())
+  message    String   // the chat message text
+  timestamp  DateTime @default(now())
+
+  // Sender of the message
+  senderId   String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+
+  // Receiver of the message
+  receiverId String
+  receiver   User     @relation("RecvMessages", fields: [receiverId], references: [id])
+
+  // Which product this conversation is about
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
 }

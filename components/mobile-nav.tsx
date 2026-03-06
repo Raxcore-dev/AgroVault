@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, TrendingUp, Thermometer, ArrowLeftRight, BarChart3 } from 'lucide-react'
+import { LayoutDashboard, TrendingUp, Thermometer, ArrowLeftRight, BarChart3, Store } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
   { href: '/', icon: LayoutDashboard, label: 'Home' },
-  { href: '/market', icon: TrendingUp, label: 'Markets' },
+  { href: '/marketplace', icon: Store, label: 'Market' },
+  { href: '/market', icon: TrendingUp, label: 'Trends' },
   { href: '/temperature', icon: Thermometer, label: 'Produce' },
-  { href: '/humidity', icon: ArrowLeftRight, label: 'Trade' },
   { href: '/risk', icon: BarChart3, label: 'Analytics' },
 ]
 

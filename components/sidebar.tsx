@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, TrendingUp, Wheat, ArrowLeftRight, BarChart3, Settings, Thermometer, Droplets, AlertTriangle } from 'lucide-react'
+import { LayoutDashboard, TrendingUp, Wheat, ArrowLeftRight, BarChart3, Settings, Thermometer, Droplets, AlertTriangle, Store } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -10,6 +10,11 @@ const navItems = [
     href: '/',
     icon: LayoutDashboard,
     label: 'Dashboard',
+  },
+  {
+    href: '/marketplace',
+    icon: Store,
+    label: 'Marketplace',
   },
   {
     href: '/market',

@@ -1,18 +1,29 @@
-import { Sprout, Bell, Search } from 'lucide-react'
+'use client'
+
+import Link from 'next/link'
+import { Sprout, Bell, Search, LogIn, LogOut } from 'lucide-react'
+import { useAuth } from '@/lib/auth-context'
 
 export function Header() {
+  const { user, logout } = useAuth()
+
+  // Get user initials for the avatar
+  const initials = user
+    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'JK'
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-white">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
             <Sprout className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-bold text-foreground tracking-tight">
             Agro<span className="text-primary">Vault</span>
           </span>
-        </div>
+        </Link>
 
         {/* Search bar - center */}
         <div className="hidden md:flex flex-1 max-w-md mx-8">
@@ -34,16 +45,34 @@ export function Header() {
             <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-secondary" />
           </button>
 
-          {/* User profile */}
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-sm font-semibold text-primary">JK</span>
+          {user ? (
+            /* Logged-in user profile */
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-sm font-semibold text-primary">{initials}</span>
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-sm font-medium text-foreground leading-none">{user.name}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 capitalize">{user.role}</p>
+              </div>
+              <button
+                onClick={logout}
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
-            <div className="hidden sm:block">
-              <p className="text-sm font-medium text-foreground leading-none">John Kamau</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Farmer</p>
-            </div>
-          </div>
+          ) : (
+            /* Sign in link */
+            <Link
+              href="/login"
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+            >
+              <LogIn className="h-4 w-4" />
+              Sign In
+            </Link>
+          )}
         </div>
       </div>
     </header>
