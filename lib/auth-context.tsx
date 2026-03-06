@@ -102,6 +102,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(data.token)
     localStorage.setItem('agrovault_token', data.token)
     localStorage.setItem('agrovault_user', JSON.stringify(data.user))
+
+    // Role-based redirect
+    if (data.user.role === 'farmer') {
+      router.push('/dashboard')
+    } else {
+      router.push('/marketplace')
+    }
   }
 
   /** Register a new account */
@@ -120,6 +127,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(data.token)
     localStorage.setItem('agrovault_token', data.token)
     localStorage.setItem('agrovault_user', JSON.stringify(data.user))
+
+    // Role-based redirect
+    if (data.user.role === 'farmer') {
+      router.push('/dashboard')
+    } else {
+      router.push('/marketplace')
+    }
   }
 
   /** Log out and redirect to login page */

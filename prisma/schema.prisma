@@ -27,6 +27,71 @@ model User {
   products     Product[]
   sentMessages Message[] @relation("SentMessages")
   recvMessages Message[] @relation("RecvMessages")
+  storageUnits StorageUnit[]
+}
+
+// ─── Storage Unit Model ───
+// Represents a physical storage facility owned by a farmer.
+model StorageUnit {
+  id        String   @id @default(cuid())
+  name      String   // e.g. "Grain Silo A", "Warehouse East"
+  location  String   // county or town, e.g. "Nakuru"
+  capacity  Float    // maximum capacity in tonnes
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Owner (farmer only)
+  farmerId String
+  farmer   User @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  // Relations
+  commodities Commodity[]
+  alerts      Alert[]
+  readings    StorageReading[]
+}
+
+// ─── Commodity Model ───
+// Commodities stored inside a storage unit.
+model Commodity {
+  id                      String   @id @default(cuid())
+  commodityName           String   // e.g. "White Maize", "Beans"
+  quantity                Float    // quantity in the unit's context (kg, bags)
+  unit                    String   @default("kg")
+  dateStored              DateTime @default(now())
+  expectedStorageDuration Int      // days expected to remain in storage
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  // Which storage unit this commodity belongs to
+  storageUnitId String
+  storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
+}
+
+// ─── Storage Reading Model ───
+// Sensor readings (temperature, humidity) for a storage unit.
+model StorageReading {
+  id          String   @id @default(cuid())
+  temperature Float    // °C
+  humidity    Float    // %
+  status      String   @default("normal") // "normal" | "warning" | "danger"
+  recordedAt  DateTime @default(now())
+
+  storageUnitId String
+  storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
+}
+
+// ─── Alert Model ───
+// Alerts raised when storage conditions breach safe thresholds.
+model Alert {
+  id        String   @id @default(cuid())
+  alertType String   // "high_temperature" | "low_humidity" | "high_humidity" | "capacity_exceeded"
+  message   String
+  severity  String   // "warning" | "danger"
+  isRead    Boolean  @default(false)
+  timestamp DateTime @default(now())
+
+  storageUnitId String
+  storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
 }
 
 // ─── Product Model ───

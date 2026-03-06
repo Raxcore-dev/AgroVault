@@ -2,52 +2,44 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, TrendingUp, Wheat, ArrowLeftRight, BarChart3, Settings, Thermometer, Droplets, AlertTriangle, Store } from 'lucide-react'
+import {
+  LayoutDashboard, TrendingUp, Wheat, BarChart3, Settings,
+  Thermometer, AlertTriangle, Store, Package, Bell,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/lib/auth-context'
 
-const navItems = [
-  {
-    href: '/',
-    icon: LayoutDashboard,
-    label: 'Dashboard',
-  },
-  {
-    href: '/marketplace',
-    icon: Store,
-    label: 'Marketplace',
-  },
-  {
-    href: '/market',
-    icon: TrendingUp,
-    label: 'Market Trends',
-  },
-  {
-    href: '/temperature',
-    icon: Thermometer,
-    label: 'My Produce',
-  },
-  {
-    href: '/humidity',
-    icon: ArrowLeftRight,
-    label: 'Trading Hub',
-  },
-  {
-    href: '/risk',
-    icon: BarChart3,
-    label: 'Analytics',
-  },
+interface NavItem {
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+}
+
+const farmerNav: NavItem[] = [
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/dashboard/storage-units', icon: Package, label: 'Storage Units' },
+  { href: '/dashboard/commodities', icon: Wheat, label: 'Commodities' },
+  { href: '/dashboard/alerts', icon: AlertTriangle, label: 'Storage Alerts' },
+  { href: '/marketplace', icon: Store, label: 'Marketplace' },
+  { href: '/market', icon: TrendingUp, label: 'Market Analysis' },
+  { href: '/dashboard/notifications', icon: Bell, label: 'Notifications' },
 ]
 
-const bottomNav = [
-  {
-    href: '#',
-    icon: Settings,
-    label: 'Settings',
-  },
+const buyerNav: NavItem[] = [
+  { href: '/marketplace', icon: Store, label: 'Marketplace' },
+  { href: '/market', icon: TrendingUp, label: 'Market Trends' },
+  { href: '/risk', icon: BarChart3, label: 'Analytics' },
+]
+
+const bottomNav: NavItem[] = [
+  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { user } = useAuth()
+
+  const navItems = user?.role === 'farmer' ? farmerNav : buyerNav
 
   return (
     <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 border-r border-border bg-white p-4 md:flex md:flex-col">
@@ -56,7 +48,7 @@ export function Sidebar() {
         <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Menu</p>
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.href
+          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
           return (
             <Link
               key={item.href}
