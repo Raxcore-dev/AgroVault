@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { authorizeRole } from '@/lib/api-auth'
+import { generateSpoilageAlerts } from '@/lib/services/spoilageDetectionService'
 
 const farmerGuard = authorizeRole('farmer')
 
@@ -109,6 +110,12 @@ export async function POST(
       data: alerts.map((a) => ({ ...a, storageUnitId: id })),
     })
   }
+
+  // Trigger spoilage risk evaluation and market recommendations
+  // Run async – don't block the response
+  generateSpoilageAlerts(id).catch((err) =>
+    console.error('Spoilage alert generation failed:', err)
+  )
 
   return NextResponse.json({
     reading,

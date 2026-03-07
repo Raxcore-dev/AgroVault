@@ -37,6 +37,8 @@ model StorageUnit {
   name      String   // e.g. "Grain Silo A", "Warehouse East"
   location  String   // county or town, e.g. "Nakuru"
   capacity  Float    // maximum capacity in tonnes
+  latitude  Float?   // GPS latitude for distance calculations
+  longitude Float?   // GPS longitude for distance calculations
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -65,6 +67,9 @@ model Commodity {
   // Which storage unit this commodity belongs to
   storageUnitId String
   storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
+
+  // Relations
+  alerts Alert[]
 }
 
 // ─── Storage Reading Model ───
@@ -84,7 +89,7 @@ model StorageReading {
 // Alerts raised when storage conditions breach safe thresholds.
 model Alert {
   id        String   @id @default(cuid())
-  alertType String   // "high_temperature" | "low_humidity" | "high_humidity" | "capacity_exceeded"
+  alertType String   // "high_temperature" | "low_humidity" | "high_humidity" | "capacity_exceeded" | "spoilage_risk"
   message   String
   severity  String   // "warning" | "danger"
   isRead    Boolean  @default(false)
@@ -92,6 +97,15 @@ model Alert {
 
   storageUnitId String
   storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
+
+  commodityId String?
+  commodity   Commodity? @relation(fields: [commodityId], references: [id], onDelete: SetNull)
+
+  // Spoilage-specific fields
+  spoilageRisk      String?  // "low" | "medium" | "high"
+  recommendedAction String?  // e.g. "Sell immediately at Kibuye Market"
+  recommendedMarketId String?
+  recommendedMarket   Market? @relation(fields: [recommendedMarketId], references: [id], onDelete: SetNull)
 }
 
 // ─── Product Model ───
@@ -136,4 +150,34 @@ model Message {
   // Which product this conversation is about
   productId  String
   product    Product  @relation(fields: [productId], references: [id])
+}
+
+// ─── Market Model ───
+// Represents physical markets where farmers can sell commodities.
+model Market {
+  id          String   @id @default(cuid())
+  marketName  String   // e.g. "Kibuye Market"
+  location    String   // e.g. "Kisumu"
+  commodity   String   // e.g. "maize", "beans", "wheat"
+  pricePerKg  Float    // price in KES per kg
+  latitude    Float
+  longitude   Float
+  lastUpdated DateTime @default(now())
+
+  // Alerts that recommend this market
+  alerts Alert[]
+
+  @@index([commodity])
+}
+
+// ─── Commodity Thresholds Model ───
+// Configurable safe thresholds per commodity type for spoilage detection.
+model CommodityThreshold {
+  id            String @id @default(cuid())
+  commodityName String @unique // e.g. "maize", "beans", "wheat"
+  minTemp       Float  // minimum safe temperature °C
+  maxTemp       Float  // maximum safe temperature °C
+  minHumidity   Float  // minimum safe humidity %
+  maxHumidity   Float  // maximum safe humidity %
+  maxStorageDays Int   // maximum recommended storage duration in days
 }

@@ -23,7 +23,11 @@ export async function GET(request: NextRequest) {
       storageUnit: { farmerId: user.userId },
       ...(unreadOnly ? { isRead: false } : {}),
     },
-    include: { storageUnit: { select: { id: true, name: true } } },
+    include: {
+      storageUnit: { select: { id: true, name: true, location: true } },
+      commodity: { select: { id: true, commodityName: true } },
+      recommendedMarket: { select: { id: true, marketName: true, location: true, pricePerKg: true } },
+    },
     orderBy: { timestamp: 'desc' },
     take: 50,
   })

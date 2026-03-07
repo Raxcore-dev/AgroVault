@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, TrendingUp, Wheat, BarChart3, Settings,
-  Thermometer, AlertTriangle, Store, Package, Bell,
+  Thermometer, AlertTriangle, Store, Package, Bell, ShieldAlert,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
@@ -20,6 +20,7 @@ const farmerNav: NavItem[] = [
   { href: '/dashboard/storage-units', icon: Package, label: 'Storage Units' },
   { href: '/dashboard/commodities', icon: Wheat, label: 'Commodities' },
   { href: '/dashboard/alerts', icon: AlertTriangle, label: 'Storage Alerts' },
+  { href: '/dashboard/market-analysis', icon: ShieldAlert, label: 'Risk & Markets' },
   { href: '/marketplace', icon: Store, label: 'Marketplace' },
   { href: '/market', icon: TrendingUp, label: 'Market Analysis' },
   { href: '/dashboard/notifications', icon: Bell, label: 'Notifications' },

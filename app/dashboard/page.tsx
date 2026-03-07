@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 import {
   Package, Wheat, AlertTriangle, Thermometer, Droplets,
-  ArrowRight, Plus, TrendingUp, Activity,
+  ArrowRight, Plus, TrendingUp, Activity, ShieldAlert,
 } from 'lucide-react'
 
 interface DashboardStats {
@@ -32,10 +32,39 @@ interface StorageUnit {
   _count: { commodities: number; readings: number }
 }
 
+interface SpoilageAssessment {
+  storageUnitId: string
+  storageUnitName: string
+  commodityId: string
+  commodityName: string
+  riskLevel: 'low' | 'medium' | 'high'
+  temperature: number
+  humidity: number
+  daysStored: number
+  maxStorageDays: number
+  reasons: string[]
+  recommendation?: {
+    marketId: string
+    marketName: string
+    location: string
+    pricePerKg: number
+    distanceKm: number
+  } | null
+}
+
+interface SpoilageSummary {
+  total: number
+  high: number
+  medium: number
+  low: number
+}
+
 export default function FarmerDashboard() {
   const { user, token } = useAuth()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [units, setUnits] = useState<StorageUnit[]>([])
+  const [spoilageAssessments, setSpoilageAssessments] = useState<SpoilageAssessment[]>([])
+  const [spoilageSummary, setSpoilageSummary] = useState<SpoilageSummary | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -46,10 +75,15 @@ export default function FarmerDashboard() {
     Promise.all([
       fetch('/api/dashboard/farmer', { headers }).then((r) => r.ok ? r.json() : null),
       fetch('/api/storage-units', { headers }).then((r) => r.ok ? r.json() : null),
+      fetch('/api/storage/alerts', { headers }).then((r) => r.ok ? r.json() : null),
     ])
-      .then(([statsData, unitsData]) => {
+      .then(([statsData, unitsData, spoilageData]) => {
         if (statsData) setStats(statsData)
         if (unitsData) setUnits(unitsData.storageUnits ?? unitsData)
+        if (spoilageData) {
+          setSpoilageAssessments(spoilageData.assessments ?? [])
+          setSpoilageSummary(spoilageData.summary ?? null)
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -200,6 +234,114 @@ export default function FarmerDashboard() {
             </div>
           )}
         </div>
+
+        {/* Spoilage Risk & Market Recommendations */}
+        {spoilageAssessments.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold text-foreground">Spoilage Risk & Recommendations</h2>
+              </div>
+              <Link
+                href="/dashboard/market-analysis"
+                className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+              >
+                View full analysis <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            {/* Quick Risk Summary */}
+            {spoilageSummary && (spoilageSummary.high > 0 || spoilageSummary.medium > 0) && (
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-3 text-center">
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">{spoilageSummary.high}</p>
+                  <p className="text-xs text-red-700 dark:text-red-300 font-medium">High Risk</p>
+                </div>
+                <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 text-center">
+                  <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{spoilageSummary.medium}</p>
+                  <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">Medium Risk</p>
+                </div>
+                <div className="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30 p-3 text-center">
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{spoilageSummary.low}</p>
+                  <p className="text-xs text-green-700 dark:text-green-300 font-medium">Low Risk</p>
+                </div>
+              </div>
+            )}
+
+            {/* High Risk Alerts with Recommendations */}
+            <div className="space-y-3">
+              {spoilageAssessments
+                .filter((a) => a.riskLevel === 'high')
+                .slice(0, 3)
+                .map((assessment) => (
+                  <div
+                    key={`${assessment.storageUnitId}-${assessment.commodityId}`}
+                    className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                        <div>
+                          <h4 className="font-semibold text-foreground text-sm">{assessment.storageUnitName}</h4>
+                          <p className="text-xs text-muted-foreground">{assessment.commodityName}</p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/50 px-2.5 py-0.5 text-xs font-semibold text-red-800 dark:text-red-300">
+                        HIGH RISK
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground mb-2">
+                      <span className="flex items-center gap-1">
+                        <Thermometer className="h-3.5 w-3.5" />
+                        {assessment.temperature.toFixed(1)}°C
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Droplets className="h-3.5 w-3.5" />
+                        {assessment.humidity.toFixed(1)}%
+                      </span>
+                      <span>{assessment.daysStored} days stored</span>
+                    </div>
+
+                    {assessment.reasons.length > 0 && (
+                      <p className="text-xs text-red-700 dark:text-red-300 mb-2">
+                        {assessment.reasons[0]}
+                      </p>
+                    )}
+
+                    {assessment.recommendation && (
+                      <div className="rounded-lg bg-white/60 dark:bg-white/5 border border-primary/20 p-3 mt-2">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                          <p className="text-xs font-semibold text-primary">Recommendation</p>
+                        </div>
+                        <p className="text-sm text-foreground">
+                          Sell immediately at <span className="font-bold">{assessment.recommendation.marketName}</span>
+                          {' '}({assessment.recommendation.location}) — KES {assessment.recommendation.pricePerKg}/kg
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+              {spoilageAssessments.filter((a) => a.riskLevel === 'high').length === 0 &&
+               spoilageAssessments.filter((a) => a.riskLevel === 'medium').length > 0 && (
+                <div className="card-elevated rounded-xl p-4 border-amber-200 dark:border-amber-800">
+                  <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                    <AlertTriangle className="h-4 w-4" />
+                    <p className="text-sm font-medium">
+                      {spoilageAssessments.filter((a) => a.riskLevel === 'medium').length} commodities at medium risk.
+                      <Link href="/dashboard/market-analysis" className="ml-1 text-primary hover:underline">
+                        View details
+                      </Link>
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Recent Readings */}
         {stats?.recentReadings && stats.recentReadings.length > 0 && (

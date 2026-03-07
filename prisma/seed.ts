@@ -29,6 +29,8 @@ async function main() {
   await prisma.storageUnit.deleteMany()
   await prisma.message.deleteMany()
   await prisma.product.deleteMany()
+  await prisma.market.deleteMany()
+  await prisma.commodityThreshold.deleteMany()
   await prisma.user.deleteMany()
 
   const passwordHash = await bcrypt.hash('password123', 10)
@@ -280,6 +282,8 @@ async function main() {
       name: 'Nakuru Warehouse A',
       location: 'Nakuru',
       capacity: 500,
+      latitude: -0.3031,
+      longitude: 36.0800,
       farmerId: farmer1.id,
     },
   })
@@ -289,6 +293,8 @@ async function main() {
       name: 'Nakuru Cold Room',
       location: 'Nakuru Town',
       capacity: 200,
+      latitude: -0.3031,
+      longitude: 36.0800,
       farmerId: farmer1.id,
     },
   })
@@ -298,7 +304,21 @@ async function main() {
       name: 'Nyeri Storage Facility',
       location: 'Nyeri',
       capacity: 350,
+      latitude: -0.4169,
+      longitude: 36.9458,
       farmerId: farmer2.id,
+    },
+  })
+
+  // High-risk demo unit for Kisumu
+  const unit4 = await prisma.storageUnit.create({
+    data: {
+      name: 'Kisumu Maize Silo',
+      location: 'Kisumu',
+      capacity: 400,
+      latitude: -0.0917,
+      longitude: 34.7680,
+      farmerId: farmer1.id,
     },
   })
 
@@ -313,6 +333,9 @@ async function main() {
       { commodityName: 'Hass Avocados', quantity: 20, storageUnitId: unit2.id, expectedStorageDuration: 10 },
       { commodityName: 'Red Beans', quantity: 100, storageUnitId: unit3.id, expectedStorageDuration: 180 },
       { commodityName: 'Green Grams', quantity: 80, storageUnitId: unit3.id, expectedStorageDuration: 150 },
+      // High-risk scenario: maize stored too long in bad conditions
+      { commodityName: 'White Maize', quantity: 300, storageUnitId: unit4.id, expectedStorageDuration: 120,
+        dateStored: new Date(Date.now() - 100 * 24 * 60 * 60 * 1000) }, // stored 100 days ago
     ],
   })
 
@@ -330,6 +353,8 @@ async function main() {
       { storageUnitId: unit1.id, temperature: 22 + Math.random() * 3, humidity: 55 + Math.random() * 10, recordedAt: time },
       { storageUnitId: unit2.id, temperature: 8 + Math.random() * 4, humidity: 80 + Math.random() * 10, recordedAt: time },
       { storageUnitId: unit3.id, temperature: 23 + Math.random() * 5, humidity: 50 + Math.random() * 15, recordedAt: time },
+      // High-risk readings for Kisumu Maize Silo: temp > 32°C, humidity > 75%
+      { storageUnitId: unit4.id, temperature: 33 + Math.random() * 3, humidity: 78 + Math.random() * 8, recordedAt: time },
     )
   }
 
@@ -365,6 +390,52 @@ async function main() {
   })
 
   console.log('✅ Created sample alerts')
+
+  // ─── Create Commodity Thresholds ───
+  await prisma.commodityThreshold.createMany({
+    data: [
+      { commodityName: 'maize', minTemp: 10, maxTemp: 30, minHumidity: 50, maxHumidity: 70, maxStorageDays: 120 },
+      { commodityName: 'wheat', minTemp: 10, maxTemp: 28, minHumidity: 50, maxHumidity: 65, maxStorageDays: 180 },
+      { commodityName: 'beans', minTemp: 10, maxTemp: 28, minHumidity: 40, maxHumidity: 65, maxStorageDays: 180 },
+      { commodityName: 'rice', minTemp: 10, maxTemp: 30, minHumidity: 55, maxHumidity: 70, maxStorageDays: 150 },
+      { commodityName: 'tomatoes', minTemp: 2, maxTemp: 12, minHumidity: 85, maxHumidity: 95, maxStorageDays: 14 },
+      { commodityName: 'avocados', minTemp: 5, maxTemp: 13, minHumidity: 85, maxHumidity: 95, maxStorageDays: 21 },
+      { commodityName: 'grams', minTemp: 10, maxTemp: 28, minHumidity: 40, maxHumidity: 65, maxStorageDays: 150 },
+    ],
+  })
+
+  console.log('✅ Created commodity thresholds')
+
+  // ─── Create Markets ───
+  await prisma.market.createMany({
+    data: [
+      // Maize markets
+      { marketName: 'Kibuye Market', location: 'Kisumu', commodity: 'maize', pricePerKg: 80, latitude: -0.0917, longitude: 34.7680 },
+      { marketName: 'Kakamega Market', location: 'Kakamega', commodity: 'maize', pricePerKg: 72, latitude: 0.2827, longitude: 34.7519 },
+      { marketName: 'Eldoret Town Market', location: 'Eldoret', commodity: 'maize', pricePerKg: 75, latitude: 0.5143, longitude: 35.2698 },
+      { marketName: 'Wakulima Market', location: 'Nairobi', commodity: 'maize', pricePerKg: 85, latitude: -1.2833, longitude: 36.8269 },
+      { marketName: 'Nakuru Municipal Market', location: 'Nakuru', commodity: 'maize', pricePerKg: 78, latitude: -0.3031, longitude: 36.0800 },
+      // Wheat markets
+      { marketName: 'Eldoret Grain Hub', location: 'Eldoret', commodity: 'wheat', pricePerKg: 65, latitude: 0.5143, longitude: 35.2698 },
+      { marketName: 'Nairobi Cereal Market', location: 'Nairobi', commodity: 'wheat', pricePerKg: 70, latitude: -1.2921, longitude: 36.8219 },
+      { marketName: 'Nakuru Grain Market', location: 'Nakuru', commodity: 'wheat', pricePerKg: 62, latitude: -0.3031, longitude: 36.0800 },
+      // Beans markets
+      { marketName: 'Nyeri Town Market', location: 'Nyeri', commodity: 'beans', pricePerKg: 120, latitude: -0.4169, longitude: 36.9458 },
+      { marketName: 'Gikomba Market', location: 'Nairobi', commodity: 'beans', pricePerKg: 130, latitude: -1.2853, longitude: 36.8424 },
+      { marketName: 'Embu Market', location: 'Embu', commodity: 'beans', pricePerKg: 115, latitude: -0.5389, longitude: 37.4596 },
+      // Tomatoes markets
+      { marketName: 'Marikiti Market', location: 'Nairobi', commodity: 'tomatoes', pricePerKg: 90, latitude: -1.2840, longitude: 36.8270 },
+      { marketName: 'Naivasha Market', location: 'Naivasha', commodity: 'tomatoes', pricePerKg: 70, latitude: -0.7172, longitude: 36.4310 },
+      // Avocado markets
+      { marketName: 'Thika Market', location: 'Thika', commodity: 'avocados', pricePerKg: 150, latitude: -1.0396, longitude: 37.0900 },
+      { marketName: 'Mombasa Export Hub', location: 'Mombasa', commodity: 'avocados', pricePerKg: 200, latitude: -4.0435, longitude: 39.6682 },
+      // Green grams markets
+      { marketName: 'Machakos Open Market', location: 'Machakos', commodity: 'grams', pricePerKg: 140, latitude: -1.5177, longitude: 37.2634 },
+      { marketName: 'Kitui Market', location: 'Kitui', commodity: 'grams', pricePerKg: 135, latitude: -1.3667, longitude: 38.0106 },
+    ],
+  })
+
+  console.log('✅ Created markets')
 
   console.log('\n🎉 Seeding complete! Demo accounts:')
   console.log('  Farmer: john@farmer.com / password123')
