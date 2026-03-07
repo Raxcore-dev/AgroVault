@@ -6,7 +6,9 @@ import { useAuth } from '@/lib/auth-context'
 import {
   Package, Wheat, AlertTriangle, Thermometer, Droplets,
   ArrowRight, Plus, TrendingUp, Activity, ShieldAlert,
+  Brain, Sparkles, Loader2,
 } from 'lucide-react'
+import { AIInsightCard, AIInsightSkeleton, type AIAnalysis } from '@/components/ai-insight-card'
 
 interface DashboardStats {
   totalStorageUnits: number
@@ -65,6 +67,10 @@ export default function FarmerDashboard() {
   const [units, setUnits] = useState<StorageUnit[]>([])
   const [spoilageAssessments, setSpoilageAssessments] = useState<SpoilageAssessment[]>([])
   const [spoilageSummary, setSpoilageSummary] = useState<SpoilageSummary | null>(null)
+  const [aiAnalyses, setAiAnalyses] = useState<AIAnalysis[]>([])
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const [reanalyzingId, setReanalyzingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -87,7 +93,59 @@ export default function FarmerDashboard() {
       })
       .catch(console.error)
       .finally(() => setLoading(false))
+
+    // Fetch AI analysis separately (may take longer)
+    setAiLoading(true)
+    fetch('/api/storage/analyze', {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.analyses) setAiAnalyses(data.analyses)
+      })
+      .catch((err) => {
+        console.error('AI analysis fetch failed:', err)
+        setAiError('AI analysis unavailable')
+      })
+      .finally(() => setAiLoading(false))
   }, [token])
+
+  const handleReanalyze = async (storageUnitId: string, commodityId: string) => {
+    if (!token) return
+    setReanalyzingId(`${storageUnitId}-${commodityId}`)
+    try {
+      const res = await fetch('/api/storage/analyze', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ storageUnitId, commodityId }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.analyses?.[0]) {
+          setAiAnalyses((prev) => {
+            const updated = [...prev]
+            const idx = updated.findIndex(
+              (a) =>
+                a.raw_input.commodity === data.analyses[0].raw_input.commodity &&
+                a.raw_input.location === data.analyses[0].raw_input.location
+            )
+            if (idx >= 0) updated[idx] = data.analyses[0]
+            else updated.push(data.analyses[0])
+            return updated
+          })
+        }
+      }
+    } catch (err) {
+      console.error('Re-analysis failed:', err)
+    } finally {
+      setReanalyzingId(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -342,6 +400,80 @@ export default function FarmerDashboard() {
             </div>
           </div>
         )}
+
+        {/* Recent Readings */}
+        {/* AI-Powered Insights */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Brain className="h-5 w-5 text-primary" />
+                <Sparkles className="h-2.5 w-2.5 text-primary absolute -top-1 -right-1" />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground">AI-Powered Insights</h2>
+            </div>
+            <Link
+              href="/dashboard/market-analysis"
+              className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+            >
+              Full analysis <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          {aiLoading ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <AIInsightSkeleton />
+              <AIInsightSkeleton />
+            </div>
+          ) : aiError ? (
+            <div className="card-elevated rounded-xl p-6 text-center">
+              <Brain className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+              <p className="text-sm text-muted-foreground">{aiError}</p>
+            </div>
+          ) : aiAnalyses.length === 0 ? (
+            <div className="card-elevated rounded-xl p-6 text-center">
+              <Brain className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+              <p className="text-sm text-muted-foreground">
+                No AI analyses available yet. Add sensor readings to trigger AI analysis.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {aiAnalyses
+                .sort((a, b) => {
+                  const order = { high: 0, medium: 1, low: 2 }
+                  return order[a.spoilage.risk_level] - order[b.spoilage.risk_level]
+                })
+                .slice(0, 4)
+                .map((analysis, idx) => {
+                  // Find the matching spoilage assessment to get unit/commodity names
+                  const match = spoilageAssessments.find(
+                    (s) =>
+                      s.storageUnitName
+                        .toLowerCase()
+                        .includes(analysis.raw_input.location.toLowerCase().split(',')[0]) ||
+                      s.commodityName
+                        .toLowerCase()
+                        .includes(analysis.raw_input.commodity)
+                  )
+                  return (
+                    <AIInsightCard
+                      key={idx}
+                      analysis={analysis}
+                      storageUnitName={match?.storageUnitName ?? analysis.raw_input.location}
+                      commodityName={match?.commodityName ?? analysis.raw_input.commodity}
+                      storageUnitId={match?.storageUnitId}
+                      commodityId={match?.commodityId}
+                      onReanalyze={handleReanalyze}
+                      isReanalyzing={
+                        reanalyzingId === `${match?.storageUnitId}-${match?.commodityId}`
+                      }
+                    />
+                  )
+                })}
+            </div>
+          )}
+        </div>
 
         {/* Recent Readings */}
         {stats?.recentReadings && stats.recentReadings.length > 0 && (

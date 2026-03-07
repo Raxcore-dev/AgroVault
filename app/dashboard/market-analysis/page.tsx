@@ -4,13 +4,14 @@ import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import {
   AlertTriangle, TrendingUp, BarChart3, RefreshCw,
-  ShieldAlert, Store, ArrowRight,
+  ShieldAlert, Store, ArrowRight, Brain, Sparkles,
 } from 'lucide-react'
 import {
   SpoilageAlertCard,
   SpoilageAlertSkeleton,
   type SpoilageAssessment,
 } from '@/components/spoilage-alert-card'
+import { AIInsightCard, AIInsightSkeleton, type AIAnalysis } from '@/components/ai-insight-card'
 import Link from 'next/link'
 
 interface MarketData {
@@ -36,6 +37,9 @@ export default function MarketAnalysisPage() {
   const [assessments, setAssessments] = useState<SpoilageAssessment[]>([])
   const [summary, setSummary] = useState<SpoilageSummary | null>(null)
   const [markets, setMarkets] = useState<MarketData[]>([])
+  const [aiAnalyses, setAiAnalyses] = useState<AIAnalysis[]>([])
+  const [aiLoading, setAiLoading] = useState(false)
+  const [reanalyzingId, setReanalyzingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [activeTab, setActiveTab] = useState<'all' | 'high' | 'medium' | 'low'>('all')
@@ -67,6 +71,24 @@ export default function MarketAnalysisPage() {
       setLoading(false)
       setRefreshing(false)
     }
+
+    // Fetch AI analysis (runs after main data loads)
+    setAiLoading(true)
+    try {
+      const aiRes = await fetch('/api/storage/analyze', {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      if (aiRes.ok) {
+        const aiData = await aiRes.json()
+        setAiAnalyses(aiData.analyses ?? [])
+      }
+    } catch (err) {
+      console.error('AI analysis fetch failed:', err)
+    } finally {
+      setAiLoading(false)
+    }
   }, [token])
 
   useEffect(() => {
@@ -76,6 +98,41 @@ export default function MarketAnalysisPage() {
   const handleRefresh = () => {
     setRefreshing(true)
     fetchData()
+  }
+
+  const handleReanalyze = async (storageUnitId: string, commodityId: string) => {
+    if (!token) return
+    setReanalyzingId(`${storageUnitId}-${commodityId}`)
+    try {
+      const res = await fetch('/api/storage/analyze', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ storageUnitId, commodityId }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.analyses?.[0]) {
+          setAiAnalyses((prev) => {
+            const updated = [...prev]
+            const idx = updated.findIndex(
+              (a) =>
+                a.raw_input.commodity === data.analyses[0].raw_input.commodity &&
+                a.raw_input.location === data.analyses[0].raw_input.location
+            )
+            if (idx >= 0) updated[idx] = data.analyses[0]
+            else updated.push(data.analyses[0])
+            return updated
+          })
+        }
+      }
+    } catch (err) {
+      console.error('Re-analysis failed:', err)
+    } finally {
+      setReanalyzingId(null)
+    }
   }
 
   const filteredAssessments =
@@ -216,6 +273,65 @@ export default function MarketAnalysisPage() {
             ))}
           </div>
         )}
+
+        {/* Market Prices Section */}
+        {/* AI-Powered Insights Section */}
+        <div className="mt-8 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="relative">
+              <Brain className="h-5 w-5 text-primary" />
+              <Sparkles className="h-2.5 w-2.5 text-primary absolute -top-1 -right-1" />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">AI-Powered Risk Analysis</h2>
+          </div>
+
+          {aiLoading ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <AIInsightSkeleton />
+              <AIInsightSkeleton />
+            </div>
+          ) : aiAnalyses.length === 0 ? (
+            <div className="card-elevated rounded-xl p-8 text-center">
+              <Brain className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
+              <p className="text-sm text-muted-foreground">
+                No AI analyses available. Add sensor readings to trigger analysis.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {aiAnalyses
+                .sort((a, b) => {
+                  const order = { high: 0, medium: 1, low: 2 }
+                  return order[a.spoilage.risk_level] - order[b.spoilage.risk_level]
+                })
+                .map((analysis, idx) => {
+                  const match = assessments.find(
+                    (s) =>
+                      s.commodityName
+                        .toLowerCase()
+                        .includes(analysis.raw_input.commodity) ||
+                      s.storageUnitName
+                        .toLowerCase()
+                        .includes(analysis.raw_input.location.toLowerCase().split(',')[0])
+                  )
+                  return (
+                    <AIInsightCard
+                      key={idx}
+                      analysis={analysis}
+                      storageUnitName={match?.storageUnitName ?? analysis.raw_input.location}
+                      commodityName={match?.commodityName ?? analysis.raw_input.commodity}
+                      storageUnitId={match?.storageUnitId}
+                      commodityId={match?.commodityId}
+                      onReanalyze={handleReanalyze}
+                      isReanalyzing={
+                        reanalyzingId === `${match?.storageUnitId}-${match?.commodityId}`
+                      }
+                    />
+                  )
+                })}
+            </div>
+          )}
+        </div>
 
         {/* Market Prices Section */}
         {markets.length > 0 && (

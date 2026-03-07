@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     // Only return high-risk assessments that have recommendations
     const recommendations = assessments
-      .filter((a) => a.riskLevel === 'high' && a.recommendation)
+      .filter((a) => a.riskLevel === 'high' && (a.recommendation || a.aiAnalysis?.market))
       .map((a) => ({
         storageUnitId: a.storageUnitId,
         storageUnitName: a.storageUnitName,
@@ -32,6 +32,13 @@ export async function GET(request: NextRequest) {
         daysStored: a.daysStored,
         reasons: a.reasons,
         recommendation: a.recommendation,
+        aiInsights: a.aiAnalysis
+          ? {
+              risk_reason: a.aiAnalysis.spoilage.risk_reason,
+              recommendation: a.aiAnalysis.spoilage.recommendation,
+              market: a.aiAnalysis.market,
+            }
+          : null,
       }))
 
     return NextResponse.json({ recommendations })

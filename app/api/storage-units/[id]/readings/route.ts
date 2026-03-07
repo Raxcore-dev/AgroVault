@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { authorizeRole } from '@/lib/api-auth'
 import { generateSpoilageAlerts } from '@/lib/services/spoilageDetectionService'
+import { analyzeStorageUnit } from '@/lib/services/aiAnalysisService'
 
 const farmerGuard = authorizeRole('farmer')
 
@@ -115,6 +116,11 @@ export async function POST(
   // Run async – don't block the response
   generateSpoilageAlerts(id).catch((err) =>
     console.error('Spoilage alert generation failed:', err)
+  )
+
+  // Trigger AI analysis asynchronously for enhanced insights
+  analyzeStorageUnit(id).catch((err) =>
+    console.error('AI analysis failed:', err)
   )
 
   return NextResponse.json({
