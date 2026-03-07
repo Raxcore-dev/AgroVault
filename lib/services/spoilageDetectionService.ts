@@ -12,6 +12,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { getMarketRecommendation } from '@/lib/services/marketRecommendationService'
+import { runFullAnalysis, type AIFullAnalysis } from '@/lib/services/aiAnalysisService'
 
 // ─── Default Thresholds (fallback when DB thresholds not configured) ───
 
@@ -53,6 +54,7 @@ export interface SpoilageAssessment {
     pricePerKg: number
     distanceKm: number
   } | null
+  aiAnalysis?: AIFullAnalysis | null
 }
 
 /**
@@ -220,6 +222,31 @@ export async function evaluateStorageUnit(storageUnitId: string): Promise<Spoila
         unit.location
       )
       assessment.recommendation = recommendation
+    }
+
+    // Run AI analysis (for any risk level) to get AI-powered insights
+    try {
+      const aiResult = await runFullAnalysis(unit.id, commodity.id)
+      assessment.aiAnalysis = aiResult
+
+      // If AI says high-risk but rule-based says low/medium, escalate
+      if (aiResult && aiResult.spoilage.risk_level === 'high' && riskLevel !== 'high') {
+        assessment.riskLevel = 'high'
+        assessment.reasons.push(`AI analysis: ${aiResult.spoilage.risk_reason}`)
+        // Fetch market recommendation since we escalated
+        if (!assessment.recommendation) {
+          const recommendation = await getMarketRecommendation(
+            normalizeCommodityName(commodity.commodityName),
+            unit.latitude,
+            unit.longitude,
+            unit.location
+          )
+          assessment.recommendation = recommendation
+        }
+      }
+    } catch (aiErr) {
+      console.error('[AI] Analysis failed for unit', unit.id, aiErr)
+      assessment.aiAnalysis = null
     }
 
     assessments.push(assessment)
