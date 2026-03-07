@@ -79,6 +79,9 @@ export default function FarmerDashboard() {
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
   const [reanalyzingId, setReanalyzingId] = useState<string | null>(null)
+  const [weatherData, setWeatherData] = useState<any>(null)
+  const [weatherAlerts, setWeatherAlerts] = useState<any>(null)
+  const [weatherLoading, setWeatherLoading] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -118,6 +121,19 @@ export default function FarmerDashboard() {
         setAiError('AI analysis unavailable')
       })
       .finally(() => setAiLoading(false))
+
+    // Fetch weather data
+    setWeatherLoading(true)
+    Promise.all([
+      fetch('/api/weather/forecast', { headers }).then((r) => r.ok ? r.json() : null),
+      fetch('/api/weather/alerts', { headers }).then((r) => r.ok ? r.json() : null),
+    ])
+      .then(([forecastData, alertsData]) => {
+        if (forecastData) setWeatherData(forecastData)
+        if (alertsData) setWeatherAlerts(alertsData)
+      })
+      .catch(console.error)
+      .finally(() => setWeatherLoading(false))
   }, [token])
 
   const handleReanalyze = async (storageUnitId: string, commodityId: string) => {
@@ -479,6 +495,111 @@ export default function FarmerDashboard() {
                     />
                   )
                 })}
+            </div>
+          )}
+        </div>
+
+        {/* Weather Intelligence Panel */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <CloudSun className="h-5 w-5 text-sky-500" />
+              <h2 className="text-lg font-semibold text-foreground">Weather Intelligence</h2>
+            </div>
+            <Link href="/dashboard/weather">
+              <Button variant="ghost" size="sm" className="text-sky-600 hover:text-sky-700">
+                Full Forecast <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </Link>
+          </div>
+
+          {weatherLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <WeatherSkeleton />
+              <div className="md:col-span-2">
+                <div className="card-elevated p-4 space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-12 bg-muted animate-pulse rounded-lg" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : weatherData ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Current Weather */}
+              <CurrentWeatherCard current={weatherData.current} location={weatherData.location} />
+
+              {/* Weather Alerts & Rain Outlook */}
+              <div className="md:col-span-2 space-y-4">
+                {/* Risk Banner */}
+                {weatherAlerts && (
+                  <div
+                    className={`rounded-lg p-3 flex items-center gap-3 ${
+                      weatherAlerts.overall_risk === 'high'
+                        ? 'bg-red-50 border border-red-200 dark:bg-red-950/30 dark:border-red-800'
+                        : weatherAlerts.overall_risk === 'medium'
+                        ? 'bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-800'
+                        : 'bg-green-50 border border-green-200 dark:bg-green-950/30 dark:border-green-800'
+                    }`}
+                  >
+                    {weatherAlerts.overall_risk === 'high' ? (
+                      <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+                    ) : weatherAlerts.overall_risk === 'medium' ? (
+                      <CloudRain className="h-5 w-5 text-amber-500 shrink-0" />
+                    ) : (
+                      <CloudSun className="h-5 w-5 text-green-500 shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">
+                        {weatherAlerts.overall_risk === 'high'
+                          ? 'High weather risk — check alerts'
+                          : weatherAlerts.overall_risk === 'medium'
+                          ? 'Moderate weather risk — stay prepared'
+                          : 'Low weather risk — good conditions'}
+                      </p>
+                      {weatherAlerts.safe_harvest_window && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Safe harvest window: <span className="font-medium">{weatherAlerts.safe_harvest_window}</span>
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-xs text-muted-foreground">Rain (3d)</p>
+                      <p className="text-sm font-semibold">
+                        {weatherAlerts.rain_forecast_next_3_days ?? '—'}%
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3-Day Quick Forecast */}
+                {weatherData.forecast && weatherData.forecast.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {weatherData.forecast.slice(0, 3).map((day: any, i: number) => (
+                      <div key={i} className="card-elevated p-3 text-center">
+                        <p className="text-xs text-muted-foreground font-medium">
+                          {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                        </p>
+                        <div className="flex justify-center my-1">
+                          <Thermometer className="h-4 w-4 text-orange-400" />
+                        </div>
+                        <p className="text-sm font-semibold">
+                          {Math.round(day.temp_max)}° / {Math.round(day.temp_min)}°
+                        </p>
+                        <div className="flex items-center justify-center gap-1 mt-1">
+                          <Droplets className="h-3 w-3 text-blue-400" />
+                          <span className="text-xs text-muted-foreground">{Math.round(day.rain_probability)}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="card-elevated p-6 text-center text-muted-foreground">
+              <CloudSun className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Weather data unavailable</p>
             </div>
           )}
         </div>

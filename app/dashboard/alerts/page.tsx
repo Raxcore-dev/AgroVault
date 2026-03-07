@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
-import { AlertTriangle, CheckCircle, Thermometer, Droplets, Package } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Thermometer, Droplets, Package, CloudRain } from 'lucide-react'
 
 interface Alert {
   id: string
@@ -91,6 +91,9 @@ export default function AlertsPage() {
       case 'capacity_exceeded':
       case 'CAPACITY_EXCEEDED':
         return <Package className="h-5 w-5" />
+      case 'weather_risk':
+      case 'WEATHER_RISK':
+        return <CloudRain className="h-5 w-5" />
       default:
         return <AlertTriangle className="h-5 w-5" />
     }
