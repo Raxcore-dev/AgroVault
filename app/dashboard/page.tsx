@@ -6,9 +6,17 @@ import { useAuth } from '@/lib/auth-context'
 import {
   Package, Wheat, AlertTriangle, Thermometer, Droplets,
   ArrowRight, Plus, TrendingUp, Activity, ShieldAlert,
-  Brain, Sparkles, Loader2,
+  Brain, Sparkles, Loader2, CloudSun, CloudRain,
 } from 'lucide-react'
 import { AIInsightCard, AIInsightSkeleton, type AIAnalysis } from '@/components/ai-insight-card'
+import {
+  CurrentWeatherCard,
+  ForecastCard,
+  WeatherAlertCard,
+  HarvestRecommendationCard,
+  WeatherSkeleton,
+  ForecastSkeleton,
+} from '@/components/weather-widgets'
 
 interface DashboardStats {
   totalStorageUnits: number

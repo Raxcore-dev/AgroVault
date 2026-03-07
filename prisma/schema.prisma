@@ -89,7 +89,7 @@ model StorageReading {
 // Alerts raised when storage conditions breach safe thresholds.
 model Alert {
   id        String   @id @default(cuid())
-  alertType String   // "high_temperature" | "low_humidity" | "high_humidity" | "capacity_exceeded" | "spoilage_risk" | "ai_spoilage_risk"
+  alertType String   // "high_temperature" | "low_humidity" | "high_humidity" | "capacity_exceeded" | "spoilage_risk" | "ai_spoilage_risk" | "weather_risk"
   message   String
   severity  String   // "warning" | "danger"
   isRead    Boolean  @default(false)

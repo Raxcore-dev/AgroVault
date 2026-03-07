@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, TrendingUp, Store, Package, AlertTriangle, BarChart3 } from 'lucide-react'
+import { LayoutDashboard, TrendingUp, Store, Package, AlertTriangle, BarChart3, CloudSun } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
 
@@ -16,8 +16,8 @@ const farmerMobileNav: NavItem[] = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Home' },
   { href: '/dashboard/storage-units', icon: Package, label: 'Storage' },
   { href: '/marketplace', icon: Store, label: 'Market' },
+  { href: '/dashboard/weather', icon: CloudSun, label: 'Weather' },
   { href: '/dashboard/alerts', icon: AlertTriangle, label: 'Alerts' },
-  { href: '/market', icon: TrendingUp, label: 'Trends' },
 ]
 
 const buyerMobileNav: NavItem[] = [
