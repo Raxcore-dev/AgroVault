@@ -23,6 +23,8 @@ async function main() {
   console.log('🌱 Seeding database...')
 
   // Clear existing data (order matters for foreign keys)
+  await prisma.jobApplication.deleteMany()
+  await prisma.job.deleteMany()
   await prisma.alert.deleteMany()
   await prisma.storageReading.deleteMany()
   await prisma.commodity.deleteMany()
@@ -81,6 +83,146 @@ async function main() {
   })
 
   console.log('✅ Created users:', farmer1.name, farmer2.name, buyer1.name, buyer2.name)
+
+  // ─── Create Worker Users ───
+  const worker1 = await prisma.user.create({
+    data: {
+      name: 'David Otieno',
+      email: 'david@worker.com',
+      password: passwordHash,
+      role: 'buyer', // workers use the buyer role (non-farmer)
+      phone: '+254 756 789 012',
+      location: 'Kisumu',
+    },
+  })
+
+  const worker2 = await prisma.user.create({
+    data: {
+      name: 'Grace Wambui',
+      email: 'grace@worker.com',
+      password: passwordHash,
+      role: 'buyer',
+      phone: '+254 767 890 123',
+      location: 'Nakuru',
+    },
+  })
+
+  console.log('✅ Created workers:', worker1.name, worker2.name)
+
+  // ─── Create Farm Jobs ───
+  const job1 = await prisma.job.create({
+    data: {
+      title: 'Maize Harvest Workers Needed',
+      cropType: 'maize',
+      description: 'We need reliable workers to help harvest 20 acres of maize in Kisumu. Experience with maize harvesting preferred. We provide lunch and transport from Kisumu town. Work runs from 7 AM to 4 PM daily.',
+      workersNeeded: 10,
+      payPerDay: 700,
+      location: 'Kisumu',
+      latitude: -0.0917,
+      longitude: 34.7680,
+      startDate: new Date('2026-03-15'),
+      farmerId: farmer1.id,
+    },
+  })
+
+  const job2 = await prisma.job.create({
+    data: {
+      title: 'Tea Picking Assistants – Nyeri Highlands',
+      cropType: 'tea',
+      description: 'Seasonal tea picking on our Nyeri estate. Light work suitable for all. Training provided for first-timers. Morning shift 6 AM – 12 PM, afternoon shift 1 PM – 5 PM.',
+      workersNeeded: 15,
+      payPerDay: 600,
+      location: 'Nyeri',
+      latitude: -0.4169,
+      longitude: 36.9458,
+      startDate: new Date('2026-03-20'),
+      farmerId: farmer2.id,
+    },
+  })
+
+  const job3 = await prisma.job.create({
+    data: {
+      title: 'Wheat Harvesting Crew – Naivasha',
+      cropType: 'wheat',
+      description: 'Looking for 8 workers to help with wheat harvesting on our 15-acre farm near Lake Naivasha. Must be physically fit. Pay includes breakfast and lunch. We supply gloves and tools.',
+      workersNeeded: 8,
+      payPerDay: 800,
+      location: 'Naivasha',
+      latitude: -0.7172,
+      longitude: 36.4310,
+      startDate: new Date('2026-03-18'),
+      farmerId: farmer1.id,
+    },
+  })
+
+  const job4 = await prisma.job.create({
+    data: {
+      title: 'Tomato Picking & Sorting – Meru',
+      cropType: 'tomatoes',
+      description: 'Urgent: Need workers for tomato picking and grading at our greenhouse farm in Meru. Careful handling required. We provide training for sorting grades. Job may extend for 2 weeks.',
+      workersNeeded: 6,
+      payPerDay: 650,
+      location: 'Meru',
+      latitude: 0.0480,
+      longitude: 37.6559,
+      startDate: new Date('2026-03-12'),
+      farmerId: farmer2.id,
+    },
+  })
+
+  const job5 = await prisma.job.create({
+    data: {
+      title: 'Bean Harvest Helpers – Machakos',
+      cropType: 'beans',
+      description: 'Small-scale bean harvest on 5 acres in Machakos. Simple work – plucking and bagging. Great for students looking for short-term work. 3-day job.',
+      workersNeeded: 4,
+      payPerDay: 500,
+      location: 'Machakos',
+      latitude: -1.5177,
+      longitude: 37.2634,
+      startDate: new Date('2026-03-25'),
+      farmerId: farmer1.id,
+    },
+  })
+
+  // ─── Create Sample Job Applications ───
+  await prisma.jobApplication.create({
+    data: {
+      jobId: job1.id,
+      workerId: worker1.id,
+      message: 'I have 3 years of experience harvesting maize in Kisumu. Available from the start date. I can also bring 2 friends who are experienced.',
+      status: 'accepted',
+    },
+  })
+
+  await prisma.jobApplication.create({
+    data: {
+      jobId: job1.id,
+      workerId: worker2.id,
+      message: 'I am interested in this position. I am hardworking and reliable. I can start immediately.',
+      status: 'pending',
+    },
+  })
+
+  await prisma.jobApplication.create({
+    data: {
+      jobId: job2.id,
+      workerId: worker1.id,
+      message: 'I would love to help with tea picking. I am based in Nyeri and can walk to the estate.',
+      status: 'pending',
+    },
+  })
+
+  await prisma.jobApplication.create({
+    data: {
+      jobId: job4.id,
+      workerId: buyer1.id,
+      message: 'I am interested in the tomato sorting job. I have experience working at Marikiti Market sorting produce.',
+      status: 'pending',
+    },
+  })
+
+  console.log('✅ Created farm jobs and applications')
 
   // ─── Create Products ───
   const products = await Promise.all([
@@ -442,6 +584,8 @@ async function main() {
   console.log('  Farmer: wanjiku@farmer.com / password123')
   console.log('  Buyer:  peter@buyer.com / password123')
   console.log('  Buyer:  amina@buyer.com / password123')
+  console.log('  Worker: david@worker.com / password123')
+  console.log('  Worker: grace@worker.com / password123')
 
   await prisma.$disconnect()
 }

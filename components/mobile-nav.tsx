@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, TrendingUp, Store, Package, AlertTriangle, BarChart3, CloudSun } from 'lucide-react'
+import { LayoutDashboard, TrendingUp, Store, Package, AlertTriangle, BarChart3, CloudSun, Briefcase } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
 
@@ -15,13 +15,14 @@ interface NavItem {
 const farmerMobileNav: NavItem[] = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Home' },
   { href: '/dashboard/storage-units', icon: Package, label: 'Storage' },
+  { href: '/jobs', icon: Briefcase, label: 'Jobs' },
   { href: '/marketplace', icon: Store, label: 'Market' },
-  { href: '/dashboard/weather', icon: CloudSun, label: 'Weather' },
   { href: '/dashboard/alerts', icon: AlertTriangle, label: 'Alerts' },
 ]
 
 const buyerMobileNav: NavItem[] = [
   { href: '/marketplace', icon: Store, label: 'Market' },
+  { href: '/jobs', icon: Briefcase, label: 'Jobs' },
   { href: '/market', icon: TrendingUp, label: 'Trends' },
   { href: '/risk', icon: BarChart3, label: 'Analytics' },
 ]

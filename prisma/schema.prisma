@@ -28,6 +28,8 @@ model User {
   sentMessages Message[] @relation("SentMessages")
   recvMessages Message[] @relation("RecvMessages")
   storageUnits StorageUnit[]
+  jobs         Job[]
+  jobApplications JobApplication[]
 }
 
 // ─── Storage Unit Model ───
@@ -180,4 +182,53 @@ model CommodityThreshold {
   minHumidity   Float  // minimum safe humidity %
   maxHumidity   Float  // maximum safe humidity %
   maxStorageDays Int   // maximum recommended storage duration in days
+}
+
+// ─── Job Model ───
+// Farm labor marketplace: farmers post jobs that workers can apply to.
+model Job {
+  id            String   @id @default(cuid())
+  title         String   // e.g. "Maize Harvest Workers Needed"
+  cropType      String   // e.g. "maize", "wheat", "beans"
+  description   String
+  workersNeeded Int      // number of workers required
+  payPerDay     Float    // pay in KES per day
+  location      String   // county or town, e.g. "Kisumu"
+  latitude      Float    // GPS latitude
+  longitude     Float    // GPS longitude
+  startDate     DateTime // when the job starts
+  isOpen        Boolean  @default(true) // whether the job is still accepting applications
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Farmer who posted the job
+  farmerId String
+  farmer   User @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  // Applications from workers
+  applications JobApplication[]
+
+  @@index([cropType])
+  @@index([location])
+  @@index([isOpen])
+}
+
+// ─── Job Application Model ───
+// A worker applies for a job with a message.
+model JobApplication {
+  id        String   @id @default(cuid())
+  message   String   // application message from the worker
+  status    String   @default("pending") // "pending" | "accepted" | "rejected"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // The job being applied to
+  jobId String
+  job   Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // The worker applying
+  workerId String
+  worker   User @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, workerId]) // a worker can only apply once per job
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
+import { Button } from '@/components/ui/button'
 import {
   Package, Wheat, AlertTriangle, Thermometer, Droplets,
   ArrowRight, Plus, TrendingUp, Activity, ShieldAlert,
@@ -527,7 +528,7 @@ export default function FarmerDashboard() {
           ) : weatherData ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Current Weather */}
-              <CurrentWeatherCard current={weatherData.current} location={weatherData.location} />
+              <CurrentWeatherCard data={weatherData} />
 
               {/* Weather Alerts & Rain Outlook */}
               <div className="md:col-span-2 space-y-4">
