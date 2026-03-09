@@ -268,7 +268,7 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
       {/* Chat Widget */}
       {chatWorker && job && (
         <ChatWidget
-          productId={job.id}
+          jobId={job.id}
           otherUserId={chatWorker.id}
           otherUserName={chatWorker.name}
           onClose={() => setChatWorker(null)}

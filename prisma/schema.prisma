@@ -135,7 +135,7 @@ model Product {
 }
 
 // ─── Message Model ───
-// Stores chat messages between buyers and farmers for a specific product.
+// Stores chat messages between users for a specific product or job.
 model Message {
   id         String   @id @default(cuid())
   message    String   // the chat message text
@@ -149,9 +149,12 @@ model Message {
   receiverId String
   receiver   User     @relation("RecvMessages", fields: [receiverId], references: [id])
 
-  // Which product this conversation is about
-  productId  String
-  product    Product  @relation(fields: [productId], references: [id])
+  // Conversation context – either about a product or a job
+  productId  String?
+  product    Product?  @relation(fields: [productId], references: [id])
+
+  jobId      String?
+  job        Job?      @relation(fields: [jobId], references: [id])
 }
 
 // ─── Market Model ───
@@ -207,6 +210,9 @@ model Job {
 
   // Applications from workers
   applications JobApplication[]
+
+  // Chat messages about this job
+  messages Message[]
 
   @@index([cropType])
   @@index([location])

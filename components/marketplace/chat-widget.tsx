@@ -1,16 +1,17 @@
 /**
  * Chat Widget Component
  * 
- * Real-time chat interface between a buyer and farmer about a specific product.
+ * Real-time chat interface between users about a specific product or job.
  * Features:
  *   - Displays message history
  *   - Sends new messages via the API
- *   - Connects to Socket.IO for real-time updates
+ *   - Polls for new messages every 3 seconds for real-time feel
  *   - Auto-scrolls to the latest message
  * 
  * Props:
- *   - productId: The product this conversation is about
- *   - otherUserId: The user on the other side (farmer or buyer)
+ *   - productId?: The product this conversation is about
+ *   - jobId?: The job this conversation is about
+ *   - otherUserId: The user on the other side
  *   - otherUserName: Display name of the other user
  *   - onClose: Callback to close the chat widget
  */
@@ -20,7 +21,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Send, X, MessageCircle } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
-import { io, Socket } from 'socket.io-client'
 
 interface Message {
   id: string
@@ -33,20 +33,25 @@ interface Message {
 }
 
 interface ChatWidgetProps {
-  productId: string
+  productId?: string
+  jobId?: string
   otherUserId: string
   otherUserName: string
   onClose: () => void
 }
 
-export function ChatWidget({ productId, otherUserId, otherUserName, onClose }: ChatWidgetProps) {
+export function ChatWidget({ productId, jobId, otherUserId, otherUserName, onClose }: ChatWidgetProps) {
   const { user, token } = useAuth()
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const socketRef = useRef<Socket | null>(null)
+
+  // Build the query params for messages API
+  const contextParam = productId
+    ? `productId=${productId}`
+    : `jobId=${jobId}`
 
   // Auto-scroll to the latest message
   const scrollToBottom = useCallback(() => {
@@ -54,75 +59,35 @@ export function ChatWidget({ productId, otherUserId, otherUserName, onClose }: C
   }, [])
 
   // Fetch message history
-  useEffect(() => {
+  const fetchMessages = useCallback(async (showLoading = false) => {
     if (!token) return
-
-    const fetchMessages = async () => {
-      try {
-        const res = await fetch(
-          `/api/messages?productId=${productId}&otherUserId=${otherUserId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
-        if (res.ok) {
-          const data = await res.json()
-          setMessages(data.messages)
-        }
-      } catch (err) {
-        console.error('Failed to fetch messages:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchMessages()
-  }, [token, productId, otherUserId])
-
-  // Connect to Socket.IO for real-time messages
-  useEffect(() => {
-    if (!user) return
-
+    if (showLoading) setIsLoading(true)
     try {
-      const socket = io({
-        path: '/api/socketio',
-        auth: { token },
-      })
-
-      socket.on('connect', () => {
-        // Join a room specific to this conversation
-        const room = [user.id, otherUserId].sort().join('-') + '-' + productId
-        socket.emit('join-room', room)
-      })
-
-      // Listen for new incoming messages
-      socket.on('new-message', (msg: Message) => {
-        setMessages((prev) => [...prev, msg])
-      })
-
-      socketRef.current = socket
-
-      return () => {
-        socket.disconnect()
+      const res = await fetch(
+        `/api/messages?${contextParam}&otherUserId=${otherUserId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(data.messages)
       }
-    } catch {
-      // Socket.IO server not running, fall back to polling
-      console.log('Socket.IO not available, using polling fallback')
-      const pollInterval = setInterval(async () => {
-        if (!token) return
-        try {
-          const res = await fetch(
-            `/api/messages?productId=${productId}&otherUserId=${otherUserId}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          )
-          if (res.ok) {
-            const data = await res.json()
-            setMessages(data.messages)
-          }
-        } catch { /* ignore */ }
-      }, 3000)
-
-      return () => clearInterval(pollInterval)
+    } catch (err) {
+      console.error('Failed to fetch messages:', err)
+    } finally {
+      if (showLoading) setIsLoading(false)
     }
-  }, [user, token, otherUserId, productId])
+  }, [token, contextParam, otherUserId])
+
+  // Initial fetch
+  useEffect(() => {
+    fetchMessages(true)
+  }, [fetchMessages])
+
+  // Poll for new messages every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => fetchMessages(false), 3000)
+    return () => clearInterval(interval)
+  }, [fetchMessages])
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -144,7 +109,7 @@ export function ChatWidget({ productId, otherUserId, otherUserName, onClose }: C
         },
         body: JSON.stringify({
           receiverId: otherUserId,
-          productId,
+          ...(productId ? { productId } : { jobId }),
           message: newMessage.trim(),
         }),
       })
@@ -155,13 +120,6 @@ export function ChatWidget({ productId, otherUserId, otherUserName, onClose }: C
 
         // Add to local state immediately
         setMessages((prev) => [...prev, sentMessage])
-
-        // Emit via Socket.IO so the other user gets it in real-time
-        if (socketRef.current?.connected) {
-          const room = [user!.id, otherUserId].sort().join('-') + '-' + productId
-          socketRef.current.emit('send-message', { room, message: sentMessage })
-        }
-
         setNewMessage('')
       }
     } catch (err) {

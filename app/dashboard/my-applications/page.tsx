@@ -209,7 +209,7 @@ export default function MyApplicationsPage() {
       {/* Chat Widget */}
       {chatTarget && (
         <ChatWidget
-          productId={chatTarget.jobId}
+          jobId={chatTarget.jobId}
           otherUserId={chatTarget.farmerId}
           otherUserName={chatTarget.farmerName}
           onClose={() => setChatTarget(null)}

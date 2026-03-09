@@ -427,7 +427,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
       {/* Chat Widget */}
       {showChat && job && user && (
         <ChatWidget
-          productId={job.id}
+          jobId={job.id}
           otherUserId={job.farmer.id}
           otherUserName={job.farmer.name}
           onClose={() => setShowChat(false)}

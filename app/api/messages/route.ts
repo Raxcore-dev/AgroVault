@@ -1,14 +1,15 @@
 /**
  * GET /api/messages?productId=xxx&otherUserId=yyy
+ * GET /api/messages?jobId=xxx&otherUserId=yyy
  *   Returns chat messages between the authenticated user and another user
- *   about a specific product. Messages are ordered chronologically.
+ *   about a specific product or job. Messages are ordered chronologically.
  * 
  * POST /api/messages
  *   Sends a new chat message. Requires authentication.
- *   Body: { receiverId, productId, message }
+ *   Body: { receiverId, message, productId? | jobId? }
  * 
  * Security: Only logged-in users can send/read messages.
- * Messages are scoped to a product conversation between two users.
+ * Messages are scoped to a product/job conversation between two users.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -25,20 +26,31 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const productId = searchParams.get('productId')
+    const jobId = searchParams.get('jobId')
     const otherUserId = searchParams.get('otherUserId')
 
-    if (!productId || !otherUserId) {
+    if (!otherUserId) {
       return NextResponse.json(
-        { error: 'productId and otherUserId are required.' },
+        { error: 'otherUserId is required.' },
         { status: 400 }
       )
     }
 
+    if (!productId && !jobId) {
+      return NextResponse.json(
+        { error: 'productId or jobId is required.' },
+        { status: 400 }
+      )
+    }
+
+    // Build where clause depending on context type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const contextFilter: any = productId ? { productId } : { jobId }
+
     // Fetch messages where the authenticated user is either sender or receiver
-    // in the conversation with `otherUserId` about `productId`
     const messages = await prisma.message.findMany({
       where: {
-        productId,
+        ...contextFilter,
         OR: [
           { senderId: auth.userId, receiverId: otherUserId },
           { senderId: otherUserId, receiverId: auth.userId },
@@ -67,12 +79,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { receiverId, productId, message } = body
+    const { receiverId, productId, jobId, message } = body
 
     // ─── Validation ───
-    if (!receiverId || !productId || !message) {
+    if (!receiverId || !message) {
       return NextResponse.json(
-        { error: 'receiverId, productId, and message are required.' },
+        { error: 'receiverId and message are required.' },
+        { status: 400 }
+      )
+    }
+
+    if (!productId && !jobId) {
+      return NextResponse.json(
+        { error: 'productId or jobId is required.' },
         { status: 400 }
       )
     }
@@ -90,10 +109,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Receiver not found.' }, { status: 404 })
     }
 
-    // Verify product exists
-    const product = await prisma.product.findUnique({ where: { id: productId } })
-    if (!product) {
-      return NextResponse.json({ error: 'Product not found.' }, { status: 404 })
+    // Verify context exists (product or job)
+    if (productId) {
+      const product = await prisma.product.findUnique({ where: { id: productId } })
+      if (!product) {
+        return NextResponse.json({ error: 'Product not found.' }, { status: 404 })
+      }
+    } else if (jobId) {
+      const job = await prisma.job.findUnique({ where: { id: jobId } })
+      if (!job) {
+        return NextResponse.json({ error: 'Job not found.' }, { status: 404 })
+      }
     }
 
     // ─── Create message ───
@@ -101,8 +127,8 @@ export async function POST(request: NextRequest) {
       data: {
         senderId: auth.userId,
         receiverId,
-        productId,
         message,
+        ...(productId ? { productId } : { jobId }),
       },
       include: {
         sender: { select: { id: true, name: true, role: true } },
