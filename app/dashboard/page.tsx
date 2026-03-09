@@ -528,7 +528,15 @@ export default function FarmerDashboard() {
           ) : weatherData ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Current Weather */}
-              <CurrentWeatherCard data={weatherData} />
+              <CurrentWeatherCard data={{
+                location: weatherData.location ?? '',
+                temperature: Number(weatherData.current?.temperature) || 0,
+                humidity: Number(weatherData.current?.humidity) || 0,
+                wind_speed: Number(weatherData.current?.wind_speed) || 0,
+                description: weatherData.current?.description ?? '',
+                icon: weatherData.current?.icon ?? '01d',
+                feels_like: Number(weatherData.current?.feels_like) || 0,
+              }} />
 
               {/* Weather Alerts & Rain Outlook */}
               <div className="md:col-span-2 space-y-4">
@@ -585,7 +593,7 @@ export default function FarmerDashboard() {
                           <Thermometer className="h-4 w-4 text-orange-400" />
                         </div>
                         <p className="text-sm font-semibold">
-                          {Math.round(day.temp_max)}° / {Math.round(day.temp_min)}°
+                          {Math.round(Number(day.temperature_max) || 0)}° / {Math.round(Number(day.temperature_min) || 0)}°
                         </p>
                         <div className="flex items-center justify-center gap-1 mt-1">
                           <Droplets className="h-3 w-3 text-blue-400" />

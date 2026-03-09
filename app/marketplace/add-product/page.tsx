@@ -10,10 +10,11 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Package, MapPin } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, Plus, Package, MapPin, Upload, X, Loader2 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 
 // Common product categories for Kenyan agriculture
@@ -46,6 +47,10 @@ export default function AddProductPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageUploading, setImageUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [formData, setFormData] = useState({
     productName: '',
@@ -80,6 +85,72 @@ export default function AddProductPage() {
     }
   }
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file.')
+      return
+    }
+
+    // Validate file size (5 MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be smaller than 5 MB.')
+      return
+    }
+
+    setError('')
+    setImageFile(file)
+
+    // Create preview URL
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const removeImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+    setFormData((prev) => ({ ...prev, productImage: '' }))
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  /**
+   * Upload image to Cloudinary via /api/upload, returns the secure URL.
+   */
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile || !token) return null
+
+    setImageUploading(true)
+    try {
+      const formDataUpload = new FormData()
+      formDataUpload.append('image', imageFile)
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formDataUpload,
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Image upload failed')
+      }
+
+      return data.url
+    } catch (err) {
+      throw err
+    } finally {
+      setImageUploading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -97,6 +168,12 @@ export default function AddProductPage() {
     setIsSubmitting(true)
 
     try {
+      // Upload image first if one was selected
+      let imageUrl = formData.productImage || null
+      if (imageFile) {
+        imageUrl = await uploadImage()
+      }
+
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: {
@@ -109,7 +186,7 @@ export default function AddProductPage() {
           price: Number(formData.price),
           quantity: Number(formData.quantity),
           unit: formData.unit,
-          productImage: formData.productImage || null,
+          productImage: imageUrl,
           locationName: formData.locationName,
           latitude: Number(formData.latitude),
           longitude: Number(formData.longitude),
@@ -305,19 +382,63 @@ export default function AddProductPage() {
                 </select>
               </div>
 
-              {/* Product Image URL */}
+              {/* Product Image Upload */}
               <div>
-                <label htmlFor="productImage" className="block text-sm font-medium text-foreground mb-1.5">
-                  Product Image URL <span className="text-muted-foreground">(optional)</span>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Product Photo <span className="text-muted-foreground">(optional)</span>
                 </label>
+
+                {imagePreview ? (
+                  <div className="relative w-full rounded-lg border border-border overflow-hidden">
+                    <div className="relative aspect-video w-full bg-muted">
+                      <Image
+                        src={imagePreview}
+                        alt="Preview"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-background">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Upload className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-sm text-muted-foreground truncate">
+                          {imageFile?.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          ({((imageFile?.size ?? 0) / 1024).toFixed(0)} KB)
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="rounded-md p-1 text-muted-foreground hover:text-danger hover:bg-danger/10 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full rounded-lg border-2 border-dashed border-border bg-muted/30 px-4 py-8 text-center hover:border-primary/50 hover:bg-muted/50 transition-colors"
+                  >
+                    <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm font-medium text-foreground">
+                      Click to upload a photo
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      JPEG, PNG, WebP or GIF — max 5 MB
+                    </p>
+                  </button>
+                )}
+
                 <input
-                  id="productImage"
-                  name="productImage"
-                  type="url"
-                  value={formData.productImage}
-                  onChange={handleChange}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="hidden"
                 />
               </div>
 
@@ -391,15 +512,15 @@ export default function AddProductPage() {
               {/* Submit */}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || imageUploading}
                 className="btn-cta w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? (
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                {isSubmitting || imageUploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Plus className="h-4 w-4" />
                 )}
-                {isSubmitting ? 'Listing product...' : 'List Product'}
+                {imageUploading ? 'Uploading photo...' : isSubmitting ? 'Listing product...' : 'List Product'}
               </button>
             </form>
           </div>
