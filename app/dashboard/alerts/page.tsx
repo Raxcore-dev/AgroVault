@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
+import { useRoleGuard } from '@/hooks/use-role-guard'
 import { AlertTriangle, CheckCircle, Thermometer, Droplets, Package, CloudRain } from 'lucide-react'
 
 interface Alert {
@@ -17,9 +18,12 @@ interface Alert {
 }
 
 export default function AlertsPage() {
+  const { allowed, isLoading: roleLoading } = useRoleGuard('farmer')
   const { token } = useAuth()
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
+
+  if (roleLoading || !allowed) return null
 
   useEffect(() => {
     if (!token) return
