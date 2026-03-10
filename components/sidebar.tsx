@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, TrendingUp, Wheat, BarChart3, Settings,
   Thermometer, AlertTriangle, Store, Package, Bell, ShieldAlert, CloudSun, Briefcase,
+  Search, MessageCircle, User,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
@@ -34,7 +35,6 @@ const buyerNav: NavItem[] = [
   { href: '/jobs', icon: Briefcase, label: 'Farm Jobs' },
   { href: '/dashboard/my-applications', icon: Briefcase, label: 'My Applications' },
   { href: '/market', icon: TrendingUp, label: 'Market Trends' },
-  { href: '/risk', icon: BarChart3, label: 'Analytics' },
 ]
 
 const bottomNav: NavItem[] = [
