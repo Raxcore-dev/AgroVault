@@ -13,6 +13,7 @@ import {
   ToggleLeft, ToggleRight, Loader2, Banknote, Wheat,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
+import { useRoleGuard } from '@/hooks/use-role-guard'
 
 interface Job {
   id: string
@@ -35,10 +36,13 @@ interface Job {
 }
 
 export default function MyJobsPage() {
+  const { allowed, isLoading: roleLoading } = useRoleGuard('farmer')
   const { token } = useAuth()
   const [jobs, setJobs] = useState<Job[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+
+  if (roleLoading || !allowed) return null
 
   useEffect(() => {
     if (!token) return
