@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/lib/auth-context'
+import { useRoleGuard } from '@/hooks/use-role-guard'
 import {
   CloudRain, RefreshCw, Brain, Sparkles, ShieldAlert,
   MapPin, CloudSun, Droplets,
@@ -90,6 +91,7 @@ interface RecResponse {
 }
 
 export default function WeatherInsightsPage() {
+  const { allowed, isLoading: roleLoading } = useRoleGuard('farmer')
   const { token } = useAuth()
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [alertsData, setAlertsData] = useState<AlertsResponse | null>(null)
@@ -97,6 +99,8 @@ export default function WeatherInsightsPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [recsLoading, setRecsLoading] = useState(false)
+
+  if (roleLoading || !allowed) return null
 
   const fetchData = useCallback(async () => {
     if (!token) return
