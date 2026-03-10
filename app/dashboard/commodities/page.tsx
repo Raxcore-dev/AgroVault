@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
+import { useRoleGuard } from '@/hooks/use-role-guard'
 import { Wheat, Package } from 'lucide-react'
 import Link from 'next/link'
 
@@ -32,9 +33,12 @@ interface StorageUnit {
 }
 
 export default function CommoditiesPage() {
+  const { allowed, isLoading: roleLoading } = useRoleGuard('farmer')
   const { token } = useAuth()
   const [units, setUnits] = useState<StorageUnit[]>([])
   const [loading, setLoading] = useState(true)
+
+  if (roleLoading || !allowed) return null
 
   useEffect(() => {
     if (!token) return
