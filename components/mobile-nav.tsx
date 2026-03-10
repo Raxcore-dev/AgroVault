@@ -23,8 +23,8 @@ const farmerMobileNav: NavItem[] = [
 const buyerMobileNav: NavItem[] = [
   { href: '/marketplace', icon: Store, label: 'Market' },
   { href: '/jobs', icon: Briefcase, label: 'Jobs' },
+  { href: '/dashboard/my-applications', icon: Briefcase, label: 'Applied' },
   { href: '/market', icon: TrendingUp, label: 'Trends' },
-  { href: '/risk', icon: BarChart3, label: 'Analytics' },
 ]
 
 export function MobileNav() {
