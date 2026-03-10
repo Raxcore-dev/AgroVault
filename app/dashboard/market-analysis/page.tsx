@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/lib/auth-context'
+import { useRoleGuard } from '@/hooks/use-role-guard'
 import {
   AlertTriangle, TrendingUp, BarChart3, RefreshCw,
   ShieldAlert, Store, ArrowRight, Brain, Sparkles,
@@ -33,7 +34,10 @@ interface SpoilageSummary {
 }
 
 export default function MarketAnalysisPage() {
+  const { allowed, isLoading: roleLoading } = useRoleGuard('farmer')
   const { token } = useAuth()
+
+  if (roleLoading || !allowed) return null
   const [assessments, setAssessments] = useState<SpoilageAssessment[]>([])
   const [summary, setSummary] = useState<SpoilageSummary | null>(null)
   const [markets, setMarkets] = useState<MarketData[]>([])
