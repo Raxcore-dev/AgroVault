@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
+import { getRestrictedRedirect, type UserRole } from '@/lib/role-routes'
 import { Header } from './header'
 import { Sidebar } from './sidebar'
 import { MobileNav } from './mobile-nav'
@@ -17,11 +18,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname)
 
+  // Redirect unauthenticated users to login
   useEffect(() => {
     if (!isLoading && !user && !isPublicRoute) {
       router.push('/login')
     }
   }, [isLoading, user, isPublicRoute, router])
+
+  // Role-based route protection: redirect if accessing a restricted route
+  useEffect(() => {
+    if (isLoading || !user || isPublicRoute) return
+
+    const redirect = getRestrictedRedirect(pathname, user.role as UserRole)
+    if (redirect) {
+      router.replace(redirect)
+    }
+  }, [isLoading, user, pathname, isPublicRoute, router])
 
   // Public routes (login/register) — render without shell
   if (isPublicRoute) {

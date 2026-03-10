@@ -7,6 +7,7 @@
  * Returns:
  *   - 200: { user } with full profile data
  *   - 401: Not authenticated
+ *   - 404: User not found
  */
 
 import { NextRequest, NextResponse } from 'next/server'

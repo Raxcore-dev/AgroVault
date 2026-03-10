@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
+import { useRoleGuard } from '@/hooks/use-role-guard'
 import { Package, Plus, MapPin, X, Trash2, Pencil } from 'lucide-react'
 
 interface StorageUnit {
@@ -16,8 +17,12 @@ interface StorageUnit {
 }
 
 export default function StorageUnitsPage() {
+  const { allowed, isLoading: roleLoading } = useRoleGuard('farmer')
   const { token } = useAuth()
   const searchParams = useSearchParams()
+
+  // Block access for non-farmer roles
+  if (roleLoading || !allowed) return null
   const [units, setUnits] = useState<StorageUnit[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddForm, setShowAddForm] = useState(searchParams.get('action') === 'add')
