@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import {
   Package, Wheat, AlertTriangle, Thermometer, Droplets,
   ArrowRight, Plus, TrendingUp, Activity, ShieldAlert,
-  Brain, Sparkles, Loader2, CloudSun, CloudRain,
+  Brain, Sparkles, Loader2, CloudSun, CloudRain, Briefcase,
 } from 'lucide-react'
 import { AIInsightCard, AIInsightSkeleton, type AIAnalysis } from '@/components/ai-insight-card'
 import {
@@ -70,7 +70,113 @@ interface SpoilageSummary {
   low: number
 }
 
-export default function FarmerDashboard() {
+export default function DashboardPage() {
+  const { user, token } = useAuth()
+
+  // Buyers see the buyer-specific dashboard
+  if (user?.role === 'buyer') {
+    return <BuyerDashboard />
+  }
+
+  // Default: farmer dashboard
+  return <FarmerDashboard />
+}
+
+// ─── Buyer Dashboard ───
+
+function BuyerDashboard() {
+  const { user } = useAuth()
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="px-6 py-6 lg:px-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Welcome back, {user?.name?.split(' ')[0] || 'Buyer'}.
+          </p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-6">
+          <Link
+            href="/marketplace"
+            className="card-elevated rounded-xl p-6 hover:shadow-md transition-shadow group"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="rounded-lg bg-primary/10 p-2.5">
+                <Package className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground">Browse Products</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Explore fresh produce and commodities from local farmers.
+            </p>
+            <div className="mt-3 flex items-center text-sm font-medium text-primary">
+              Go to Marketplace <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </Link>
+
+          <Link
+            href="/jobs"
+            className="card-elevated rounded-xl p-6 hover:shadow-md transition-shadow group"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="rounded-lg bg-accent/10 p-2.5">
+                <Briefcase className="h-5 w-5 text-accent" />
+              </div>
+              <h3 className="font-semibold text-foreground">Farm Jobs</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Find farm labor opportunities and apply for open positions.
+            </p>
+            <div className="mt-3 flex items-center text-sm font-medium text-primary">
+              View Jobs <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </Link>
+
+          <Link
+            href="/market"
+            className="card-elevated rounded-xl p-6 hover:shadow-md transition-shadow group"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="rounded-lg bg-secondary/10 p-2.5">
+                <TrendingUp className="h-5 w-5 text-secondary" />
+              </div>
+              <h3 className="font-semibold text-foreground">Market Trends</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Check current commodity prices and market trends.
+            </p>
+            <div className="mt-3 flex items-center text-sm font-medium text-primary">
+              View Trends <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </Link>
+        </div>
+
+        {/* My Applications Summary */}
+        <div className="card-elevated rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground">My Applications</h2>
+            <Link
+              href="/dashboard/my-applications"
+              className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+            >
+              View all <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Track the status of your job applications and marketplace interactions.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Farmer Dashboard ───
+
+function FarmerDashboard() {
   const { user, token } = useAuth()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [units, setUnits] = useState<StorageUnit[]>([])
