@@ -100,8 +100,6 @@ export default function WeatherInsightsPage() {
   const [refreshing, setRefreshing] = useState(false)
   const [recsLoading, setRecsLoading] = useState(false)
 
-  if (roleLoading || !allowed) return null
-
   const fetchData = useCallback(async () => {
     if (!token) return
     const headers = { Authorization: `Bearer ${token}` }
@@ -147,6 +145,8 @@ export default function WeatherInsightsPage() {
     setRefreshing(true)
     fetchData()
   }
+
+  if (roleLoading || !allowed) return null
 
   if (loading) {
     return (

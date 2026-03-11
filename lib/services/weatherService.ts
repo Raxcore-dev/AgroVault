@@ -1,11 +1,8 @@
 /**
  * Weather Service
  *
- * Fetches weather forecast data from the OpenWeather API based on the
- * farmer's location. Falls back to realistic mock data when the API key
- * is not configured so the UI always has something to render.
- *
- * Env variable: OPENWEATHER_API_KEY
+ * Fetches real weather forecast data from the Open-Meteo API (free, no key required)
+ * based on the farmer's location. Falls back to mock data only if the API is unreachable.
  */
 
 // ─── Types ───
@@ -15,7 +12,7 @@ export interface WeatherCurrent {
   humidity: number          // %
   wind_speed: number        // m/s
   description: string       // "light rain", "clear sky", etc.
-  icon: string              // OpenWeather icon code e.g. "10d"
+  icon: string              // OpenWeather-style icon code for UI mapping
   feels_like: number
   pressure: number
 }
@@ -86,93 +83,128 @@ function resolveCoords(location: string): { lat: number; lon: number } | null {
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-// ─── Fetch from OpenWeather API ───
+// ─── WMO Weather Code → description & icon mapping ───
 
-async function fetchFromOpenWeather(
+function wmoToDescription(code: number): string {
+  if (code === 0) return 'clear sky'
+  if (code === 1) return 'mainly clear'
+  if (code === 2) return 'partly cloudy'
+  if (code === 3) return 'overcast'
+  if (code === 45 || code === 48) return 'foggy'
+  if (code >= 51 && code <= 55) return 'drizzle'
+  if (code >= 56 && code <= 57) return 'freezing drizzle'
+  if (code === 61) return 'light rain'
+  if (code === 63) return 'moderate rain'
+  if (code === 65) return 'heavy rain'
+  if (code >= 66 && code <= 67) return 'freezing rain'
+  if (code >= 71 && code <= 77) return 'snow'
+  if (code === 80) return 'light rain showers'
+  if (code === 81) return 'moderate rain showers'
+  if (code === 82) return 'heavy rain showers'
+  if (code >= 85 && code <= 86) return 'snow showers'
+  if (code === 95) return 'thunderstorm'
+  if (code === 96 || code === 99) return 'thunderstorm with hail'
+  return 'partly cloudy'
+}
+
+function wmoToIcon(code: number): string {
+  if (code === 0) return '01d'
+  if (code <= 2) return '02d'
+  if (code === 3) return '04d'
+  if (code === 45 || code === 48) return '50d'
+  if (code >= 51 && code <= 57) return '09d'
+  if (code >= 61 && code <= 67) return '10d'
+  if (code >= 71 && code <= 77) return '13d'
+  if (code >= 80 && code <= 82) return '09d'
+  if (code >= 85 && code <= 86) return '13d'
+  if (code >= 95) return '11d'
+  return '02d'
+}
+
+// ─── Fetch from Open-Meteo (free, no API key) ───
+
+async function fetchFromOpenMeteo(
   lat: number,
   lon: number,
-  locationName: string
+  locationName: string,
 ): Promise<WeatherData | null> {
-  const apiKey = process.env.OPENWEATHER_API_KEY
-  if (!apiKey || apiKey === '' || apiKey === 'your_openweather_api_key_here') {
-    return null
-  }
-
   try {
-    // Fetch current weather + 5-day/3-hour forecast in one go
-    const [currentRes, forecastRes] = await Promise.all([
-      fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`,
-        { next: { revalidate: 1800 } }
-      ),
-      fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`,
-        { next: { revalidate: 1800 } }
-      ),
-    ])
+    const currentParams = [
+      'temperature_2m',
+      'relative_humidity_2m',
+      'wind_speed_10m',
+      'apparent_temperature',
+      'surface_pressure',
+      'weather_code',
+    ].join(',')
 
-    if (!currentRes.ok || !forecastRes.ok) {
-      console.error('[Weather] API returned non-OK:', currentRes.status, forecastRes.status)
+    const dailyParams = [
+      'temperature_2m_max',
+      'temperature_2m_min',
+      'precipitation_probability_max',
+      'precipitation_sum',
+      'wind_speed_10m_max',
+      'weather_code',
+      'relative_humidity_2m_mean',
+    ].join(',')
+
+    const url =
+      `https://api.open-meteo.com/v1/forecast` +
+      `?latitude=${lat}&longitude=${lon}` +
+      `&current=${currentParams}` +
+      `&daily=${dailyParams}` +
+      `&wind_speed_unit=ms` +
+      `&timezone=auto` +
+      `&forecast_days=7`
+
+    const res = await fetch(url, { next: { revalidate: 1800 } })
+
+    if (!res.ok) {
+      console.error('[Weather] Open-Meteo returned non-OK:', res.status)
       return null
     }
 
-    const currentJson = await currentRes.json()
-    const forecastJson = await forecastRes.json()
+    const json = await res.json()
 
-    // Parse current weather
-    const current: WeatherCurrent = {
-      temperature: currentJson.main.temp,
-      humidity: currentJson.main.humidity,
-      wind_speed: currentJson.wind.speed,
-      description: currentJson.weather?.[0]?.description ?? 'N/A',
-      icon: currentJson.weather?.[0]?.icon ?? '01d',
-      feels_like: currentJson.main.feels_like,
-      pressure: currentJson.main.pressure,
+    const cur = json.current
+    const daily = json.daily
+
+    if (!cur || !daily) {
+      console.error('[Weather] Unexpected Open-Meteo response shape')
+      return null
     }
 
-    // Aggregate forecast into daily summaries (next 7 days)
-    const dailyMap = new Map<string, {
-      temps: number[]; humids: number[]; winds: number[]; rains: number[];
-      rainMMs: number[]; descs: string[]; icons: string[]; date: Date
-    }>()
-
-    for (const item of forecastJson.list ?? []) {
-      const dt = new Date(item.dt * 1000)
-      const dateKey = dt.toISOString().split('T')[0]
-
-      if (!dailyMap.has(dateKey)) {
-        dailyMap.set(dateKey, {
-          temps: [], humids: [], winds: [], rains: [], rainMMs: [],
-          descs: [], icons: [], date: dt,
-        })
-      }
-
-      const day = dailyMap.get(dateKey)!
-      day.temps.push(item.main.temp)
-      day.humids.push(item.main.humidity)
-      day.winds.push(item.wind.speed)
-      day.rains.push((item.pop ?? 0) * 100)
-      day.rainMMs.push(item.rain?.['3h'] ?? 0)
-      day.descs.push(item.weather?.[0]?.description ?? '')
-      day.icons.push(item.weather?.[0]?.icon ?? '01d')
+    const current: WeatherCurrent = {
+      temperature: Math.round(cur.temperature_2m * 10) / 10,
+      humidity: Math.round(cur.relative_humidity_2m),
+      wind_speed: Math.round(cur.wind_speed_10m * 10) / 10,
+      description: wmoToDescription(cur.weather_code),
+      icon: wmoToIcon(cur.weather_code),
+      feels_like: Math.round(cur.apparent_temperature * 10) / 10,
+      pressure: Math.round(cur.surface_pressure),
     }
 
     const forecast: WeatherForecastDay[] = []
-    for (const [dateKey, d] of dailyMap) {
-      if (forecast.length >= 7) break
-      const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length
+    const times: string[] = daily.time ?? []
+
+    for (let i = 0; i < times.length && i < 7; i++) {
+      const dateStr = times[i]
+      const dt = new Date(dateStr + 'T12:00:00')
+      const wmoCode = daily.weather_code[i] ?? 0
+      const rainProb = daily.precipitation_probability_max?.[i] ?? 0
+
       forecast.push({
-        date: dateKey,
-        day: DAY_NAMES[d.date.getDay()],
-        temperature: Math.round(avg(d.temps) * 10) / 10,
-        temperature_min: Math.round(Math.min(...d.temps) * 10) / 10,
-        temperature_max: Math.round(Math.max(...d.temps) * 10) / 10,
-        humidity: Math.round(avg(d.humids)),
-        wind_speed: Math.round(avg(d.winds) * 10) / 10,
-        rain_probability: Math.round(Math.max(...d.rains)),
-        rainfall_mm: Math.round(d.rainMMs.reduce((a, b) => a + b, 0) * 10) / 10,
-        description: d.descs[Math.floor(d.descs.length / 2)] || 'N/A',
-        icon: d.icons[Math.floor(d.icons.length / 2)] || '01d',
+        date: dateStr,
+        day: DAY_NAMES[dt.getDay()],
+        temperature: Math.round(daily.temperature_2m_max[i] * 10) / 10,
+        temperature_min: Math.round(daily.temperature_2m_min[i] * 10) / 10,
+        temperature_max: Math.round(daily.temperature_2m_max[i] * 10) / 10,
+        humidity: Math.round(daily.relative_humidity_2m_mean?.[i] ?? 0),
+        wind_speed: Math.round(daily.wind_speed_10m_max[i] * 10) / 10,
+        rain_probability: Math.round(rainProb),
+        rainfall_mm: Math.round((daily.precipitation_sum[i] ?? 0) * 10) / 10,
+        description: wmoToDescription(wmoCode),
+        icon: wmoToIcon(wmoCode),
       })
     }
 
@@ -185,23 +217,22 @@ async function fetchFromOpenWeather(
       fetched_at: new Date().toISOString(),
     }
   } catch (err) {
-    console.error('[Weather] Failed to fetch from OpenWeather:', err)
+    console.error('[Weather] Failed to fetch from Open-Meteo:', err)
     return null
   }
 }
 
-// ─── Realistic fallback data ───
+// ─── Fallback mock data (only used if Open-Meteo is unreachable) ───
 
 function generateMockForecast(locationName: string, lat: number, lon: number): WeatherData {
   const now = new Date()
-  const baseTemp = lat < 0 ? 27 : 25 // slightly warmer near equator
+  const baseTemp = lat < 0 ? 27 : 25
 
   const forecast: WeatherForecastDay[] = []
   for (let i = 0; i < 7; i++) {
     const d = new Date(now)
     d.setDate(d.getDate() + i)
 
-    // Simulate a rainy spell mid-week
     const rainChance = i >= 2 && i <= 4 ? 60 + Math.round(Math.random() * 30) : 10 + Math.round(Math.random() * 25)
     const temp = baseTemp - i * 0.3 + (Math.random() * 2 - 1)
 
@@ -241,8 +272,8 @@ function generateMockForecast(locationName: string, lat: number, lon: number): W
 // ─── Public API ───
 
 /**
- * Fetch weather data for a location. Uses cached data if available.
- * Falls back to mock data when no API key is configured.
+ * Fetch real weather data for a location via Open-Meteo.
+ * Uses cached data if available. Falls back to mock only if the API is unreachable.
  */
 export async function getWeatherForecast(location: string): Promise<WeatherData> {
   const coords = resolveCoords(location)
@@ -256,14 +287,15 @@ export async function getWeatherForecast(location: string): Promise<WeatherData>
     return cached.data
   }
 
-  // Try real API
-  const realData = await fetchFromOpenWeather(lat, lon, location)
+  // Fetch real data from Open-Meteo
+  const realData = await fetchFromOpenMeteo(lat, lon, location)
   if (realData) {
     weatherCache.set(key, { data: realData, timestamp: Date.now() })
     return realData
   }
 
-  // Fallback to mock
+  // Fallback to mock only if API is unreachable
+  console.warn('[Weather] Open-Meteo unreachable, using mock data for', location)
   const mock = generateMockForecast(location, lat, lon)
   weatherCache.set(key, { data: mock, timestamp: Date.now() })
   return mock
@@ -275,7 +307,7 @@ export async function getWeatherForecast(location: string): Promise<WeatherData>
 export async function getWeatherByCoords(
   lat: number,
   lon: number,
-  locationName: string
+  locationName: string,
 ): Promise<WeatherData> {
   const key = cacheKey(lat, lon)
 
@@ -284,7 +316,7 @@ export async function getWeatherByCoords(
     return cached.data
   }
 
-  const realData = await fetchFromOpenWeather(lat, lon, locationName)
+  const realData = await fetchFromOpenMeteo(lat, lon, locationName)
   if (realData) {
     weatherCache.set(key, { data: realData, timestamp: Date.now() })
     return realData
