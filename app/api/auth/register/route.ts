@@ -1,13 +1,13 @@
 /**
  * POST /api/auth/register
  * 
- * Registers a new user (farmer or buyer).
+ * Registers a new user (farmer or job applicant).
  * 
  * Request body:
  *   - name: string (required)
  *   - email: string (required, must be unique)
  *   - password: string (required, min 6 characters)
- *   - role: "farmer" | "buyer" (defaults to "buyer")
+ *   - role: "farmer" | "job_applicant" (defaults to "job_applicant")
  *   - phone: string (optional)
  *   - location: string (optional, e.g. "Nakuru")
  * 
@@ -41,9 +41,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (role && !['farmer', 'buyer'].includes(role)) {
+    if (role && !['farmer', 'job_applicant'].includes(role)) {
       return NextResponse.json(
-        { error: 'Role must be "farmer" or "buyer".' },
+        { error: 'Role must be "farmer" or "job_applicant".' },
         { status: 400 }
       )
     }
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         password: hashedPassword,
-        role: role || 'buyer',
+        role: role || 'job_applicant',
         phone: phone || null,
         location: location || null,
       },
