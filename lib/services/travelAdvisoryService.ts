@@ -277,11 +277,16 @@ function summariseForecast(weather: WeatherData): TravelForecastSummary {
 // ─── Known Kenyan markets/locations for autocomplete ─────────────────────────
 
 export const KENYAN_MARKET_LOCATIONS = [
-  // Major cities
-  'Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret', 'Nyeri',
-  'Thika', 'Machakos', 'Kitale', 'Nanyuki', 'Kakamega', 'Kericho',
-  'Embu', 'Meru', 'Bungoma',
-  // Major markets
+  // ── All 47 counties ──────────────────────────────────────────────────────
+  'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu',
+  'Garissa', 'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho',
+  'Kiambu', 'Kilifi', 'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui',
+  'Kwale', 'Laikipia', 'Lamu', 'Machakos', 'Makueni', 'Mandera',
+  'Marsabit', 'Meru', 'Migori', 'Mombasa', 'Murang\'a', 'Nairobi',
+  'Nakuru', 'Nandi', 'Narok', 'Nyandarua', 'Nyamira', 'Nyeri',
+  'Samburu', 'Siaya', 'Taita-Taveta', 'Tana River', 'Tharaka-Nithi',
+  'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot',
+  // ── Major named markets ──────────────────────────────────────────────────
   'Kibuye Market, Kisumu',
   'Kongowea Market, Mombasa',
   'Wakulima Market, Nairobi',
@@ -289,7 +294,11 @@ export const KENYAN_MARKET_LOCATIONS = [
   'Karatina Market, Nyeri',
   'Eldoret Municipal Market',
   'Nakuru Municipal Market',
-  'Garissa Market, Nairobi',
   'Githurai Market, Nairobi',
   'Kawangware Market, Nairobi',
+  'Kitale Market, Trans Nzoia',
+  'Kisii Municipal Market',
+  'Meru Municipal Market',
+  'Embu Municipal Market',
+  'Garissa County Market',
 ]
