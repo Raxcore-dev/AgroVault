@@ -5,7 +5,7 @@
  * Used by AppShell for route protection and by navigation components.
  */
 
-export type UserRole = 'farmer' | 'buyer'
+export type UserRole = 'farmer' | 'job_applicant'
 
 /** Routes that are exclusively for farmers */
 export const FARMER_ONLY_ROUTES = [
@@ -21,15 +21,15 @@ export const FARMER_ONLY_ROUTES = [
   '/temperature',
 ]
 
-/** Routes that are exclusively for buyers */
-export const BUYER_ONLY_ROUTES = [
+/** Routes that are exclusively for job applicants */
+export const JOB_APPLICANT_ONLY_ROUTES = [
   '/dashboard/my-applications',
 ]
 
-/** Redirect destination when a buyer tries to access a farmer route */
-export const BUYER_REDIRECT = '/marketplace'
+/** Redirect destination when a job applicant tries to access a farmer route */
+export const JOB_APPLICANT_REDIRECT = '/jobs'
 
-/** Redirect destination when a farmer tries to access a buyer route */
+/** Redirect destination when a farmer tries to access a job applicant route */
 export const FARMER_REDIRECT = '/dashboard'
 
 /**
@@ -40,18 +40,18 @@ export function getRestrictedRedirect(
   pathname: string,
   role: UserRole
 ): string | null {
-  if (role === 'buyer') {
+  if (role === 'job_applicant') {
     const isFarmerRoute = FARMER_ONLY_ROUTES.some(
       (route) => pathname === route || pathname.startsWith(route + '/')
     )
-    if (isFarmerRoute) return BUYER_REDIRECT
+    if (isFarmerRoute) return JOB_APPLICANT_REDIRECT
   }
 
   if (role === 'farmer') {
-    const isBuyerRoute = BUYER_ONLY_ROUTES.some(
+    const isApplicantRoute = JOB_APPLICANT_ONLY_ROUTES.some(
       (route) => pathname === route || pathname.startsWith(route + '/')
     )
-    if (isBuyerRoute) return FARMER_REDIRECT
+    if (isApplicantRoute) return FARMER_REDIRECT
   }
 
   return null

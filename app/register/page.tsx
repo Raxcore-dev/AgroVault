@@ -10,7 +10,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Sprout, UserPlus, Eye, EyeOff, Wheat, ShoppingBag } from 'lucide-react'
+import { Sprout, UserPlus, Eye, EyeOff, Wheat, Briefcase } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 
 export default function RegisterPage() {
@@ -19,7 +19,7 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'buyer' as 'farmer' | 'buyer',
+    role: 'job_applicant' as 'farmer' | 'job_applicant',
     phone: '',
     location: '',
   })
@@ -73,7 +73,7 @@ export default function RegisterPage() {
             Join Agro<span className="text-primary">Vault</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Create an account to start buying or selling
+            Create an account to manage storage or find farm work
           </p>
         </div>
 
@@ -89,21 +89,9 @@ export default function RegisterPage() {
             {/* Role Selection */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                I want to
+                Select account type
               </label>
               <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFormData((p) => ({ ...p, role: 'buyer' }))}
-                  className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${
-                    formData.role === 'buyer'
-                      ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-border text-muted-foreground hover:border-primary/30'
-                  }`}
-                >
-                  <ShoppingBag className="h-6 w-6" />
-                  <span className="text-sm font-semibold">Buy Produce</span>
-                </button>
                 <button
                   type="button"
                   onClick={() => setFormData((p) => ({ ...p, role: 'farmer' }))}
@@ -114,7 +102,21 @@ export default function RegisterPage() {
                   }`}
                 >
                   <Wheat className="h-6 w-6" />
-                  <span className="text-sm font-semibold">Sell Produce</span>
+                  <span className="text-sm font-semibold">Farmer</span>
+                  <span className="text-xs text-center leading-tight opacity-70">Manage storage &amp; post jobs</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData((p) => ({ ...p, role: 'job_applicant' }))}
+                  className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${
+                    formData.role === 'job_applicant'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-border text-muted-foreground hover:border-primary/30'
+                  }`}
+                >
+                  <Briefcase className="h-6 w-6" />
+                  <span className="text-sm font-semibold">Job Applicant</span>
+                  <span className="text-xs text-center leading-tight opacity-70">Find &amp; apply for farm work</span>
                 </button>
               </div>
             </div>

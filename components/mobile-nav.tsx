@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, TrendingUp, Store, Package, AlertTriangle, BarChart3, CloudSun, Briefcase } from 'lucide-react'
+import { LayoutDashboard, TrendingUp, Store, Package, AlertTriangle, BarChart3, CloudSun, Briefcase, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
 
@@ -16,14 +16,14 @@ const farmerMobileNav: NavItem[] = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Home' },
   { href: '/dashboard/storage-units', icon: Package, label: 'Storage' },
   { href: '/jobs', icon: Briefcase, label: 'Jobs' },
-  { href: '/marketplace', icon: Store, label: 'Market' },
+  { href: '/market-intelligence', icon: Globe, label: 'Market' },
   { href: '/dashboard/alerts', icon: AlertTriangle, label: 'Alerts' },
 ]
 
-const buyerMobileNav: NavItem[] = [
-  { href: '/marketplace', icon: Store, label: 'Market' },
+const jobApplicantMobileNav: NavItem[] = [
   { href: '/jobs', icon: Briefcase, label: 'Jobs' },
   { href: '/dashboard/my-applications', icon: Briefcase, label: 'Applied' },
+  { href: '/market-intelligence', icon: Globe, label: 'Market' },
   { href: '/market', icon: TrendingUp, label: 'Trends' },
 ]
 
@@ -31,7 +31,7 @@ export function MobileNav() {
   const pathname = usePathname()
   const { user } = useAuth()
 
-  const navItems = user?.role === 'farmer' ? farmerMobileNav : buyerMobileNav
+  const navItems = user?.role === 'farmer' ? farmerMobileNav : jobApplicantMobileNav
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 flex border-t border-border bg-white md:hidden z-50">

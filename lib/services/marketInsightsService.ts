@@ -370,3 +370,87 @@ export function clearInsightsCache(userId?: string): void {
   if (userId) insightsCache.delete(userId)
   else insightsCache.clear()
 }
+
+// ─── National Market Data ──────────────────────────────────────────────────────
+
+export interface NationalMarketEntry {
+  id: string
+  commodity: string
+  marketName: string
+  county: string
+  pricePerKg: number
+  previousPricePerKg: number | null
+  demandLevel: 'high' | 'medium' | 'low'
+  priceTrend: 'increasing' | 'stable' | 'decreasing'
+  trendLabel: string
+  lastUpdated: string
+  distanceKm: number | null
+}
+
+let nationalCacheTimestamp = 0
+let nationalCacheData: NationalMarketEntry[] | null = null
+const NATIONAL_TTL_MS = 15 * 60 * 1000
+
+/**
+ * Returns all market entries across Kenya, optionally sorted by distance
+ * if the caller provides their GPS coordinates.
+ */
+export async function getNationalMarketData(
+  userLat?: number | null,
+  userLng?: number | null,
+): Promise<{ markets: NationalMarketEntry[]; lastRefreshed: string }> {
+  // Refresh market prices if interval elapsed
+  if (Date.now() - lastPriceRefresh > REFRESH_INTERVAL_MS) {
+    await refreshMarketPrices()
+    nationalCacheData = null // invalidate national cache too
+  }
+
+  // Serve from national cache unless stale
+  if (nationalCacheData && Date.now() - nationalCacheTimestamp < NATIONAL_TTL_MS) {
+    const markets = sortByDistance(nationalCacheData, userLat, userLng)
+    return { markets, lastRefreshed: new Date(nationalCacheTimestamp).toISOString() }
+  }
+
+  const rows = await prisma.market.findMany({ orderBy: { commodity: 'asc' } })
+
+  const entries: NationalMarketEntry[] = rows.map((m) => ({
+    id:                  m.id,
+    commodity:           m.commodity,
+    marketName:          m.marketName,
+    county:              m.location,
+    pricePerKg:          m.pricePerKg,
+    previousPricePerKg:  m.previousPricePerKg ?? null,
+    demandLevel:         (m.demandLevel ?? 'medium') as 'high' | 'medium' | 'low',
+    priceTrend:          (m.priceTrend ?? 'stable') as 'increasing' | 'stable' | 'decreasing',
+    trendLabel:          buildTrendLabel(m.priceTrend ?? 'stable', m.pricePerKg, m.previousPricePerKg ?? null),
+    lastUpdated:         relativeTime(m.lastUpdated),
+    distanceKm:          null,
+  }))
+
+  nationalCacheData = entries
+  nationalCacheTimestamp = Date.now()
+
+  const markets = sortByDistance(entries, userLat, userLng)
+  return { markets, lastRefreshed: new Date(nationalCacheTimestamp).toISOString() }
+}
+
+function sortByDistance(
+  entries: NationalMarketEntry[],
+  userLat?: number | null,
+  userLng?: number | null,
+): NationalMarketEntry[] {
+  if (userLat == null || userLng == null) return entries
+
+  return entries
+    .map((e) => {
+      const coords = LOCATION_COORDS[(e.county ?? '').toLowerCase().trim()]
+      if (!coords) return { ...e, distanceKm: null }
+      return { ...e, distanceKm: Math.round(haversineKm(userLat, userLng, coords.lat, coords.lng)) }
+    })
+    .sort((a, b) => {
+      if (a.distanceKm == null && b.distanceKm == null) return 0
+      if (a.distanceKm == null) return 1
+      if (b.distanceKm == null) return -1
+      return a.distanceKm - b.distanceKm
+    })
+}

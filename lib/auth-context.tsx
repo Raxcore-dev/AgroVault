@@ -1,23 +1,8 @@
-/**
- * Auth Context Provider
- * 
- * Provides authentication state throughout the application.
- * Stores JWT token in localStorage and provides login/register/logout functions.
- * 
- * Usage:
- *   Wrap your app with <AuthProvider> then use the `useAuth()` hook to access:
- *   - user: The currently logged-in user (or null)
- *   - token: The JWT token string (or null)
- *   - login(email, password): Log in and store credentials
- *   - register(data): Register a new account
- *   - logout(): Clear credentials and redirect
- *   - isLoading: Whether the initial auth check is in progress
- */
-
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import { useGeolocation } from '@/hooks/use-geolocation'
 
 // ─── Types ───
 
@@ -25,7 +10,7 @@ interface User {
   id: string
   name: string
   email: string
-  role: 'farmer' | 'buyer'
+  role: 'farmer' | 'job_applicant'
   phone: string | null
   location: string | null
   createdAt: string
@@ -35,7 +20,7 @@ interface RegisterData {
   name: string
   email: string
   password: string
-  role: 'farmer' | 'buyer'
+  role: 'farmer' | 'job_applicant'
   phone?: string
   location?: string
 }
@@ -58,12 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const { captureLocation } = useGeolocation()
 
   // On mount, check if there's a saved token and validate it
   useEffect(() => {
     const savedToken = localStorage.getItem('agrovault_token')
     if (savedToken) {
-      // Verify the token is still valid by calling /api/auth/me
       fetch('/api/auth/me', {
         headers: { Authorization: `Bearer ${savedToken}` },
       })
@@ -76,7 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setToken(savedToken)
         })
         .catch(() => {
-          // Token is invalid, clear it
           localStorage.removeItem('agrovault_token')
           localStorage.removeItem('agrovault_user')
         })
@@ -97,17 +81,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || 'Login failed')
 
-    // Store in state and localStorage
     setUser(data.user)
     setToken(data.token)
     localStorage.setItem('agrovault_token', data.token)
     localStorage.setItem('agrovault_user', JSON.stringify(data.user))
 
-    // Role-based redirect
+    // Request geolocation permission after login (fire-and-forget)
+    captureLocation(data.token)
+
     if (data.user.role === 'farmer') {
       router.push('/dashboard')
     } else {
-      router.push('/marketplace')
+      router.push('/jobs')
     }
   }
 
@@ -122,17 +107,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || 'Registration failed')
 
-    // Auto-login after registration
     setUser(data.user)
     setToken(data.token)
     localStorage.setItem('agrovault_token', data.token)
     localStorage.setItem('agrovault_user', JSON.stringify(data.user))
 
-    // Role-based redirect
+    // Request geolocation permission after registration (fire-and-forget)
+    captureLocation(data.token)
+
     if (data.user.role === 'farmer') {
       router.push('/dashboard')
     } else {
-      router.push('/marketplace')
+      router.push('/jobs')
     }
   }
 
@@ -161,3 +147,4 @@ export function useAuth(): AuthContextType {
   }
   return context
 }
+

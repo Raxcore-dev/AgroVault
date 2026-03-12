@@ -60,29 +60,29 @@ async function main() {
     },
   })
 
-  const buyer1 = await prisma.user.create({
+  const applicant1 = await prisma.user.create({
     data: {
       name: 'Peter Ochieng',
-      email: 'peter@buyer.com',
+      email: 'peter@applicant.com',
       password: passwordHash,
-      role: 'buyer',
+      role: 'job_applicant',
       phone: '+254 734 567 890',
       location: 'Nairobi',
     },
   })
 
-  const buyer2 = await prisma.user.create({
+  const applicant2 = await prisma.user.create({
     data: {
       name: 'Amina Hassan',
-      email: 'amina@buyer.com',
+      email: 'amina@applicant.com',
       password: passwordHash,
-      role: 'buyer',
+      role: 'job_applicant',
       phone: '+254 745 678 901',
       location: 'Mombasa',
     },
   })
 
-  console.log('✅ Created users:', farmer1.name, farmer2.name, buyer1.name, buyer2.name)
+  console.log('✅ Created users:', farmer1.name, farmer2.name, applicant1.name, applicant2.name)
 
   // ─── Create Worker Users ───
   const worker1 = await prisma.user.create({
@@ -90,7 +90,7 @@ async function main() {
       name: 'David Otieno',
       email: 'david@worker.com',
       password: passwordHash,
-      role: 'buyer', // workers use the buyer role (non-farmer)
+      role: 'job_applicant', // workers are job applicants
       phone: '+254 756 789 012',
       location: 'Kisumu',
     },
@@ -101,7 +101,7 @@ async function main() {
       name: 'Grace Wambui',
       email: 'grace@worker.com',
       password: passwordHash,
-      role: 'buyer',
+      role: 'job_applicant',
       phone: '+254 767 890 123',
       location: 'Nakuru',
     },
@@ -216,7 +216,7 @@ async function main() {
   await prisma.jobApplication.create({
     data: {
       jobId: job4.id,
-      workerId: buyer1.id,
+      workerId: applicant1.id,
       message: 'I am interested in the tomato sorting job. I have experience working at Marikiti Market sorting produce.',
       status: 'pending',
     },
@@ -386,7 +386,7 @@ async function main() {
   await prisma.message.createMany({
     data: [
       {
-        senderId: buyer1.id,
+        senderId: applicant1.id,
         receiverId: farmer1.id,
         productId: product1.id,
         message: 'Hello! Is the maize still available? I need about 50 bags.',
@@ -394,13 +394,13 @@ async function main() {
       },
       {
         senderId: farmer1.id,
-        receiverId: buyer1.id,
+        receiverId: applicant1.id,
         productId: product1.id,
         message: 'Yes, it is! I have 500 bags ready. Where are you located?',
         timestamp: new Date('2026-03-01T10:05:00'),
       },
       {
-        senderId: buyer1.id,
+        senderId: applicant1.id,
         receiverId: farmer1.id,
         productId: product1.id,
         message: 'I\'m in Nairobi. Can you arrange delivery or should I collect?',
@@ -408,7 +408,7 @@ async function main() {
       },
       {
         senderId: farmer1.id,
-        receiverId: buyer1.id,
+        receiverId: applicant1.id,
         productId: product1.id,
         message: 'I can arrange transport to Nairobi for a small fee. Let me get a quote for 50 bags.',
         timestamp: new Date('2026-03-01T10:15:00'),
@@ -582,8 +582,8 @@ async function main() {
   console.log('\n🎉 Seeding complete! Demo accounts:')
   console.log('  Farmer: john@farmer.com / password123')
   console.log('  Farmer: wanjiku@farmer.com / password123')
-  console.log('  Buyer:  peter@buyer.com / password123')
-  console.log('  Buyer:  amina@buyer.com / password123')
+  console.log('  Job Applicant: peter@applicant.com / password123')
+  console.log('  Job Applicant: amina@applicant.com / password123')
   console.log('  Worker: david@worker.com / password123')
   console.log('  Worker: grace@worker.com / password123')
 

@@ -17,7 +17,7 @@ model User {
   name      String
   email     String   @unique
   password  String   // bcrypt-hashed password
-  role      String   @default("buyer") // "farmer" | "buyer"
+  role      String   @default("job_applicant") // "farmer" | "job_applicant"
   phone     String?
   location  String?  // county or town name
   createdAt DateTime @default(now())
@@ -30,6 +30,7 @@ model User {
   storageUnits StorageUnit[]
   jobs         Job[]
   jobApplications JobApplication[]
+  location_data UserLocation?
 }
 
 // ─── Storage Unit Model ───
@@ -177,6 +178,22 @@ model Market {
 
   @@index([commodity])
   @@index([location])
+}
+
+// ─── User Location Model ───
+// Stores GPS-detected location for a user (captured via Browser Geolocation API).
+// One record per user – updated each time the user grants location permission.
+model UserLocation {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  latitude  Float
+  longitude Float
+  county    String?  // reverse-geocoded county name, e.g. "Kisumu"
+  region    String?  // broader region, e.g. "Nyanza"
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 // ─── Commodity Thresholds Model ───

@@ -26,14 +26,14 @@ const farmerNav: NavItem[] = [
   { href: '/dashboard/weather', icon: CloudSun, label: 'Weather Insights' },
   { href: '/jobs', icon: Briefcase, label: 'Farm Jobs' },
   { href: '/dashboard/jobs', icon: Briefcase, label: 'My Job Posts' },
-  { href: '/marketplace', icon: Store, label: 'Marketplace' },
+  { href: '/market-intelligence', icon: Store, label: 'Market Intelligence' },
   { href: '/dashboard/notifications', icon: Bell, label: 'Notifications' },
 ]
 
-const buyerNav: NavItem[] = [
-  { href: '/marketplace', icon: Store, label: 'Marketplace' },
-  { href: '/jobs', icon: Briefcase, label: 'Farm Jobs' },
-  { href: '/dashboard/my-applications', icon: Briefcase, label: 'My Applications' },
+const jobApplicantNav: NavItem[] = [
+  { href: '/jobs', icon: Briefcase, label: 'Available Jobs' },
+  { href: '/dashboard/my-applications', icon: Search, label: 'My Applications' },
+  { href: '/market-intelligence', icon: Store, label: 'Market Intelligence' },
   { href: '/market', icon: TrendingUp, label: 'Market Trends' },
 ]
 
@@ -45,7 +45,7 @@ export function Sidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
 
-  const navItems = user?.role === 'farmer' ? farmerNav : buyerNav
+  const navItems = user?.role === 'farmer' ? farmerNav : jobApplicantNav
 
   return (
     <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 border-r border-border bg-white p-4 md:flex md:flex-col">

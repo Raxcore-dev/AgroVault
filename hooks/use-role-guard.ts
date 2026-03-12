@@ -14,7 +14,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
-import { type UserRole, getRestrictedRedirect, BUYER_REDIRECT, FARMER_REDIRECT } from '@/lib/role-routes'
+import { type UserRole, getRestrictedRedirect, JOB_APPLICANT_REDIRECT, FARMER_REDIRECT } from '@/lib/role-routes'
 
 interface RoleGuardResult {
   /** Whether the current user is allowed to view this page */
@@ -34,7 +34,7 @@ export function useRoleGuard(requiredRole: UserRole): RoleGuardResult {
     if (!user) return // AppShell handles unauthenticated redirect
 
     if (user.role !== requiredRole) {
-      const redirect = requiredRole === 'farmer' ? BUYER_REDIRECT : FARMER_REDIRECT
+      const redirect = requiredRole === 'farmer' ? JOB_APPLICANT_REDIRECT : FARMER_REDIRECT
       router.replace(redirect)
     }
   }, [isLoading, user, requiredRole, router])
