@@ -54,29 +54,103 @@ function cacheKey(lat: number, lon: number): string {
   return `${lat.toFixed(2)}:${lon.toFixed(2)}`
 }
 
-// ─── Known Kenyan locations (fallback coordinates) ───
+// ─── All 47 Kenya county headquarters coordinates ───────────────────────────
+// Keys are fully-normalised county names (lowercase, strip leading/trailing spaces).
+// Multi-word counties ("trans nzoia") use the full name as key.
+// HQ town aliases are listed after the county entries.
 
 const LOCATION_COORDS: Record<string, { lat: number; lon: number }> = {
-  kisumu:   { lat: -0.0917, lon: 34.7680 },
-  nairobi:  { lat: -1.2921, lon: 36.8219 },
-  mombasa:  { lat: -4.0435, lon: 39.6682 },
-  nakuru:   { lat: -0.3031, lon: 36.0800 },
-  eldoret:  { lat: 0.5143,  lon: 35.2698 },
-  nyeri:    { lat: -0.4197, lon: 36.9511 },
-  thika:    { lat: -1.0396, lon: 37.0900 },
-  machakos: { lat: -1.5177, lon: 37.2634 },
-  kitale:   { lat: 1.0187,  lon: 35.0020 },
-  nanyuki:  { lat: 0.0066,  lon: 37.0722 },
-  kakamega: { lat: 0.2827,  lon: 34.7519 },
-  bungoma:  { lat: 0.5635,  lon: 34.5607 },
-  kericho:  { lat: -0.3692, lon: 35.2863 },
-  embu:     { lat: -0.5389, lon: 37.4596 },
-  meru:     { lat: 0.0515,  lon: 37.6559 },
+  // ── Coast ──────────────────────────────────────────────────────────────────
+  'mombasa':         { lat: -4.0435, lon: 39.6682 },
+  'kwale':           { lat: -4.1720, lon: 39.4523 },
+  'kilifi':          { lat: -3.6305, lon: 39.8499 },
+  'tana river':      { lat: -1.4980, lon: 40.0300 },
+  'lamu':            { lat: -2.2686, lon: 40.9020 },
+  'taita-taveta':    { lat: -3.3943, lon: 38.3607 },
+  // ── North Eastern ──────────────────────────────────────────────────────────
+  'garissa':         { lat: -0.4536, lon: 42.1355 },
+  'wajir':           { lat:  1.7471, lon: 40.0573 },
+  'mandera':         { lat:  3.9373, lon: 41.8569 },
+  // ── Eastern ────────────────────────────────────────────────────────────────
+  'marsabit':        { lat:  2.3284, lon: 37.9947 },
+  'isiolo':          { lat:  0.3540, lon: 37.5820 },
+  'meru':            { lat:  0.0515, lon: 37.6559 },
+  'tharaka-nithi':   { lat: -0.3390, lon: 37.6480 },
+  'embu':            { lat: -0.5389, lon: 37.4596 },
+  'kitui':           { lat: -1.3670, lon: 38.0100 },
+  'machakos':        { lat: -1.5177, lon: 37.2634 },
+  'makueni':         { lat: -1.7895, lon: 37.6257 },
+  // ── Central ────────────────────────────────────────────────────────────────
+  'nyandarua':       { lat: -0.2660, lon: 36.3791 },
+  'nyeri':           { lat: -0.4197, lon: 36.9511 },
+  'kirinyaga':       { lat: -0.4974, lon: 37.2805 },
+  "murang'a":        { lat: -0.7195, lon: 37.1504 },
+  'kiambu':          { lat: -1.1716, lon: 36.8350 },
+  // ── Nairobi ────────────────────────────────────────────────────────────────
+  'nairobi':         { lat: -1.2921, lon: 36.8219 },
+  // ── Rift Valley ────────────────────────────────────────────────────────────
+  'turkana':         { lat:  3.1193, lon: 35.5966 },
+  'west pokot':      { lat:  1.2390, lon: 35.1125 },
+  'samburu':         { lat:  1.0983, lon: 36.6988 },
+  'trans nzoia':     { lat:  1.0187, lon: 35.0020 },
+  'uasin gishu':     { lat:  0.5143, lon: 35.2698 },
+  'elgeyo-marakwet': { lat:  0.6713, lon: 35.5093 },
+  'nandi':           { lat:  0.2049, lon: 35.0994 },
+  'baringo':         { lat:  0.4896, lon: 35.7428 },
+  'laikipia':        { lat:  0.0066, lon: 37.0722 },
+  'nakuru':          { lat: -0.3031, lon: 36.0800 },
+  'narok':           { lat: -1.0800, lon: 35.8690 },
+  'kajiado':         { lat: -1.8534, lon: 36.7773 },
+  'kericho':         { lat: -0.3692, lon: 35.2863 },
+  'bomet':           { lat: -0.7823, lon: 35.3416 },
+  // ── Western ────────────────────────────────────────────────────────────────
+  'kakamega':        { lat:  0.2827, lon: 34.7519 },
+  'vihiga':          { lat:  0.0666, lon: 34.7233 },
+  'bungoma':         { lat:  0.5635, lon: 34.5607 },
+  'busia':           { lat:  0.4608, lon: 34.1112 },
+  // ── Nyanza ─────────────────────────────────────────────────────────────────
+  'siaya':           { lat: -0.0612, lon: 34.2880 },
+  'kisumu':          { lat: -0.0917, lon: 34.7680 },
+  'homa bay':        { lat: -0.5272, lon: 34.4572 },
+  'migori':          { lat: -1.0634, lon: 34.4731 },
+  'kisii':           { lat: -0.6817, lon: 34.7665 },
+  'nyamira':         { lat: -0.5671, lon: 34.9352 },
+  // ── HQ town aliases (backward-compat) ──────────────────────────────────────
+  'eldoret':         { lat:  0.5143, lon: 35.2698 }, // Uasin Gishu HQ
+  'kitale':          { lat:  1.0187, lon: 35.0020 }, // Trans Nzoia HQ
+  'nanyuki':         { lat:  0.0066, lon: 37.0722 }, // Laikipia HQ
+  'thika':           { lat: -1.0396, lon: 37.0900 }, // Kiambu area
+  'lodwar':          { lat:  3.1193, lon: 35.5966 }, // Turkana HQ
+  'kapenguria':      { lat:  1.2390, lon: 35.1125 }, // West Pokot HQ
+  'maralal':         { lat:  1.0983, lon: 36.6988 }, // Samburu HQ
+  'kapsabet':        { lat:  0.2049, lon: 35.0994 }, // Nandi HQ
+  'kabarnet':        { lat:  0.4896, lon: 35.7428 }, // Baringo HQ
+  'narok town':      { lat: -1.0800, lon: 35.8690 },
+  'kajiado town':    { lat: -1.8534, lon: 36.7773 },
+  'wote':            { lat: -1.7895, lon: 37.6257 }, // Makueni HQ
+  'chuka':           { lat: -0.3390, lon: 37.6480 }, // Tharaka-Nithi HQ
+  'kerugoya':        { lat: -0.4974, lon: 37.2805 }, // Kirinyaga HQ
+  'ol kalou':        { lat: -0.2660, lon: 36.3791 }, // Nyandarua HQ
+  'hola':            { lat: -1.4980, lon: 40.0300 }, // Tana River HQ
+  'wundanyi':        { lat: -3.3943, lon: 38.3607 }, // Taita-Taveta HQ
+  'mbale':           { lat:  0.0666, lon: 34.7233 }, // Vihiga HQ
+  'iten':            { lat:  0.6713, lon: 35.5093 }, // Elgeyo-Marakwet HQ
+  'bomet town':      { lat: -0.7823, lon: 35.3416 },
+  'kisii town':      { lat: -0.6817, lon: 34.7665 },
 }
 
+/**
+ * Resolve a human-readable location name to lat/lon.
+ *
+ * Strategy (in order):
+ *  1. Full normalised name  ("trans nzoia" → LOCATION_COORDS["trans nzoia"])
+ *  2. First word only       ("kisumu city" → LOCATION_COORDS["kisumu"])
+ */
 function resolveCoords(location: string): { lat: number; lon: number } | null {
-  const normalized = location.toLowerCase().trim().split(',')[0].split(' ')[0]
-  return LOCATION_COORDS[normalized] ?? null
+  const cleaned = location.toLowerCase().trim().split(',')[0].trim()
+  if (LOCATION_COORDS[cleaned]) return LOCATION_COORDS[cleaned]
+  const firstWord = cleaned.split(' ')[0]
+  return LOCATION_COORDS[firstWord] ?? null
 }
 
 // ─── Day name helper ───
