@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { useRoleGuard } from '@/hooks/use-role-guard'
+import Link from 'next/link'
 import {
   MapPin,
   RefreshCw,
@@ -13,6 +14,7 @@ import {
   Store,
   AlertTriangle,
   Clock,
+  Navigation,
 } from 'lucide-react'
 import type { MarketInsight } from '@/lib/services/marketInsightsService'
 
@@ -467,6 +469,29 @@ export default function MarketInsightsPage() {
               </div>
             </div>
           </>
+        )}
+
+        {/* ── Travel Advisory CTA ── */}
+        {!loading && (
+          <div className="mt-8 rounded-xl border border-primary/20 bg-primary/5 p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <Navigation className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Ready to transport your produce?</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Before heading to the market, check the <strong>Market Travel Advisory</strong> to see
+                  weather conditions at your destination and get a combined weather + price recommendation.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/dashboard/market-travel-advisory"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 shrink-0"
+            >
+              <Navigation className="h-4 w-4" />
+              Check Travel Advisory
+            </Link>
+          </div>
         )}
       </div>
     </div>

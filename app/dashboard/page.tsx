@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import {
   Package, Wheat, AlertTriangle, Thermometer, Droplets,
   ArrowRight, Plus, TrendingUp, Activity, ShieldAlert,
-  Brain, Sparkles, Loader2, CloudSun, CloudRain, Briefcase,
+  Brain, Sparkles, Loader2, CloudSun, CloudRain, Briefcase, Navigation,
 } from 'lucide-react'
 import { AIInsightCard, AIInsightSkeleton, type AIAnalysis } from '@/components/ai-insight-card'
 import {
@@ -18,6 +18,8 @@ import {
   WeatherSkeleton,
   ForecastSkeleton,
 } from '@/components/weather-widgets'
+import { MarketTravelAdvisoryWidget } from '@/components/market-travel-advisory'
+import { SensorReadingsPanel } from '@/components/sensor-readings-panel'
 
 interface DashboardStats {
   totalStorageUnits: number
@@ -816,46 +818,26 @@ function FarmerDashboard() {
           )}
         </div>
 
-        {/* Recent Readings */}
-        {stats?.recentReadings && stats.recentReadings.length > 0 && (
-          <div>
-            <h2 className="text-lg font-semibold text-foreground mb-4">Recent Sensor Readings</h2>
-            <div className="card-elevated rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Unit</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Temperature</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Humidity</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.recentReadings.map((reading) => (
-                    <tr key={reading.id} className="border-b border-border last:border-0">
-                      <td className="px-4 py-3 font-medium text-foreground">{reading.storageUnit.name}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 ${reading.temperature > 28 ? 'text-danger' : reading.temperature > 24 ? 'text-warning' : 'text-primary'}`}>
-                          <Thermometer className="h-3.5 w-3.5" />
-                          {reading.temperature.toFixed(1)}°C
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 ${reading.humidity > 75 || reading.humidity < 40 ? 'text-danger' : 'text-accent'}`}>
-                          <Droplets className="h-3.5 w-3.5" />
-                          {reading.humidity.toFixed(1)}%
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {new Date(reading.recordedAt).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* Market Travel Advisory Panel */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Navigation className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">Market Travel Advisory</h2>
             </div>
+            <Link href="/dashboard/market-travel-advisory">
+              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                Full Advisory <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </Link>
           </div>
-        )}
+          <div className="card-elevated rounded-xl p-5">
+            <MarketTravelAdvisoryWidget compact />
+          </div>
+        </div>
+
+        {/* Live Sensor Readings from Supabase */}
+        <SensorReadingsPanel />
       </div>
     </div>
   )
