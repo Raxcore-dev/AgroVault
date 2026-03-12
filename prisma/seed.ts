@@ -552,28 +552,28 @@ async function main() {
   await prisma.market.createMany({
     data: [
       // Maize markets
-      { marketName: 'Kibuye Market', location: 'Kisumu', commodity: 'maize', pricePerKg: 80, latitude: -0.0917, longitude: 34.7680 },
-      { marketName: 'Kakamega Market', location: 'Kakamega', commodity: 'maize', pricePerKg: 72, latitude: 0.2827, longitude: 34.7519 },
-      { marketName: 'Eldoret Town Market', location: 'Eldoret', commodity: 'maize', pricePerKg: 75, latitude: 0.5143, longitude: 35.2698 },
-      { marketName: 'Wakulima Market', location: 'Nairobi', commodity: 'maize', pricePerKg: 85, latitude: -1.2833, longitude: 36.8269 },
-      { marketName: 'Nakuru Municipal Market', location: 'Nakuru', commodity: 'maize', pricePerKg: 78, latitude: -0.3031, longitude: 36.0800 },
+      { marketName: 'Kibuye Market',           location: 'Kisumu',   commodity: 'maize', pricePerKg: 80, demandLevel: 'high',   priceTrend: 'increasing', latitude: -0.0917, longitude: 34.7680 },
+      { marketName: 'Kakamega Market',         location: 'Kakamega', commodity: 'maize', pricePerKg: 72, demandLevel: 'medium', priceTrend: 'stable',     latitude:  0.2827, longitude: 34.7519 },
+      { marketName: 'Eldoret Town Market',     location: 'Eldoret',  commodity: 'maize', pricePerKg: 75, demandLevel: 'high',   priceTrend: 'increasing', latitude:  0.5143, longitude: 35.2698 },
+      { marketName: 'Wakulima Market',         location: 'Nairobi',  commodity: 'maize', pricePerKg: 85, demandLevel: 'high',   priceTrend: 'increasing', latitude: -1.2833, longitude: 36.8269 },
+      { marketName: 'Nakuru Municipal Market', location: 'Nakuru',   commodity: 'maize', pricePerKg: 78, demandLevel: 'medium', priceTrend: 'stable',     latitude: -0.3031, longitude: 36.0800 },
       // Wheat markets
-      { marketName: 'Eldoret Grain Hub', location: 'Eldoret', commodity: 'wheat', pricePerKg: 65, latitude: 0.5143, longitude: 35.2698 },
-      { marketName: 'Nairobi Cereal Market', location: 'Nairobi', commodity: 'wheat', pricePerKg: 70, latitude: -1.2921, longitude: 36.8219 },
-      { marketName: 'Nakuru Grain Market', location: 'Nakuru', commodity: 'wheat', pricePerKg: 62, latitude: -0.3031, longitude: 36.0800 },
+      { marketName: 'Eldoret Grain Hub',       location: 'Eldoret',  commodity: 'wheat', pricePerKg: 65, demandLevel: 'medium', priceTrend: 'stable',     latitude:  0.5143, longitude: 35.2698 },
+      { marketName: 'Nairobi Cereal Market',   location: 'Nairobi',  commodity: 'wheat', pricePerKg: 70, demandLevel: 'high',   priceTrend: 'increasing', latitude: -1.2921, longitude: 36.8219 },
+      { marketName: 'Nakuru Grain Market',     location: 'Nakuru',   commodity: 'wheat', pricePerKg: 62, demandLevel: 'low',    priceTrend: 'decreasing', latitude: -0.3031, longitude: 36.0800 },
       // Beans markets
-      { marketName: 'Nyeri Town Market', location: 'Nyeri', commodity: 'beans', pricePerKg: 120, latitude: -0.4169, longitude: 36.9458 },
-      { marketName: 'Gikomba Market', location: 'Nairobi', commodity: 'beans', pricePerKg: 130, latitude: -1.2853, longitude: 36.8424 },
-      { marketName: 'Embu Market', location: 'Embu', commodity: 'beans', pricePerKg: 115, latitude: -0.5389, longitude: 37.4596 },
+      { marketName: 'Nyeri Town Market',       location: 'Nyeri',    commodity: 'beans', pricePerKg: 120, demandLevel: 'high',   priceTrend: 'increasing', latitude: -0.4169, longitude: 36.9458 },
+      { marketName: 'Gikomba Market',          location: 'Nairobi',  commodity: 'beans', pricePerKg: 130, demandLevel: 'high',   priceTrend: 'increasing', latitude: -1.2853, longitude: 36.8424 },
+      { marketName: 'Embu Market',             location: 'Embu',     commodity: 'beans', pricePerKg: 115, demandLevel: 'medium', priceTrend: 'stable',     latitude: -0.5389, longitude: 37.4596 },
       // Tomatoes markets
-      { marketName: 'Marikiti Market', location: 'Nairobi', commodity: 'tomatoes', pricePerKg: 90, latitude: -1.2840, longitude: 36.8270 },
-      { marketName: 'Naivasha Market', location: 'Naivasha', commodity: 'tomatoes', pricePerKg: 70, latitude: -0.7172, longitude: 36.4310 },
+      { marketName: 'Marikiti Market',         location: 'Nairobi',  commodity: 'tomatoes', pricePerKg: 90, demandLevel: 'high',   priceTrend: 'increasing', latitude: -1.2840, longitude: 36.8270 },
+      { marketName: 'Naivasha Market',         location: 'Naivasha', commodity: 'tomatoes', pricePerKg: 70, demandLevel: 'medium', priceTrend: 'decreasing', latitude: -0.7172, longitude: 36.4310 },
       // Avocado markets
-      { marketName: 'Thika Market', location: 'Thika', commodity: 'avocados', pricePerKg: 150, latitude: -1.0396, longitude: 37.0900 },
-      { marketName: 'Mombasa Export Hub', location: 'Mombasa', commodity: 'avocados', pricePerKg: 200, latitude: -4.0435, longitude: 39.6682 },
+      { marketName: 'Thika Market',            location: 'Thika',    commodity: 'avocados', pricePerKg: 150, demandLevel: 'medium', priceTrend: 'stable',     latitude: -1.0396, longitude: 37.0900 },
+      { marketName: 'Mombasa Export Hub',      location: 'Mombasa',  commodity: 'avocados', pricePerKg: 200, demandLevel: 'high',   priceTrend: 'increasing', latitude: -4.0435, longitude: 39.6682 },
       // Green grams markets
-      { marketName: 'Machakos Open Market', location: 'Machakos', commodity: 'grams', pricePerKg: 140, latitude: -1.5177, longitude: 37.2634 },
-      { marketName: 'Kitui Market', location: 'Kitui', commodity: 'grams', pricePerKg: 135, latitude: -1.3667, longitude: 38.0106 },
+      { marketName: 'Machakos Open Market',    location: 'Machakos', commodity: 'grams', pricePerKg: 140, demandLevel: 'medium', priceTrend: 'stable',     latitude: -1.5177, longitude: 37.2634 },
+      { marketName: 'Kitui Market',            location: 'Kitui',    commodity: 'grams', pricePerKg: 135, demandLevel: 'low',    priceTrend: 'decreasing', latitude: -1.3667, longitude: 38.0106 },
     ],
   })
 

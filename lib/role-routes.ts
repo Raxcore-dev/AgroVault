@@ -13,6 +13,7 @@ export const FARMER_ONLY_ROUTES = [
   '/dashboard/commodities',
   '/dashboard/alerts',
   '/dashboard/market-analysis',
+  '/dashboard/market-insights',
   '/dashboard/weather',
   '/dashboard/jobs',
   '/dashboard/notifications',

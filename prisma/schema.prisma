@@ -160,19 +160,23 @@ model Message {
 // ─── Market Model ───
 // Represents physical markets where farmers can sell commodities.
 model Market {
-  id          String   @id @default(cuid())
-  marketName  String   // e.g. "Kibuye Market"
-  location    String   // e.g. "Kisumu"
-  commodity   String   // e.g. "maize", "beans", "wheat"
-  pricePerKg  Float    // price in KES per kg
-  latitude    Float
-  longitude   Float
-  lastUpdated DateTime @default(now())
+  id                 String   @id @default(cuid())
+  marketName         String   // e.g. "Kibuye Market"
+  location           String   // e.g. "Kisumu"
+  commodity          String   // e.g. "maize", "beans", "wheat"
+  pricePerKg         Float    // current price in KES per kg
+  previousPricePerKg Float?   // previous price – used to compute trend
+  demandLevel        String   @default("medium") // "low" | "medium" | "high"
+  priceTrend         String   @default("stable") // "increasing" | "stable" | "decreasing"
+  latitude           Float
+  longitude          Float
+  lastUpdated        DateTime @default(now())
 
   // Alerts that recommend this market
   alerts Alert[]
 
   @@index([commodity])
+  @@index([location])
 }
 
 // ─── Commodity Thresholds Model ───

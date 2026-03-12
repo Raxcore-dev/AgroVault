@@ -22,11 +22,11 @@ const farmerNav: NavItem[] = [
   { href: '/dashboard/commodities', icon: Wheat, label: 'Commodities' },
   { href: '/dashboard/alerts', icon: AlertTriangle, label: 'Storage Alerts' },
   { href: '/dashboard/market-analysis', icon: ShieldAlert, label: 'Risk & Markets' },
+  { href: '/dashboard/market-insights', icon: TrendingUp, label: 'Market Insights' },
   { href: '/dashboard/weather', icon: CloudSun, label: 'Weather Insights' },
   { href: '/jobs', icon: Briefcase, label: 'Farm Jobs' },
   { href: '/dashboard/jobs', icon: Briefcase, label: 'My Job Posts' },
   { href: '/marketplace', icon: Store, label: 'Marketplace' },
-  { href: '/market', icon: TrendingUp, label: 'Market Analysis' },
   { href: '/dashboard/notifications', icon: Bell, label: 'Notifications' },
 ]
 
