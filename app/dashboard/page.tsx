@@ -73,18 +73,18 @@ interface SpoilageSummary {
 export default function DashboardPage() {
   const { user, token } = useAuth()
 
-  // Buyers see the buyer-specific dashboard
-  if (user?.role === 'buyer') {
-    return <BuyerDashboard />
+  // Job applicants see their own dashboard
+  if (user?.role === 'job_applicant') {
+    return <JobApplicantDashboard />
   }
 
   // Default: farmer dashboard
   return <FarmerDashboard />
 }
 
-// ─── Buyer Dashboard ───
+// ─── Job Applicant Dashboard ───
 
-function BuyerDashboard() {
+function JobApplicantDashboard() {
   const { user } = useAuth()
 
   return (
@@ -93,27 +93,27 @@ function BuyerDashboard() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Welcome back, {user?.name?.split(' ')[0] || 'Buyer'}.
+            Welcome back, {user?.name?.split(' ')[0] || 'there'}.
           </p>
         </div>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-6">
           <Link
-            href="/marketplace"
+            href="/market-intelligence"
             className="card-elevated rounded-xl p-6 hover:shadow-md transition-shadow group"
           >
             <div className="flex items-center gap-3 mb-3">
               <div className="rounded-lg bg-primary/10 p-2.5">
                 <Package className="h-5 w-5 text-primary" />
               </div>
-              <h3 className="font-semibold text-foreground">Browse Products</h3>
+              <h3 className="font-semibold text-foreground">Market Intelligence</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              Explore fresh produce and commodities from local farmers.
+              View live commodity prices and demand signals across all Kenyan counties.
             </p>
             <div className="mt-3 flex items-center text-sm font-medium text-primary">
-              Go to Marketplace <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
+              View Markets <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </Link>
 
@@ -166,7 +166,7 @@ function BuyerDashboard() {
             </Link>
           </div>
           <p className="text-sm text-muted-foreground">
-            Track the status of your job applications and marketplace interactions.
+            Track the status of your job applications.
           </p>
         </div>
       </div>
