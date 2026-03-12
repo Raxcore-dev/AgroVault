@@ -31,10 +31,10 @@ const farmerNav: NavItem[] = [
 ]
 
 const jobApplicantNav: NavItem[] = [
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/jobs', icon: Briefcase, label: 'Available Jobs' },
   { href: '/dashboard/my-applications', icon: Search, label: 'My Applications' },
-  { href: '/market-intelligence', icon: Store, label: 'Market Intelligence' },
-  { href: '/market', icon: TrendingUp, label: 'Market Trends' },
+  { href: '/dashboard/settings', icon: User, label: 'Profile & Settings' },
 ]
 
 const bottomNav: NavItem[] = [
