@@ -19,6 +19,8 @@ export const FARMER_ONLY_ROUTES = [
   '/dashboard/notifications',
   '/humidity',
   '/temperature',
+  '/market',
+  '/market-intelligence',
 ]
 
 /** Routes that are exclusively for job applicants */
@@ -27,7 +29,7 @@ export const JOB_APPLICANT_ONLY_ROUTES = [
 ]
 
 /** Redirect destination when a job applicant tries to access a farmer route */
-export const JOB_APPLICANT_REDIRECT = '/jobs'
+export const JOB_APPLICANT_REDIRECT = '/dashboard'
 
 /** Redirect destination when a farmer tries to access a job applicant route */
 export const FARMER_REDIRECT = '/dashboard'
