@@ -71,10 +71,13 @@ interface SpoilageSummary {
 }
 
 export default function DashboardPage() {
-  const { user, token } = useAuth()
+  const { user, token, isLoading } = useAuth()
+
+  // Wait for auth to resolve before committing to a dashboard
+  if (isLoading || !user) return null
 
   // Job applicants see their own dashboard
-  if (user?.role === 'job_applicant') {
+  if (user.role === 'job_applicant') {
     return <JobApplicantDashboard />
   }
 
