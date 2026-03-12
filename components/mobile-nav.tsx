@@ -21,10 +21,9 @@ const farmerMobileNav: NavItem[] = [
 ]
 
 const jobApplicantMobileNav: NavItem[] = [
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Home' },
   { href: '/jobs', icon: Briefcase, label: 'Jobs' },
   { href: '/dashboard/my-applications', icon: Briefcase, label: 'Applied' },
-  { href: '/market-intelligence', icon: Globe, label: 'Market' },
-  { href: '/market', icon: TrendingUp, label: 'Trends' },
 ]
 
 export function MobileNav() {
