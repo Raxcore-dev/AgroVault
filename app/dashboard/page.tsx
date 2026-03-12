@@ -84,91 +84,185 @@ export default function DashboardPage() {
 
 // ─── Job Applicant Dashboard ───
 
+interface RecentJob {
+  id: string
+  title: string
+  location: string
+  payPerDay: number
+  cropType: string
+  createdAt: string
+  farmer: { name: string; phone: string | null }
+}
+
+interface RecentApplication {
+  id: string
+  status: string
+  createdAt: string
+  job: { id: string; title: string; location: string }
+}
+
 function JobApplicantDashboard() {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
+  const [recentJobs, setRecentJobs] = useState<RecentJob[]>([])
+  const [applications, setApplications] = useState<RecentApplication[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!token) return
+    const headers = { Authorization: `Bearer ${token}` }
+    Promise.all([
+      fetch('/api/jobs?limit=5&sort=newest', { headers }).then((r) => r.ok ? r.json() : null),
+      fetch('/api/jobs/my-applications', { headers }).then((r) => r.ok ? r.json() : null),
+    ])
+      .then(([jobsData, appsData]) => {
+        if (jobsData?.jobs) setRecentJobs(jobsData.jobs)
+        if (appsData?.applications) setApplications(appsData.applications)
+      })
+      .finally(() => setLoading(false))
+  }, [token])
+
+  const pending  = applications.filter((a) => a.status === 'pending').length
+  const accepted = applications.filter((a) => a.status === 'accepted').length
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="px-6 py-6 lg:px-8">
-        <div className="mb-6">
+      <div className="px-6 py-6 lg:px-8 space-y-6">
+
+        {/* Header */}
+        <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Welcome back, {user?.name?.split(' ')[0] || 'there'}.
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-6">
-          <Link
-            href="/market-intelligence"
-            className="card-elevated rounded-xl p-6 hover:shadow-md transition-shadow group"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="rounded-lg bg-primary/10 p-2.5">
-                <Package className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground">Market Intelligence</h3>
+        {/* Stats overview */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div className="card-elevated rounded-xl border border-border p-5 flex items-start gap-4">
+            <div className="rounded-lg bg-primary/10 p-2.5"><Briefcase className="h-5 w-5 text-primary" /></div>
+            <div>
+              <p className="text-sm text-muted-foreground">Total Applied</p>
+              <p className="text-2xl font-bold text-foreground">{applications.length}</p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              View live commodity prices and demand signals across all Kenyan counties.
-            </p>
+          </div>
+          <div className="card-elevated rounded-xl border border-border p-5 flex items-start gap-4">
+            <div className="rounded-lg bg-amber-50 p-2.5"><Activity className="h-5 w-5 text-amber-600" /></div>
+            <div>
+              <p className="text-sm text-muted-foreground">Pending</p>
+              <p className="text-2xl font-bold text-foreground">{pending}</p>
+            </div>
+          </div>
+          <div className="card-elevated rounded-xl border border-border p-5 flex items-start gap-4">
+            <div className="rounded-lg bg-green-50 p-2.5"><ShieldAlert className="h-5 w-5 text-green-600" /></div>
+            <div>
+              <p className="text-sm text-muted-foreground">Accepted</p>
+              <p className="text-2xl font-bold text-foreground">{accepted}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick actions */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Link href="/jobs" className="card-elevated rounded-xl p-6 hover:shadow-md transition-shadow group border border-border">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="rounded-lg bg-primary/10 p-2.5"><Briefcase className="h-5 w-5 text-primary" /></div>
+              <h3 className="font-semibold text-foreground">Available Jobs</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">Browse and apply for open farm labor positions near you.</p>
             <div className="mt-3 flex items-center text-sm font-medium text-primary">
-              View Markets <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
+              Browse Jobs <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </Link>
 
-          <Link
-            href="/jobs"
-            className="card-elevated rounded-xl p-6 hover:shadow-md transition-shadow group"
-          >
+          <Link href="/dashboard/my-applications" className="card-elevated rounded-xl p-6 hover:shadow-md transition-shadow group border border-border">
             <div className="flex items-center gap-3 mb-3">
-              <div className="rounded-lg bg-accent/10 p-2.5">
-                <Briefcase className="h-5 w-5 text-accent" />
-              </div>
-              <h3 className="font-semibold text-foreground">Farm Jobs</h3>
+              <div className="rounded-lg bg-accent/10 p-2.5"><Activity className="h-5 w-5 text-accent" /></div>
+              <h3 className="font-semibold text-foreground">My Applications</h3>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Find farm labor opportunities and apply for open positions.
-            </p>
+            <p className="text-sm text-muted-foreground">Track the status of all jobs you have applied for.</p>
             <div className="mt-3 flex items-center text-sm font-medium text-primary">
-              View Jobs <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
-            </div>
-          </Link>
-
-          <Link
-            href="/market"
-            className="card-elevated rounded-xl p-6 hover:shadow-md transition-shadow group"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="rounded-lg bg-secondary/10 p-2.5">
-                <TrendingUp className="h-5 w-5 text-secondary" />
-              </div>
-              <h3 className="font-semibold text-foreground">Market Trends</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Check current commodity prices and market trends.
-            </p>
-            <div className="mt-3 flex items-center text-sm font-medium text-primary">
-              View Trends <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
+              View Applications <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </Link>
         </div>
 
-        {/* My Applications Summary */}
-        <div className="card-elevated rounded-xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground">My Applications</h2>
-            <Link
-              href="/dashboard/my-applications"
-              className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
-            >
+        {/* Recent Jobs */}
+        <div className="card-elevated rounded-xl border border-border overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
+            <h2 className="font-semibold text-foreground">Recent Job Openings</h2>
+            <Link href="/jobs" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
               View all <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Track the status of your job applications.
-          </p>
+          {loading ? (
+            <div className="divide-y divide-border">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="px-5 py-4 animate-pulse flex gap-4">
+                  <div className="h-10 w-10 bg-muted rounded-lg" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-muted rounded w-1/2" />
+                    <div className="h-3 bg-muted rounded w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recentJobs.length === 0 ? (
+            <p className="px-5 py-8 text-center text-sm text-muted-foreground">No jobs available right now. Check back soon.</p>
+          ) : (
+            <div className="divide-y divide-border">
+              {recentJobs.map((job) => (
+                <Link key={job.id} href={`/jobs/${job.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-muted/20 transition-colors">
+                  <div className="rounded-lg bg-primary/10 p-2.5 shrink-0">
+                    <Briefcase className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate">{job.title}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <span>{job.location}</span>
+                      <span className="text-muted-foreground/40">·</span>
+                      <span>KES {job.payPerDay.toLocaleString()}/day</span>
+                      <span className="text-muted-foreground/40">·</span>
+                      <span>{job.farmer.name}</span>
+                    </p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* Recent applications */}
+        {applications.length > 0 && (
+          <div className="card-elevated rounded-xl border border-border overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
+              <h2 className="font-semibold text-foreground">Recent Applications</h2>
+              <Link href="/dashboard/my-applications" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
+                View all <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            <div className="divide-y divide-border">
+              {applications.slice(0, 5).map((app) => {
+                const badge =
+                  app.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                  app.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                  'bg-amber-100 text-amber-700'
+                return (
+                  <div key={app.id} className="flex items-center justify-between px-5 py-3">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm text-foreground truncate">{app.job.title}</p>
+                      <p className="text-xs text-muted-foreground">{app.job.location}</p>
+                    </div>
+                    <span className={`ml-4 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${badge}`}>
+                      {app.status}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   )
