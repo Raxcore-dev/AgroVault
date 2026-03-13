@@ -134,7 +134,15 @@ The Market Analysis page uses Groq AI to generate intelligent insights:
 
 ```
 GROQ_API_KEY=your_api_key_here
+SENSOR_MODE=simulation
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_KEY=your_supabase_service_role_key
 ```
+
+`SENSOR_MODE` values:
+- `simulation`: Generates location-aware virtual temperature/humidity readings every 10 seconds for demos.
+- `live`: Reads real sensor rows from Supabase (`sensor_readings`).
 
 ## Development
 
