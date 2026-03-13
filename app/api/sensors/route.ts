@@ -6,16 +6,17 @@
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
-import { getLatestSensorReadingsForFarmer } from '@/lib/services/sensorService'
+import { getLatestSensorReadingsForFarmer, getSensorMode } from '@/lib/services/sensorService'
 import { generateSensorData } from '@/lib/mock-data'
 
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
+  const mode = getSensorMode()
 
   if (user) {
     try {
       const { readings, summary } = await getLatestSensorReadingsForFarmer(user.userId)
-      return NextResponse.json({ readings, summary, source: 'supabase' })
+      return NextResponse.json({ readings, summary, source: mode === 'live' ? 'supabase' : 'simulation', mode })
     } catch (err) {
       console.error('[SensorsAPI] Supabase error, falling back to mock:', err)
     }

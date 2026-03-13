@@ -37,7 +37,9 @@ interface SensorSummary {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const REFRESH_INTERVAL_MS = 30_000  // 30 seconds
+type SensorMode = 'simulation' | 'live'
+
+const REFRESH_INTERVAL_MS = 10_000
 
 // ─── Status helpers ───────────────────────────────────────────────────────────
 
@@ -58,7 +60,7 @@ function statusBg(status: SensorStatus) {
 }
 
 function statusLabel(status: SensorStatus) {
-  return { danger: 'High Risk', warning: 'Warning', normal: 'Normal' }[status]
+  return { danger: 'Critical', warning: 'Warning', normal: 'Normal' }[status]
 }
 
 function statusIcon(status: SensorStatus) {
@@ -115,7 +117,7 @@ function SensorCard({ reading }: { reading: SensorReading }) {
             <Thermometer className="h-3.5 w-3.5" />
             Temperature
           </div>
-          <p className={cn('text-xl font-bold', reading.temperature > 28 ? 'text-red-600' : reading.temperature > 24 ? 'text-amber-600' : 'text-emerald-600')}>
+          <p className={cn('text-xl font-bold', reading.temperature > 32 ? 'text-red-600' : reading.temperature >= 30 ? 'text-amber-600' : 'text-emerald-600')}>
             {reading.temperature.toFixed(1)}°C
           </p>
         </div>
@@ -124,7 +126,7 @@ function SensorCard({ reading }: { reading: SensorReading }) {
             <Droplets className="h-3.5 w-3.5" />
             Humidity
           </div>
-          <p className={cn('text-xl font-bold', reading.humidity > 75 || reading.humidity < 40 ? 'text-red-600' : reading.humidity > 70 ? 'text-amber-600' : 'text-emerald-600')}>
+          <p className={cn('text-xl font-bold', reading.humidity > 80 ? 'text-red-600' : reading.humidity >= 75 ? 'text-amber-600' : 'text-emerald-600')}>
             {reading.humidity.toFixed(1)}%
           </p>
         </div>
@@ -135,7 +137,7 @@ function SensorCard({ reading }: { reading: SensorReading }) {
         <div className="space-y-1">
           {reading.status_reasons.map((reason, i) => (
             <p key={i} className={cn('text-xs', statusColor(reading.status))}>
-              ⚠ {reason}
+              {`\u26a0 ${reason}`}
             </p>
           ))}
         </div>
@@ -143,7 +145,7 @@ function SensorCard({ reading }: { reading: SensorReading }) {
 
       {reading.status === 'normal' && (
         <p className="text-xs text-emerald-600 dark:text-emerald-400">
-          ✓ Storage conditions are within safe parameters.
+          {`\u2705 Storage Conditions Normal`}
         </p>
       )}
 
@@ -191,6 +193,7 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
   const [error, setError]         = useState<string | null>(null)
   const [lastFetched, setLastFetched] = useState<Date | null>(null)
   const [countdown, setCountdown] = useState(REFRESH_INTERVAL_MS / 1000)
+  const [mode, setMode] = useState<SensorMode>('live')
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const fetchReadings = useCallback(async (isManual = false) => {
@@ -212,6 +215,7 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
       const data = await res.json()
       setReadings(data.readings ?? [])
       setSummary(data.summary ?? null)
+      setMode(data.mode === 'simulation' ? 'simulation' : 'live')
       setError(null)
       setLastFetched(new Date())
       setCountdown(REFRESH_INTERVAL_MS / 1000)
@@ -228,7 +232,7 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
     fetchReadings()
   }, [fetchReadings])
 
-  // Auto-refresh every 30 seconds
+  // Auto-refresh every 10 seconds
   useEffect(() => {
     if (!token) return
     intervalRef.current = setInterval(() => fetchReadings(), REFRESH_INTERVAL_MS)
@@ -249,14 +253,18 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Activity className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">Live Sensor Readings</h2>
+          <h2 className="text-lg font-semibold text-foreground">Storage Monitoring</h2>
           {!loading && (
             <span className={cn(
               'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-              error ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700',
+              error
+                ? 'bg-red-100 text-red-700'
+                : mode === 'simulation'
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-emerald-100 text-emerald-700',
             )}>
               {error ? <WifiOff className="h-3 w-3" /> : <Wifi className="h-3 w-3" />}
-              {error ? 'Offline' : 'Supabase Live'}
+              {error ? 'Offline' : mode === 'simulation' ? 'Simulation Mode' : 'Supabase Live'}
             </span>
           )}
         </div>
@@ -322,7 +330,9 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
           <div>
             <p className="text-sm font-semibold text-red-700 dark:text-red-300">{error}</p>
             <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
-              Check your Supabase connection and ensure SUPABASE_URL and SUPABASE_ANON_KEY are set.
+              {mode === 'simulation'
+                ? 'Simulation is unavailable right now. Please try again shortly.'
+                : 'Check your Supabase connection and ensure SUPABASE_URL and SUPABASE_ANON_KEY are set.'}
             </p>
           </div>
         </div>
@@ -334,7 +344,9 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
           <Activity className="mx-auto h-8 w-8 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-foreground">No sensor readings available yet.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            IoT sensors will appear here once they start sending readings to Supabase.
+            {mode === 'simulation'
+              ? 'Simulation mode is on. Add storage units to generate virtual readings every 10 seconds.'
+              : 'IoT sensors will appear here once they start sending readings to Supabase.'}
           </p>
         </div>
       )}
@@ -350,7 +362,7 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
 
       {lastFetched && !loading && (
         <p className="text-right text-xs text-muted-foreground">
-          Last updated: {lastFetched.toLocaleTimeString()} · Auto-refreshes every 30 s
+          Last updated: {lastFetched.toLocaleTimeString()} · Auto-refreshes every 10 s
         </p>
       )}
     </div>

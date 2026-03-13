@@ -1,9 +1,13 @@
 /**
  * Sensor Service
  *
- * Fetches IoT sensor readings (temperature + humidity) from the Supabase
- * `sensor_readings` table and enriches them with storage unit names from
- * the Neon database (Prisma).
+ * Provides IoT sensor readings (temperature + humidity) for dashboard usage.
+ *
+ * In `SENSOR_MODE=live`, readings are loaded from Supabase and enriched with
+ * storage unit names from the Neon database (Prisma).
+ *
+ * In `SENSOR_MODE=simulation`, location-aware virtual readings are generated
+ * for demos and local testing.
  *
  * Table schema expected in Supabase:
  *   sensor_readings (
@@ -15,12 +19,54 @@
  *   )
  */
 
-import { supabaseAdmin, SENSOR_TABLE, type SensorRow } from '@/lib/supabase'
+import type { SensorRow } from '@/lib/supabase'
 import { prisma } from '@/lib/prisma'
+import { getWeatherForecast } from '@/lib/services/weatherService'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type SensorStatus = 'normal' | 'warning' | 'danger'
+export type SensorMode = 'simulation' | 'live'
+
+const SENSOR_MODE: SensorMode =
+  process.env.SENSOR_MODE?.toLowerCase() === 'live' ? 'live' : 'simulation'
+
+const SIMULATION_STEP_INTERVAL_MS = 10_000
+
+interface SimulationRange {
+  min: number
+  max: number
+}
+
+interface SimulationProfile {
+  temperature: SimulationRange
+  humidity: SimulationRange
+}
+
+type WeatherCondition = 'hot' | 'rainy' | 'cloudy'
+
+const WEATHER_SIMULATION_PROFILES: Record<WeatherCondition, SimulationProfile> = {
+  hot: {
+    temperature: { min: 28, max: 36 },
+    humidity: { min: 40, max: 60 },
+  },
+  rainy: {
+    temperature: { min: 20, max: 27 },
+    humidity: { min: 70, max: 90 },
+  },
+  cloudy: {
+    temperature: { min: 24, max: 30 },
+    humidity: { min: 55, max: 70 },
+  },
+}
+
+const WEATHER_CACHE_TTL_MS = 10 * 60 * 1000
+const weatherConditionCache = new Map<string, { condition: WeatherCondition; timestamp: number }>()
+
+const simulationState = new Map<
+  string,
+  { temperature: number; humidity: number; timestamp: number; weatherCondition: WeatherCondition }
+>()
 
 export interface SensorReading {
   id: string
@@ -55,26 +101,150 @@ function classifySensorStatus(
   const reasons: string[] = []
   let status: SensorStatus = 'normal'
 
-  if (temperature > 28) {
-    reasons.push(`Temperature critically high (${temperature.toFixed(1)}°C > 28°C)`)
-    status = 'danger'
-  } else if (temperature > 24) {
-    reasons.push(`Temperature elevated (${temperature.toFixed(1)}°C > 24°C)`)
-    if (status === 'normal') status = 'warning'
+  if (humidity > 75) {
+    reasons.push('High Risk of Mold Growth')
+    status = 'warning'
   }
 
-  if (humidity > 75) {
-    reasons.push(`Humidity critically high (${humidity.toFixed(1)}% > 75%) — mold risk`)
-    status = 'danger'
-  } else if (humidity > 70) {
-    reasons.push(`Humidity elevated (${humidity.toFixed(1)}%)`)
-    if (status === 'normal') status = 'warning'
-  } else if (humidity < 40) {
-    reasons.push(`Humidity too low (${humidity.toFixed(1)}% < 40%) — drying risk`)
-    if (status === 'normal') status = 'warning'
+  if (temperature > 35) {
+    reasons.push('Grain Spoilage Risk')
+    status = status === 'warning' ? 'danger' : 'warning'
   }
 
   return { status, reasons }
+}
+
+function isRainyDescription(description: string): boolean {
+  return /(rain|drizzle|thunderstorm|storm|shower|hail)/i.test(description)
+}
+
+function isCloudyDescription(description: string): boolean {
+  return /(cloud|overcast|mist|fog|haze)/i.test(description)
+}
+
+async function getWeatherConditionForLocation(location: string | null | undefined): Promise<WeatherCondition> {
+  const normalized = location?.trim().toLowerCase() || 'kisumu'
+  const cached = weatherConditionCache.get(normalized)
+  const now = Date.now()
+
+  if (cached && now - cached.timestamp < WEATHER_CACHE_TTL_MS) {
+    return cached.condition
+  }
+
+  try {
+    const weather = await getWeatherForecast(location || 'Kisumu')
+    const description = weather.current.description || ''
+    const rainChance = Number(weather.forecast?.[0]?.rain_probability ?? 0)
+    const currentTemp = Number(weather.current.temperature ?? 0)
+
+    let condition: WeatherCondition = 'cloudy'
+    if (isRainyDescription(description) || rainChance >= 60) {
+      condition = 'rainy'
+    } else if (currentTemp >= 30 && !isCloudyDescription(description)) {
+      condition = 'hot'
+    }
+
+    weatherConditionCache.set(normalized, { condition, timestamp: now })
+    return condition
+  } catch (err) {
+    console.error('[SensorService] Weather condition fallback to cloudy:', err)
+    weatherConditionCache.set(normalized, { condition: 'cloudy', timestamp: now })
+    return 'cloudy'
+  }
+}
+
+function randomBetween(min: number, max: number): number {
+  return min + Math.random() * (max - min)
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
+
+function roundToSingleDecimal(value: number): number {
+  return Math.round(value * 10) / 10
+}
+
+function nextSimulationValue(
+  previous: number | null,
+  range: SimulationRange,
+  maxStep = 1.4,
+): number {
+  if (previous == null) {
+    return roundToSingleDecimal(randomBetween(range.min, range.max))
+  }
+
+  const delta = randomBetween(-maxStep, maxStep)
+  const nudged = clamp(previous + delta, range.min, range.max)
+  return roundToSingleDecimal(nudged)
+}
+
+async function buildSimulatedReading(
+  unit: { id: string; name: string; location: string | null },
+): Promise<SensorReading> {
+  const now = Date.now()
+  const prior = simulationState.get(unit.id)
+  const weatherCondition = await getWeatherConditionForLocation(unit.location)
+  const profile = WEATHER_SIMULATION_PROFILES[weatherCondition]
+
+  // Keep values stable until the 10-second simulation tick elapses.
+  if (prior && now - prior.timestamp < SIMULATION_STEP_INTERVAL_MS) {
+    const { status, reasons } = classifySensorStatus(prior.temperature, prior.humidity)
+    return {
+      id: `sim-${unit.id}`,
+      storage_unit_id: unit.id,
+      storage_unit_name: unit.name,
+      storage_unit_location: unit.location,
+      temperature: prior.temperature,
+      humidity: prior.humidity,
+      timestamp: new Date(prior.timestamp).toISOString(),
+      status,
+      status_reasons: reasons,
+    }
+  }
+
+  const temperature = nextSimulationValue(prior?.temperature ?? null, profile.temperature)
+  const humidity = nextSimulationValue(prior?.humidity ?? null, profile.humidity, 2)
+
+  simulationState.set(unit.id, {
+    temperature,
+    humidity,
+    timestamp: now,
+    weatherCondition,
+  })
+
+  const { status, reasons } = classifySensorStatus(temperature, humidity)
+
+  return {
+    id: `sim-${unit.id}`,
+    storage_unit_id: unit.id,
+    storage_unit_name: unit.name,
+    storage_unit_location: unit.location,
+    temperature,
+    humidity,
+    timestamp: new Date(now).toISOString(),
+    status,
+    status_reasons: reasons,
+  }
+}
+
+function sortReadings(readings: SensorReading[]): SensorReading[] {
+  readings.sort((a, b) => {
+    const order = { danger: 0, warning: 1, normal: 2 }
+    const diff = order[a.status] - order[b.status]
+    if (diff !== 0) return diff
+    return (a.storage_unit_name ?? '').localeCompare(b.storage_unit_name ?? '')
+  })
+  return readings
+}
+
+async function getSupabaseConfig() {
+  const { supabaseAdmin, SENSOR_TABLE } = await import('@/lib/supabase')
+  return { supabaseAdmin, SENSOR_TABLE }
+}
+
+export function getSensorMode(): SensorMode {
+  return SENSOR_MODE
 }
 
 // ─── Fetch helpers ────────────────────────────────────────────────────────────
@@ -101,8 +271,14 @@ export async function getLatestSensorReadingsForFarmer(
     return { readings: [], summary: buildSummary([], units.length) }
   }
 
+  if (SENSOR_MODE === 'simulation') {
+    const readings = sortReadings(await Promise.all(units.map((unit) => buildSimulatedReading(unit))))
+    return { readings, summary: buildSummary(readings, units.length) }
+  }
+
   const unitIds = units.map((u) => u.id)
   const unitMap = new Map(units.map((u) => [u.id, u]))
+  const { supabaseAdmin, SENSOR_TABLE } = await getSupabaseConfig()
 
   // 2. Fetch latest reading per storage unit from Supabase
   //    Supabase doesn't support DISTINCT ON natively via JS client,
@@ -151,15 +327,7 @@ export async function getLatestSensorReadingsForFarmer(
     })
   }
 
-  // Sort: danger → warning → normal → by unit name
-  readings.sort((a, b) => {
-    const order = { danger: 0, warning: 1, normal: 2 }
-    const diff = order[a.status] - order[b.status]
-    if (diff !== 0) return diff
-    return (a.storage_unit_name ?? '').localeCompare(b.storage_unit_name ?? '')
-  })
-
-  return { readings, summary: buildSummary(readings, units.length) }
+  return { readings: sortReadings(readings), summary: buildSummary(readings, units.length) }
 }
 
 /**
@@ -169,6 +337,18 @@ export async function getLatestSensorReadingsForFarmer(
 export async function getLatestSensorReadingForUnit(
   storageUnitId: string,
 ): Promise<SensorReading | null> {
+  const unit = await prisma.storageUnit.findUnique({
+    where: { id: storageUnitId },
+    select: { id: true, name: true, location: true },
+  })
+
+  if (SENSOR_MODE === 'simulation') {
+    if (!unit) return null
+    return await buildSimulatedReading(unit)
+  }
+
+  const { supabaseAdmin, SENSOR_TABLE } = await getSupabaseConfig()
+
   const { data, error } = await supabaseAdmin
     .from(SENSOR_TABLE)
     .select('id, storage_unit_id, temperature, humidity, timestamp')
@@ -187,12 +367,6 @@ export async function getLatestSensorReadingForUnit(
 
   const row = data as SensorRow
   const { status, reasons } = classifySensorStatus(row.temperature, row.humidity)
-
-  // Look up unit name from Neon
-  const unit = await prisma.storageUnit.findUnique({
-    where: { id: storageUnitId },
-    select: { name: true, location: true },
-  })
 
   return {
     id: row.id,
@@ -215,6 +389,25 @@ export async function getSensorHistoryForUnit(
   storageUnitId: string,
   limit = 50,
 ): Promise<SensorRow[]> {
+  if (SENSOR_MODE === 'simulation') {
+    const state = simulationState.get(storageUnitId)
+    if (!state) return []
+
+    // Return a synthetic flat history if requested while in simulation mode.
+    return Array.from({ length: Math.max(1, Math.min(limit, 50)) }).map((_, index) => {
+      const secondsAgo = index * 10
+      return {
+        id: `sim-history-${storageUnitId}-${index}`,
+        storage_unit_id: storageUnitId,
+        temperature: state.temperature,
+        humidity: state.humidity,
+        timestamp: new Date(state.timestamp - secondsAgo * 1_000).toISOString(),
+      }
+    })
+  }
+
+  const { supabaseAdmin, SENSOR_TABLE } = await getSupabaseConfig()
+
   const { data, error } = await supabaseAdmin
     .from(SENSOR_TABLE)
     .select('id, storage_unit_id, temperature, humidity, timestamp')

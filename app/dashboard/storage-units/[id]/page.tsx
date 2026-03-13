@@ -33,6 +33,22 @@ interface StorageUnit {
   readings: StorageReading[]
 }
 
+type SensorStatus = 'normal' | 'warning' | 'danger'
+
+interface SimulatedSensorReading {
+  id: string
+  storage_unit_id: string
+  storage_unit_name: string | null
+  storage_unit_location: string | null
+  temperature: number
+  humidity: number
+  timestamp: string
+  status: SensorStatus
+  status_reasons: string[]
+}
+
+const SENSOR_REFRESH_MS = 10_000
+
 export default function StorageUnitDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { token } = useAuth()
@@ -46,6 +62,7 @@ export default function StorageUnitDetailPage() {
     expectedStorageDuration: '',
   })
   const [submitting, setSubmitting] = useState(false)
+  const [sensorReading, setSensorReading] = useState<SimulatedSensorReading | null>(null)
 
   const fetchUnit = async () => {
     if (!token || !id) return
@@ -65,6 +82,33 @@ export default function StorageUnitDetailPage() {
   }
 
   useEffect(() => { fetchUnit() }, [token, id])
+
+  const fetchSensorReading = async () => {
+    if (!token || !id) return
+
+    try {
+      const res = await fetch(`/api/sensors/latest?storageUnitId=${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      })
+
+      if (!res.ok) {
+        setSensorReading(null)
+        return
+      }
+
+      const data = await res.json()
+      setSensorReading(data)
+    } catch (err) {
+      console.error('Failed to fetch simulated reading:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchSensorReading()
+    const interval = setInterval(fetchSensorReading, SENSOR_REFRESH_MS)
+    return () => clearInterval(interval)
+  }, [token, id])
 
   const handleAddCommodity = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -118,6 +162,10 @@ export default function StorageUnitDetailPage() {
   }
 
   const latestReading = unit.readings?.[0]
+  const displayedReading = sensorReading ?? latestReading
+  const displayedReadingTimestamp = displayedReading
+    ? ('timestamp' in displayedReading ? displayedReading.timestamp : displayedReading.recordedAt)
+    : null
   const totalStored = unit.commodities.reduce((sum, c) => sum + c.quantity, 0)
   const capacityPercent = unit.capacity > 0 ? Math.min(100, (totalStored / unit.capacity) * 100) : 0
 
@@ -157,18 +205,18 @@ export default function StorageUnitDetailPage() {
 
           <div className="card-elevated rounded-xl p-5">
             <p className="text-sm font-medium text-muted-foreground">Temperature</p>
-            <p className={`mt-2 text-2xl font-bold ${latestReading && latestReading.temperature > 28 ? 'text-danger' : latestReading && latestReading.temperature > 24 ? 'text-warning' : 'text-primary'}`}>
-              {latestReading ? `${latestReading.temperature.toFixed(1)}°C` : '—'}
+            <p className={`mt-2 text-2xl font-bold ${displayedReading && displayedReading.temperature > 35 ? 'text-danger' : displayedReading && displayedReading.temperature > 30 ? 'text-warning' : 'text-primary'}`}>
+              {displayedReading ? `${displayedReading.temperature.toFixed(1)}°C` : '—'}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">Latest reading</p>
+            <p className="mt-1 text-xs text-muted-foreground">Auto updates every 10 seconds</p>
           </div>
 
           <div className="card-elevated rounded-xl p-5">
             <p className="text-sm font-medium text-muted-foreground">Humidity</p>
-            <p className={`mt-2 text-2xl font-bold ${latestReading && (latestReading.humidity > 75 || latestReading.humidity < 40) ? 'text-danger' : 'text-accent'}`}>
-              {latestReading ? `${latestReading.humidity.toFixed(1)}%` : '—'}
+            <p className={`mt-2 text-2xl font-bold ${displayedReading && displayedReading.humidity > 75 ? 'text-danger' : 'text-accent'}`}>
+              {displayedReading ? `${displayedReading.humidity.toFixed(1)}%` : '—'}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">Latest reading</p>
+            <p className="mt-1 text-xs text-muted-foreground">Auto updates every 10 seconds</p>
           </div>
 
           <div className="card-elevated rounded-xl p-5">
@@ -176,6 +224,34 @@ export default function StorageUnitDetailPage() {
             <p className="mt-2 text-2xl font-bold text-foreground">{unit.commodities.length}</p>
             <p className="mt-1 text-xs text-muted-foreground">Items stored</p>
           </div>
+        </div>
+
+        {/* Live Storage Monitoring Status */}
+        <div className="mb-6 card-elevated rounded-xl p-5">
+          <h2 className="text-base font-semibold text-foreground">Storage Monitoring Status</h2>
+          {!displayedReading && (
+            <p className="text-sm text-muted-foreground mt-2">
+              No sensor readings available yet for this unit.
+            </p>
+          )}
+          {displayedReading && (
+            <div className="mt-3 space-y-2">
+              {displayedReading.humidity > 75 && (
+                <p className="text-sm font-medium text-warning">{`\u26a0 High Risk of Mold Growth`}</p>
+              )}
+              {displayedReading.temperature > 35 && (
+                <p className="text-sm font-medium text-danger">{`\u26a0 Grain Spoilage Risk`}</p>
+              )}
+              {displayedReading.humidity <= 75 && displayedReading.temperature <= 35 && (
+                <p className="text-sm font-medium text-primary">{`\u2705 Storage Conditions Normal`}</p>
+              )}
+              {displayedReadingTimestamp && (
+                <p className="text-xs text-muted-foreground">
+                  Updated at {new Date(displayedReadingTimestamp).toLocaleTimeString()}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Commodities Section */}

@@ -2,7 +2,11 @@
  * GET /api/sensors/latest
  *
  * Returns the latest IoT sensor reading per storage unit for the
- * authenticated farmer, fetched from Supabase.
+ * authenticated farmer.
+ *
+ * Data source depends on SENSOR_MODE:
+ *   - simulation: generated virtual readings
+ *   - live: Supabase sensor_readings table
  *
  * Query params:
  *   storageUnitId  – (optional) filter to a single unit
@@ -20,6 +24,7 @@ import { authorizeRole } from '@/lib/api-auth'
 import {
   getLatestSensorReadingsForFarmer,
   getLatestSensorReadingForUnit,
+  getSensorMode,
   syncReadingToNeon,
 } from '@/lib/services/sensorService'
 
@@ -32,6 +37,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const storageUnitId = searchParams.get('storageUnitId')?.trim()
   const shouldSync    = searchParams.get('sync') === 'true'
+  const mode = getSensorMode()
 
   try {
     // ── Single unit ──────────────────────────────────────────────────────────
@@ -51,7 +57,7 @@ export async function GET(request: NextRequest) {
         )
       }
 
-      return NextResponse.json(reading)
+      return NextResponse.json({ ...reading, mode })
     }
 
     // ── All units for this farmer ────────────────────────────────────────────
@@ -61,7 +67,7 @@ export async function GET(request: NextRequest) {
       await Promise.allSettled(readings.map((r) => syncReadingToNeon(r)))
     }
 
-    return NextResponse.json({ readings, summary })
+    return NextResponse.json({ readings, summary, mode })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     console.error('[SensorsAPI /latest] Error:', message)
