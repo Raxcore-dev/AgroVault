@@ -1,27 +1,10 @@
-/**
- * Product Details Page
- * 
- * Displays full information about a single product:
- *   - Product image, name, price, quantity, description
- *   - Farmer information (name, phone, location)
- *   - Interactive map showing the farmer's location (OpenStreetMap/Leaflet)
- *   - Chat widget so the buyer can message the farmer
- * 
- * Dynamic route: /marketplace/[id]
- */
-
 'use client'
 
-import { useEffect, useState, use } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import {
-  ArrowLeft, MapPin, Package, Phone, Mail, User,
-  MessageCircle, Calendar, Tag, Scale
-} from 'lucide-react'
+import { ArrowLeft, MapPin, Package, Phone, Mail, Calendar, AlertCircle, Thermometer, Droplets, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
-import { FarmerMap } from '@/components/marketplace/farmer-map'
-import { ChatWidget } from '@/components/marketplace/chat-widget'
 
 interface Product {
   id: string
@@ -32,76 +15,94 @@ interface Product {
   unit: string
   productImage: string | null
   locationName: string
-  latitude: number
-  longitude: number
   category: string
-  isAvailable: boolean
   createdAt: string
+  harvestDate: string | null
+  storageUnit: {
+    id: string
+    name: string
+    location: string
+  } | null
   farmer: {
     id: string
     name: string
     email: string
-    phone: string | null
-    location: string | null
+    phone: string
+    location: string
   }
 }
 
-export default function ProductDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function ProductDetailsPage() {
   const { user } = useAuth()
+  const params = useParams()
   const router = useRouter()
   const [product, setProduct] = useState<Product | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [showChat, setShowChat] = useState(false)
-  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [storageCondition, setStorageCondition] = useState<{
+    hasStorage: boolean
+    storageUnit?: { id: string; name: string; location: string }
+    latestReading?: { temperature: number; humidity: number; status: string; recordedAt: string }
+    condition: 'safe' | 'warning' | 'danger'
+    message: string
+  } | null>(null)
 
-  // Fetch product details
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await fetch(`/api/products/${id}`)
-        if (res.ok) {
-          const data = await res.json()
-          setProduct(data.product)
-        } else {
-          setError('Product not found.')
-        }
-      } catch {
-        setError('Failed to load product.')
-      } finally {
-        setIsLoading(false)
-      }
+    if (params.id) {
+      fetchProduct(params.id as string)
+      fetchStorageCondition(params.id as string)
     }
+  }, [params.id])
 
-    fetchProduct()
-  }, [id])
+  const fetchStorageCondition = async (id: string) => {
+    try {
+      const res = await fetch(`/api/products/${id}/storage-condition`)
+      if (res.ok) {
+        const data = await res.json()
+        setStorageCondition(data)
+      }
+    } catch (error) {
+      console.error('Error fetching storage condition:', error)
+    }
+  }
 
-  if (isLoading) {
+  const fetchProduct = async (id: string) => {
+    try {
+      const res = await fetch(`/api/products/${id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setProduct(data.product)
+      } else {
+        router.push('/marketplace')
+      }
+    } catch (error) {
+      console.error('Error fetching product:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleContact = () => {
+    if (product?.farmer.phone) {
+      window.location.href = `tel:${product.farmer.phone}`
+    }
+  }
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-background px-6 py-6 lg:px-8">
-        <div className="max-w-5xl mx-auto animate-pulse">
-          <div className="h-8 bg-muted rounded w-32 mb-6" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="h-[400px] bg-muted rounded-xl" />
-            <div className="space-y-4">
-              <div className="h-8 bg-muted rounded w-3/4" />
-              <div className="h-6 bg-muted rounded w-1/4" />
-              <div className="h-20 bg-muted rounded" />
-            </div>
-          </div>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     )
   }
 
-  if (error || !product) {
+  if (!product) {
     return (
-      <div className="min-h-screen bg-background px-6 py-6 lg:px-8">
-        <div className="max-w-5xl mx-auto text-center py-20">
-          <Package className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-foreground mb-2">{error || 'Product not found'}</h2>
-          <Link href="/marketplace" className="text-sm text-primary hover:underline">
-            Back to Marketplace
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <AlertCircle className="mx-auto h-16 w-16 text-muted-foreground" />
+          <h2 className="mt-4 text-2xl font-bold text-foreground">Product not found</h2>
+          <Link href="/marketplace">
+            <button className="btn-primary mt-6">Back to Marketplace</button>
           </Link>
         </div>
       </div>
@@ -110,175 +111,197 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="px-6 py-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          {/* Back button */}
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Marketplace
-          </button>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <Link href="/marketplace" className="inline-flex items-center gap-2 text-primary hover:underline">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Marketplace
+        </Link>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* ─── Left Column: Image + Map ─── */}
-            <div className="space-y-6">
-              {/* Product Image */}
-              <div className="card-elevated rounded-xl overflow-hidden">
-                {product.productImage ? (
-                  <img
-                    src={product.productImage}
-                    alt={product.productName}
-                    className="w-full h-[350px] object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-[350px] bg-primary/5 flex items-center justify-center">
-                    <Package className="h-20 w-20 text-primary/20" />
-                  </div>
-                )}
+        <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
+          {/* Product Image */}
+          <div className="glass-card overflow-hidden rounded-lg">
+            {product.productImage ? (
+              <img
+                src={product.productImage}
+                alt={product.productName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-96 items-center justify-center bg-muted">
+                <Package className="h-32 w-32 text-muted-foreground" />
               </div>
+            )}
+          </div>
 
-              {/* Farmer Location Map */}
-              <div>
-                <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  Farm Location
-                </h3>
-                <FarmerMap
-                  latitude={product.latitude}
-                  longitude={product.longitude}
-                  farmerName={product.farmer.name}
-                  locationName={product.locationName}
-                />
-                <p className="text-xs text-muted-foreground mt-2">
-                  📍 {product.locationName} ({product.latitude.toFixed(4)}, {product.longitude.toFixed(4)})
-                </p>
+          {/* Product Details */}
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white">
+                  {product.category}
+                </span>
               </div>
+              <h1 className="mt-4 text-4xl font-bold text-foreground">{product.productName}</h1>
+              <p className="mt-4 text-3xl font-bold text-primary">
+                KES {product.price.toLocaleString()}
+                <span className="text-lg font-normal text-muted-foreground"> / {product.unit}</span>
+              </p>
             </div>
 
-            {/* ─── Right Column: Product Info + Chat ─── */}
-            <div className="space-y-6">
-              {/* Product Details Card */}
-              <div className="card-elevated rounded-xl p-6">
-                {/* Category & Availability */}
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-semibold capitalize">
-                    {product.category}
-                  </span>
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    product.isAvailable ? 'bg-primary/10 text-primary' : 'bg-danger/10 text-danger'
-                  }`}>
-                    {product.isAvailable ? 'Available' : 'Sold Out'}
-                  </span>
+            <div className="glass-card rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground">Product Information</h3>
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Package className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Available Quantity</p>
+                    <p className="font-semibold text-foreground">{product.quantity} {product.unit}</p>
+                  </div>
                 </div>
-
-                {/* Product Name */}
-                <h1 className="text-2xl font-bold text-foreground mb-2">{product.productName}</h1>
-
-                {/* Price */}
-                <p className="text-3xl font-bold text-primary mb-4">
-                  KES {product.price.toLocaleString()}
-                  <span className="text-base font-normal text-muted-foreground ml-2">per {product.unit}</span>
-                </p>
-
-                {/* Quick Info */}
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  <div className="rounded-lg bg-muted/50 p-3">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <Scale className="h-3.5 w-3.5" />
-                      <span className="text-xs">Quantity</span>
-                    </div>
-                    <p className="text-sm font-semibold text-foreground">{product.quantity} {product.unit}</p>
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Location</p>
+                    <p className="font-semibold text-foreground">{product.locationName}</p>
                   </div>
-                  <div className="rounded-lg bg-muted/50 p-3">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <MapPin className="h-3.5 w-3.5" />
-                      <span className="text-xs">Location</span>
+                </div>
+                {product.harvestDate && (
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Harvest Date</p>
+                      <p className="font-semibold text-foreground">
+                        {new Date(product.harvestDate).toLocaleDateString()}
+                      </p>
                     </div>
-                    <p className="text-sm font-semibold text-foreground">{product.locationName}</p>
                   </div>
-                  <div className="rounded-lg bg-muted/50 p-3">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <Tag className="h-3.5 w-3.5" />
-                      <span className="text-xs">Category</span>
-                    </div>
-                    <p className="text-sm font-semibold text-foreground capitalize">{product.category}</p>
-                  </div>
-                  <div className="rounded-lg bg-muted/50 p-3">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <Calendar className="h-3.5 w-3.5" />
-                      <span className="text-xs">Listed</span>
-                    </div>
-                    <p className="text-sm font-semibold text-foreground">
+                )}
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Listed Date</p>
+                    <p className="font-semibold text-foreground">
                       {new Date(product.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                {/* Description */}
-                <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-foreground mb-2">Description</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{product.description}</p>
+            <div className="glass-card rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground">Description</h3>
+              <p className="mt-4 text-muted-foreground">{product.description}</p>
+            </div>
+
+            {/* Storage Condition Card - Only show if product is linked to a storage unit */}
+            {storageCondition?.hasStorage && (
+              <div className={`glass-card rounded-lg p-6 border-2 ${
+                storageCondition.condition === 'safe' ? 'border-green-500/30' :
+                storageCondition.condition === 'warning' ? 'border-yellow-500/30' :
+                'border-red-500/30'
+              }`}>
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <Thermometer className="h-5 w-5" />
+                  Storage Condition
+                </h3>
+                
+                {/* Status indicator */}
+                <div className="mt-4 flex items-center gap-3">
+                  {storageCondition.condition === 'safe' ? (
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                  ) : storageCondition.condition === 'warning' ? (
+                    <AlertTriangle className="h-6 w-6 text-yellow-500" />
+                  ) : (
+                    <XCircle className="h-6 w-6 text-red-500" />
+                  )}
+                  <span className={`font-semibold ${
+                    storageCondition.condition === 'safe' ? 'text-green-600' :
+                    storageCondition.condition === 'warning' ? 'text-yellow-600' :
+                    'text-red-600'
+                  }`}>
+                    {storageCondition.condition === 'safe' ? '✅ Safe Storage Temperature' :
+                     storageCondition.condition === 'warning' ? '⚠️ Storage Warning' :
+                     '⚠️ Storage Alert'}
+                  </span>
                 </div>
 
-                {/* Farmer Info */}
-                <div className="border-t border-border pt-4">
-                  <h3 className="text-sm font-semibold text-foreground mb-3">Farmer Information</h3>
-                  <div className="space-y-2.5">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="h-5 w-5 text-primary" />
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {storageCondition.message}
+                </p>
+
+                {/* Storage unit info */}
+                {storageCondition.storageUnit && (
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <p className="text-sm text-muted-foreground">
+                      Stored in: <span className="font-medium text-foreground">{storageCondition.storageUnit.name}</span>
+                      {' • '}{storageCondition.storageUnit.location}
+                    </p>
+                  </div>
+                )}
+
+                {/* Latest readings */}
+                {storageCondition.latestReading && (
+                  <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div className="bg-muted/50 rounded-lg p-3">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Thermometer className="h-4 w-4" />
+                        <span className="text-xs">Temperature</span>
                       </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{product.farmer.name}</p>
-                        <p className="text-xs text-muted-foreground">{product.farmer.location || product.locationName}</p>
-                      </div>
+                      <p className="mt-1 text-lg font-semibold text-foreground">
+                        {storageCondition.latestReading.temperature}°C
+                      </p>
                     </div>
-                    {product.farmer.phone && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Phone className="h-3.5 w-3.5" />
-                        <span>{product.farmer.phone}</span>
+                    <div className="bg-muted/50 rounded-lg p-3">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Droplets className="h-4 w-4" />
+                        <span className="text-xs">Humidity</span>
                       </div>
-                    )}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Mail className="h-3.5 w-3.5" />
-                      <span>{product.farmer.email}</span>
+                      <p className="mt-1 text-lg font-semibold text-foreground">
+                        {storageCondition.latestReading.humidity}%
+                      </p>
                     </div>
                   </div>
-                </div>
-
-                {/* Chat Button */}
-                {user && user.id !== product.farmer.id && (
-                  <button
-                    onClick={() => setShowChat(!showChat)}
-                    className="btn-cta w-full mt-6 flex items-center justify-center gap-2"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    {showChat ? 'Close Chat' : `Message ${product.farmer.name}`}
-                  </button>
                 )}
 
-                {!user && (
-                  <Link
-                    href="/login"
-                    className="btn-primary w-full mt-6 flex items-center justify-center gap-2 text-sm"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    Sign in to message farmer
-                  </Link>
-                )}
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Last updated: {storageCondition.latestReading 
+                    ? new Date(storageCondition.latestReading.recordedAt).toLocaleString()
+                    : 'No readings available'}
+                </p>
               </div>
+            )}
 
-              {/* Chat Widget */}
-              {showChat && user && product && (
-                <ChatWidget
-                  productId={product.id}
-                  otherUserId={product.farmer.id}
-                  otherUserName={product.farmer.name}
-                  onClose={() => setShowChat(false)}
-                />
-              )}
+            <div className="glass-card rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground">Seller Information</h3>
+              <div className="mt-4 space-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">Farmer Name</p>
+                  <p className="font-semibold text-foreground">{product.farmer.name}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Phone className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Phone</p>
+                    <p className="font-semibold text-foreground">{product.farmer.phone}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Mail className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Email</p>
+                    <p className="font-semibold text-foreground">{product.farmer.email}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button onClick={handleContact} className="btn-primary flex-1">
+                Contact Farmer
+              </button>
+              <button className="btn-secondary flex-1">
+                Request Purchase
+              </button>
             </div>
           </div>
         </div>
