@@ -10,11 +10,11 @@
 
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, Plus, Package, MapPin, Upload, X, Loader2 } from 'lucide-react'
+import { ArrowLeft, Plus, Package, MapPin, Upload, X, Loader2, Warehouse, Calendar } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 
 // Common product categories for Kenyan agriculture
@@ -63,7 +63,32 @@ export default function AddProductPage() {
     latitude: '',
     longitude: '',
     category: 'general',
+    storageUnitId: '',
+    harvestDate: '',
   })
+
+  const [storageUnits, setStorageUnits] = useState<{ id: string; name: string; location: string }[]>([])
+
+  // Fetch farmer's storage units
+  useEffect(() => {
+    if (user?.role === 'farmer' && token) {
+      fetchStorageUnits()
+    }
+  }, [user, token])
+
+  const fetchStorageUnits = async () => {
+    try {
+      const res = await fetch('/api/storage-units/my-units', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setStorageUnits(data.storageUnits || [])
+      }
+    } catch (error) {
+      console.error('Error fetching storage units:', error)
+    }
+  }
 
   // Auto-fill coordinates when a preset location is selected
   const handleLocationChange = (locationName: string) => {
@@ -191,6 +216,8 @@ export default function AddProductPage() {
           latitude: Number(formData.latitude),
           longitude: Number(formData.longitude),
           category: formData.category,
+          storageUnitId: formData.storageUnitId || null,
+          harvestDate: formData.harvestDate ? new Date(formData.harvestDate).toISOString() : null,
         }),
       })
 
@@ -508,6 +535,60 @@ export default function AddProductPage() {
                   Coordinates are auto-filled when you select a location. You can adjust them for precision.
                 </p>
               </div>
+
+              {/* Storage Unit Section - Only show if farmer has storage units */}
+              {storageUnits.length > 0 && (
+                <div className="border-t border-border pt-5">
+                  <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Warehouse className="h-4 w-4 text-primary" />
+                    Storage Information
+                    <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+                  </h3>
+
+                  {/* Storage Unit Selection */}
+                  <div className="mb-4">
+                    <label htmlFor="storageUnitId" className="block text-sm font-medium text-foreground mb-1.5">
+                      Monitored Storage Unit
+                    </label>
+                    <select
+                      id="storageUnitId"
+                      name="storageUnitId"
+                      value={formData.storageUnitId}
+                      onChange={handleChange}
+                      className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+                    >
+                      <option value="">Not linked to a storage unit</option>
+                      {storageUnits.map((unit) => (
+                        <option key={unit.id} value={unit.id}>
+                          {unit.name} ({unit.location})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Link this product to a monitored storage unit to show buyers that the product is properly stored.
+                    </p>
+                  </div>
+
+                  {/* Harvest Date */}
+                  <div>
+                    <label htmlFor="harvestDate" className="block text-sm font-medium text-foreground mb-1.5">
+                      Harvest Date
+                    </label>
+                    <input
+                      id="harvestDate"
+                      name="harvestDate"
+                      type="date"
+                      value={formData.harvestDate}
+                      onChange={handleChange}
+                      max={new Date().toISOString().split('T')[0]}
+                      className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      When was this product harvested? (optional)
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Submit */}
               <button
