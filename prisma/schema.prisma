@@ -52,6 +52,7 @@ model StorageUnit {
   commodities Commodity[]
   alerts      Alert[]
   readings    StorageReading[]
+  products    Product[]
 }
 
 // ─── Commodity Model ───
@@ -125,8 +126,13 @@ model Product {
   longitude    Float    // GPS longitude of the farm
   category     String   @default("general") // crop category for filtering
   isAvailable  Boolean  @default(true)
+  harvestDate  DateTime? // when the product was harvested
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  // Optional link to a monitored storage unit
+  storageUnitId String?
+  storageUnit   StorageUnit? @relation(fields: [storageUnitId], references: [id], onDelete: SetNull)
 
   // Relation to the farmer who listed the product
   farmerId String
