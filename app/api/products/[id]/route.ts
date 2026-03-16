@@ -33,6 +33,13 @@ export async function GET(
             location: true,
           },
         },
+        storageUnit: {
+          select: {
+            id: true,
+            name: true,
+            location: true,
+          },
+        },
       },
     })
 
@@ -73,7 +80,7 @@ export async function PATCH(
     const allowedFields = [
       'productName', 'description', 'price', 'quantity', 'unit',
       'productImage', 'locationName', 'latitude', 'longitude',
-      'category', 'isAvailable',
+      'category', 'isAvailable', 'storageUnitId', 'harvestDate',
     ]
 
     // Only allow updating specific fields
@@ -91,6 +98,13 @@ export async function PATCH(
       include: {
         farmer: {
           select: { id: true, name: true, phone: true, location: true },
+        },
+        storageUnit: {
+          select: {
+            id: true,
+            name: true,
+            location: true,
+          },
         },
       },
     })
