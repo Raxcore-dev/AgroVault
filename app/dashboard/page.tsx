@@ -196,23 +196,30 @@ function FarmerDashboard() {
 
     const headers = { Authorization: `Bearer ${token}` }
 
+    // Load critical data first
     Promise.all([
       fetch('/api/dashboard/farmer', { headers }).then((r) => r.ok ? r.json() : null),
       fetch('/api/storage-units', { headers }).then((r) => r.ok ? r.json() : null),
-      fetch('/api/storage/alerts', { headers }).then((r) => r.ok ? r.json() : null),
     ])
-      .then(([statsData, unitsData, spoilageData]) => {
+      .then(([statsData, unitsData]) => {
         if (statsData) setStats(statsData)
         if (unitsData) setUnits(unitsData.storageUnits ?? unitsData)
+        setLoading(false)
+      })
+      .catch(console.error)
+
+    // Load spoilage alerts in background
+    fetch('/api/storage/alerts', { headers })
+      .then((r) => r.ok ? r.json() : null)
+      .then((spoilageData) => {
         if (spoilageData) {
           setSpoilageAssessments(spoilageData.assessments ?? [])
           setSpoilageSummary(spoilageData.summary ?? null)
         }
       })
       .catch(console.error)
-      .finally(() => setLoading(false))
 
-    // Fetch AI analysis separately (may take longer)
+    // Load AI analysis in background (non-blocking)
     setAiLoading(true)
     fetch('/api/storage/analyze', {
       method: 'POST',
@@ -229,7 +236,7 @@ function FarmerDashboard() {
       })
       .finally(() => setAiLoading(false))
 
-    // Fetch weather data
+    // Load weather data in background
     setWeatherLoading(true)
     Promise.all([
       fetch('/api/weather/forecast', { headers }).then((r) => r.ok ? r.json() : null),
