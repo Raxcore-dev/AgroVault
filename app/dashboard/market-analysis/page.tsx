@@ -166,7 +166,6 @@ export default function MarketAnalysisPage() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background">
       <div className="px-6 py-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
