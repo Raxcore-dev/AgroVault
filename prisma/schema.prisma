@@ -31,6 +31,8 @@ model User {
   jobs         Job[]
   jobApplications JobApplication[]
   location_data UserLocation?
+  buyerConversations Conversation[] @relation("BuyerConversations")
+  farmerConversations Conversation[] @relation("FarmerConversations")
 }
 
 // ─── Storage Unit Model ───
@@ -139,6 +141,39 @@ model Product {
   farmerId String
   farmer   User      @relation(fields: [farmerId], references: [id])
   messages Message[]
+  conversations Conversation[]
+}
+
+// ─── Conversation Model ───
+// Represents a chat conversation between a buyer and farmer about a product
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Participants
+  buyerId  String
+  buyer    User @relation("BuyerConversations", fields: [buyerId], references: [id], onDelete: Cascade)
+  
+  farmerId String
+  farmer   User @relation("FarmerConversations", fields: [farmerId], references: [id], onDelete: Cascade)
+  
+  // Product context
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // Messages in this conversation
+  messages Message[]
+  
+  // Track last message for sorting conversations
+  lastMessageAt DateTime @default(now())
+  
+  // Unique constraint: one conversation per buyer-farmer-product combination
+  @@unique([buyerId, farmerId, productId])
+  @@index([buyerId])
+  @@index([farmerId])
+  @@index([productId])
+  @@index([lastMessageAt])
 }
 
 // ─── Message Model ───
@@ -147,6 +182,7 @@ model Message {
   id         String   @id @default(cuid())
   message    String   // the chat message text
   timestamp  DateTime @default(now())
+  isRead     Boolean  @default(false)
 
   // Sender of the message
   senderId   String
@@ -156,12 +192,21 @@ model Message {
   receiverId String
   receiver   User     @relation("RecvMessages", fields: [receiverId], references: [id])
 
-  // Conversation context – either about a product or a job
+  // Conversation context (for marketplace chat)
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Legacy: Conversation context – either about a product or a job
   productId  String?
   product    Product?  @relation(fields: [productId], references: [id])
 
   jobId      String?
   job        Job?      @relation(fields: [jobId], references: [id])
+  
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([timestamp])
 }
 
 // ─── Market Model ───
