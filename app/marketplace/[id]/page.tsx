@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, MapPin, Package, Phone, Mail, Calendar, AlertCircle, Thermometer, Droplets, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
+import { ArrowLeft, MapPin, Package, Phone, Mail, Calendar, AlertCircle, Thermometer, Droplets, CheckCircle, AlertTriangle, XCircle, MessageCircle } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
+import { ChatModal } from '@/components/chat-modal'
 
 interface Product {
   id: string
@@ -38,6 +39,7 @@ export default function ProductDetailsPage() {
   const router = useRouter()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showChat, setShowChat] = useState(false)
   const [storageCondition, setStorageCondition] = useState<{
     hasStorage: boolean
     storageUnit?: { id: string; name: string; location: string }
@@ -296,16 +298,41 @@ export default function ProductDetailsPage() {
             </div>
 
             <div className="flex gap-4">
-              <button onClick={handleContact} className="btn-primary flex-1">
-                Contact Farmer
-              </button>
-              <button className="btn-secondary flex-1">
-                Request Purchase
-              </button>
+              {user && user.id !== product.farmer.id && (
+                <button 
+                  onClick={() => setShowChat(true)} 
+                  className="btn-primary flex-1 flex items-center justify-center gap-2"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  Contact Seller
+                </button>
+              )}
+              {user && user.id !== product.farmer.id && product.farmer.phone && (
+                <button onClick={handleContact} className="btn-secondary flex-1 flex items-center justify-center gap-2">
+                  <Phone className="h-5 w-5" />
+                  Call Farmer
+                </button>
+              )}
+              {!user && (
+                <Link href="/login" className="btn-primary flex-1 text-center">
+                  Sign in to Contact Seller
+                </Link>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Chat Modal */}
+      {showChat && product && (
+        <ChatModal
+          productId={product.id}
+          farmerId={product.farmer.id}
+          farmerName={product.farmer.name}
+          productName={product.productName}
+          onClose={() => setShowChat(false)}
+        />
+      )}
     </div>
   )
 }
