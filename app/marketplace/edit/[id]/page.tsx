@@ -1,17 +1,14 @@
 /**
- * Add Product Page
+ * Edit Product Page
  * 
- * Form for farmers to list a new product on the marketplace.
- * Requires authentication with a "farmer" role.
- * 
- * Fields: product name, description, price, quantity, unit,
- *         product image URL, location, latitude, longitude, category.
+ * Form for farmers to edit an existing product listing.
+ * Requires authentication with a "farmer" role and ownership of the product.
  */
 
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Plus, Package, MapPin, Upload, X, Loader2, Warehouse, Calendar } from 'lucide-react'
@@ -42,14 +39,17 @@ const PRESET_LOCATIONS = [
   { name: 'Kitale', lat: 1.0187, lng: 35.0020 },
 ]
 
-export default function AddProductPage() {
+export default function EditProductPage() {
+  const params = useParams()
   const { user, token } = useAuth()
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageUploading, setImageUploading] = useState(false)
+  const [storageUnits, setStorageUnits] = useState<{ id: string; name: string; location: string }[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [formData, setFormData] = useState({
@@ -65,30 +65,8 @@ export default function AddProductPage() {
     category: 'general',
     storageUnitId: '',
     harvestDate: '',
+    isAvailable: true,
   })
-
-  const [storageUnits, setStorageUnits] = useState<{ id: string; name: string; location: string }[]>([])
-
-  // Fetch farmer's storage units
-  useEffect(() => {
-    if (user?.role === 'farmer' && token) {
-      fetchStorageUnits()
-    }
-  }, [user, token])
-
-  const fetchStorageUnits = async () => {
-    try {
-      const res = await fetch('/api/storage-units/my-units', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setStorageUnits(data.storageUnits || [])
-      }
-    } catch (error) {
-      console.error('Error fetching storage units:', error)
-    }
-  }
 
   // Auto-fill coordinates when a preset location is selected
   const handleLocationChange = (locationName: string) => {
@@ -105,6 +83,8 @@ export default function AddProductPage() {
     const { name, value } = e.target
     if (name === 'locationName') {
       handleLocationChange(value)
+    } else if (name === 'isAvailable') {
+      setFormData((prev) => ({ ...prev, [name]: value === 'true' }))
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }))
     }
@@ -114,13 +94,11 @@ export default function AddProductPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       setError('Please select a valid image file.')
       return
     }
 
-    // Validate file size (5 MB max)
     if (file.size > 5 * 1024 * 1024) {
       setError('Image must be smaller than 5 MB.')
       return
@@ -129,7 +107,6 @@ export default function AddProductPage() {
     setError('')
     setImageFile(file)
 
-    // Create preview URL
     const reader = new FileReader()
     reader.onloadend = () => {
       setImagePreview(reader.result as string)
@@ -146,9 +123,6 @@ export default function AddProductPage() {
     }
   }
 
-  /**
-   * Upload image to Cloudinary via /api/upload, returns the secure URL.
-   */
   const uploadImage = async (): Promise<string | null> => {
     if (!imageFile || !token) return null
 
@@ -176,6 +150,68 @@ export default function AddProductPage() {
     }
   }
 
+  // Fetch product data and storage units
+  useEffect(() => {
+    if (params.id && token) {
+      fetchProduct(params.id as string)
+      fetchStorageUnits()
+    }
+  }, [params.id, token])
+
+  const fetchProduct = async (id: string) => {
+    try {
+      const res = await fetch(`/api/products/${id}`)
+      if (res.ok) {
+        const data = await res.json()
+        const product = data.product
+        
+        // Check ownership
+        if (user && product.farmerId !== user.id) {
+          setError('You can only edit your own products.')
+          return
+        }
+
+        setFormData({
+          productName: product.productName || '',
+          description: product.description || '',
+          price: String(product.price || ''),
+          quantity: String(product.quantity || ''),
+          unit: product.unit || 'kg',
+          productImage: product.productImage || '',
+          locationName: product.locationName || '',
+          latitude: String(product.latitude || ''),
+          longitude: String(product.longitude || ''),
+          category: product.category || 'general',
+          storageUnitId: product.storageUnitId || '',
+          harvestDate: product.harvestDate ? product.harvestDate.split('T')[0] : '',
+          isAvailable: product.isAvailable ?? true,
+        })
+
+        if (product.productImage) {
+          setImagePreview(product.productImage)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching product:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchStorageUnits = async () => {
+    try {
+      const res = await fetch('/api/storage-units/my-units', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setStorageUnits(data.storageUnits || [])
+      }
+    } catch (error) {
+      console.error('Error fetching storage units:', error)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -185,22 +221,16 @@ export default function AddProductPage() {
       return
     }
 
-    if (user?.role !== 'farmer') {
-      setError('Only farmers can list products.')
-      return
-    }
-
     setIsSubmitting(true)
 
     try {
-      // Upload image first if one was selected
-      let imageUrl = formData.productImage || null
+      let imageUrl: string | null = formData.productImage
       if (imageFile) {
         imageUrl = await uploadImage()
       }
 
-      const res = await fetch('/api/products', {
-        method: 'POST',
+      const res = await fetch(`/api/products/${params.id}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -218,53 +248,43 @@ export default function AddProductPage() {
           category: formData.category,
           storageUnitId: formData.storageUnitId || null,
           harvestDate: formData.harvestDate ? new Date(formData.harvestDate).toISOString() : null,
+          isAvailable: formData.isAvailable,
         }),
       })
 
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to create product')
+        throw new Error(data.error || 'Failed to update product')
       }
 
-      // Redirect to the new product's detail page
-      router.push(`/marketplace/${data.product.id}`)
+      router.push('/marketplace/my-listings')
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create product.')
+      setError(err instanceof Error ? err.message : 'Failed to update product.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // Redirect if not a farmer
-  if (user && user.role !== 'farmer') {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (!user || user.role !== 'farmer') {
     return (
       <div className="min-h-screen bg-background px-6 py-6 lg:px-8">
         <div className="max-w-2xl mx-auto text-center py-20">
           <Package className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-foreground mb-2">Farmer Account Required</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Only farmers can list products. Register as a farmer to start selling.
+            Only farmers can edit products.
           </p>
           <Link href="/marketplace" className="text-sm text-primary hover:underline">
             Back to Marketplace
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background px-6 py-6 lg:px-8">
-        <div className="max-w-2xl mx-auto text-center py-20">
-          <Package className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-foreground mb-2">Sign In Required</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            You need to sign in as a farmer to list products.
-          </p>
-          <Link href="/login" className="text-primary font-semibold hover:underline">
-            Sign In →
           </Link>
         </div>
       </div>
@@ -277,20 +297,20 @@ export default function AddProductPage() {
         <div className="max-w-2xl mx-auto">
           {/* Back button */}
           <Link
-            href="/marketplace"
+            href="/marketplace/my-listings"
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Marketplace
+            Back to My Listings
           </Link>
 
           <div className="card-elevated rounded-2xl p-8">
             <h1 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
               <Plus className="h-5 w-5 text-primary" />
-              List a New Product
+              Edit Product
             </h1>
             <p className="text-sm text-muted-foreground mb-6">
-              Add your produce to the marketplace so buyers can find it.
+              Update your product listing details.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -429,10 +449,7 @@ export default function AddProductPage() {
                       <div className="flex items-center gap-2 min-w-0">
                         <Upload className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="text-sm text-muted-foreground truncate">
-                          {imageFile?.name}
-                        </span>
-                        <span className="text-xs text-muted-foreground shrink-0">
-                          ({((imageFile?.size ?? 0) / 1024).toFixed(0)} KB)
+                          {imageFile?.name || 'Current image'}
                         </span>
                       </div>
                       <button
@@ -476,7 +493,6 @@ export default function AddProductPage() {
                   Farm Location
                 </h3>
 
-                {/* Location Name */}
                 <div className="mb-4">
                   <label htmlFor="locationName" className="block text-sm font-medium text-foreground mb-1.5">
                     County / Town *
@@ -496,7 +512,6 @@ export default function AddProductPage() {
                   </select>
                 </div>
 
-                {/* Coordinates */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="latitude" className="block text-sm font-medium text-foreground mb-1.5">
@@ -531,12 +546,9 @@ export default function AddProductPage() {
                     />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Coordinates are auto-filled when you select a location. You can adjust them for precision.
-                </p>
               </div>
 
-              {/* Storage Unit Section - Only show if farmer has storage units */}
+              {/* Storage Unit Section */}
               {storageUnits.length > 0 && (
                 <div className="border-t border-border pt-5">
                   <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -545,7 +557,6 @@ export default function AddProductPage() {
                     <span className="text-xs font-normal text-muted-foreground">(optional)</span>
                   </h3>
 
-                  {/* Storage Unit Selection */}
                   <div className="mb-4">
                     <label htmlFor="storageUnitId" className="block text-sm font-medium text-foreground mb-1.5">
                       Monitored Storage Unit
@@ -564,12 +575,8 @@ export default function AddProductPage() {
                         </option>
                       ))}
                     </select>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Link this product to a monitored storage unit to show buyers that the product is properly stored.
-                    </p>
                   </div>
 
-                  {/* Harvest Date */}
                   <div>
                     <label htmlFor="harvestDate" className="block text-sm font-medium text-foreground mb-1.5">
                       Harvest Date
@@ -583,12 +590,25 @@ export default function AddProductPage() {
                       max={new Date().toISOString().split('T')[0]}
                       className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      When was this product harvested? (optional)
-                    </p>
                   </div>
                 </div>
               )}
+
+              {/* Availability Toggle */}
+              <div className="border-t border-border pt-5">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="isAvailable"
+                    checked={formData.isAvailable}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, isAvailable: e.target.checked }))}
+                    className="h-5 w-5 rounded border-border text-primary focus:ring-primary"
+                  />
+                  <span className="text-sm font-medium text-foreground">
+                    Product is available for purchase
+                  </span>
+                </label>
+              </div>
 
               {/* Submit */}
               <button
@@ -601,7 +621,7 @@ export default function AddProductPage() {
                 ) : (
                   <Plus className="h-4 w-4" />
                 )}
-                {imageUploading ? 'Uploading photo...' : isSubmitting ? 'Listing product...' : 'List Product'}
+                {imageUploading ? 'Uploading photo...' : isSubmitting ? 'Saving changes...' : 'Save Changes'}
               </button>
             </form>
           </div>

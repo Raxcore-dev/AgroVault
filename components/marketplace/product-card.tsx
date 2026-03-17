@@ -9,7 +9,7 @@
 'use client'
 
 import Link from 'next/link'
-import { MapPin, Package, User } from 'lucide-react'
+import { MapPin, Package, User, ShieldCheck } from 'lucide-react'
 
 interface ProductCardProps {
   product: {
@@ -28,6 +28,11 @@ interface ProductCardProps {
       name: string
       location: string | null
     }
+    storageUnit?: {
+      id: string
+      name: string
+      location: string
+    } | null
   }
 }
 
@@ -52,6 +57,13 @@ export function ProductCard({ product }: ProductCardProps) {
           <span className="absolute top-3 left-3 rounded-full bg-white/90 backdrop-blur-sm px-2.5 py-1 text-[11px] font-semibold text-foreground capitalize">
             {product.category}
           </span>
+          {/* Monitored storage badge */}
+          {product.storageUnit && (
+            <span className="absolute top-3 right-3 rounded-full bg-green-500/90 backdrop-blur-sm px-2 py-1 text-[10px] font-semibold text-white flex items-center gap-1">
+              <ShieldCheck className="h-3 w-3" />
+              Monitored
+            </span>
+          )}
         </div>
 
         {/* Product Info */}

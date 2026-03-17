@@ -92,6 +92,9 @@ export async function GET(request: NextRequest) {
           farmer: {
             select: { id: true, name: true, phone: true, location: true },
           },
+          storageUnit: {
+            select: { id: true, name: true, location: true },
+          },
         },
       }),
       prisma.product.count({ where }),

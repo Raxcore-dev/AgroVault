@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { useRoleGuard } from '@/hooks/use-role-guard'
+import { ErrorBoundary } from '@/components/error-boundary'
 import {
   AlertTriangle, TrendingUp, BarChart3, RefreshCw,
   ShieldAlert, Store, ArrowRight, Brain, Sparkles,
@@ -164,7 +165,7 @@ export default function MarketAnalysisPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <ErrorBoundary>
       <div className="px-6 py-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -386,6 +387,6 @@ export default function MarketAnalysisPage() {
           </div>
         )}
       </div>
-    </div>
+    </ErrorBoundary>
   )
 }

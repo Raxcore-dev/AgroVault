@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, TrendingUp, Wheat, BarChart3, Settings,
   Thermometer, AlertTriangle, Store, Package, Bell, ShieldAlert, CloudSun, Briefcase,
-  Search, MessageCircle, User, Navigation,
+  Search, MessageCircle, User, List, Plus, TrendingDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
@@ -21,21 +21,23 @@ const farmerNav: NavItem[] = [
   { href: '/dashboard/storage-units', icon: Package, label: 'Storage Units' },
   { href: '/dashboard/commodities', icon: Wheat, label: 'Commodities' },
   { href: '/dashboard/alerts', icon: AlertTriangle, label: 'Storage Alerts' },
+  { href: '/dashboard/spoilage-predictions', icon: TrendingDown, label: 'Spoilage Predictions' },
   { href: '/dashboard/market-analysis', icon: ShieldAlert, label: 'Risk & Markets' },
-  { href: '/dashboard/market-insights', icon: TrendingUp, label: 'Market Insights' },
   { href: '/dashboard/weather', icon: CloudSun, label: 'Weather Insights' },
-  { href: '/dashboard/market-travel-advisory', icon: Navigation, label: 'Travel Advisory' },
   { href: '/jobs', icon: Briefcase, label: 'Farm Jobs' },
   { href: '/dashboard/jobs', icon: Briefcase, label: 'My Job Posts' },
-  { href: '/market-intelligence', icon: Store, label: 'Market Intelligence' },
+  { href: '/marketplace', icon: Store, label: 'Marketplace' },
+  { href: '/marketplace/add-product', icon: Plus, label: 'Add Product' },
+  { href: '/marketplace/my-listings', icon: List, label: 'My Listings' },
+  { href: '/market', icon: TrendingUp, label: 'Market Analysis' },
   { href: '/dashboard/notifications', icon: Bell, label: 'Notifications' },
 ]
 
-const jobApplicantNav: NavItem[] = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/jobs', icon: Briefcase, label: 'Available Jobs' },
-  { href: '/dashboard/my-applications', icon: Search, label: 'My Applications' },
-  { href: '/dashboard/settings', icon: User, label: 'Profile & Settings' },
+const buyerNav: NavItem[] = [
+  { href: '/marketplace', icon: Store, label: 'Marketplace' },
+  { href: '/jobs', icon: Briefcase, label: 'Farm Jobs' },
+  { href: '/dashboard/my-applications', icon: Briefcase, label: 'My Applications' },
+  { href: '/market', icon: TrendingUp, label: 'Market Trends' },
 ]
 
 const bottomNav: NavItem[] = [
@@ -46,7 +48,7 @@ export function Sidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
 
-  const navItems = user?.role === 'farmer' ? farmerNav : jobApplicantNav
+  const navItems = user?.role === 'farmer' ? farmerNav : buyerNav
 
   return (
     <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 border-r border-border bg-white p-4 md:flex md:flex-col">
