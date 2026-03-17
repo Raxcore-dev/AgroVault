@@ -10,6 +10,7 @@ import {
   Brain, Sparkles, Loader2, CloudSun, CloudRain, Briefcase,
 } from 'lucide-react'
 import { AIInsightCard, AIInsightSkeleton, type AIAnalysis } from '@/components/ai-insight-card'
+import { SpoilagePredictionsWidget } from '@/components/spoilage-predictions-widget'
 import {
   CurrentWeatherCard,
   ForecastCard,
@@ -538,6 +539,11 @@ function FarmerDashboard() {
             </div>
           </div>
         )}
+
+        {/* Spoilage Predictions Widget */}
+        <div className="mb-6">
+          <SpoilagePredictionsWidget />
+        </div>
 
         {/* Recent Readings */}
         {/* AI-Powered Insights */}
