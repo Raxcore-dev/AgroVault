@@ -29,12 +29,14 @@ const farmerNav: NavItem[] = [
   { href: '/marketplace', icon: Store, label: 'Marketplace' },
   { href: '/marketplace/add-product', icon: Plus, label: 'Add Product' },
   { href: '/marketplace/my-listings', icon: List, label: 'My Listings' },
+  { href: '/dashboard/messages', icon: MessageCircle, label: 'Messages' },
   { href: '/market', icon: TrendingUp, label: 'Market Analysis' },
   { href: '/dashboard/notifications', icon: Bell, label: 'Notifications' },
 ]
 
 const buyerNav: NavItem[] = [
   { href: '/marketplace', icon: Store, label: 'Marketplace' },
+  { href: '/dashboard/messages', icon: MessageCircle, label: 'Messages' },
   { href: '/jobs', icon: Briefcase, label: 'Farm Jobs' },
   { href: '/dashboard/my-applications', icon: Briefcase, label: 'My Applications' },
   { href: '/market', icon: TrendingUp, label: 'Market Trends' },
