@@ -549,35 +549,58 @@ async function main() {
   console.log('✅ Created commodity thresholds')
 
   // ─── Create Markets ───
-  await prisma.market.createMany({
-    data: [
-      // Maize markets
-      { marketName: 'Kibuye Market',           location: 'Kisumu',   commodity: 'maize', pricePerKg: 80, demandLevel: 'high',   priceTrend: 'increasing', latitude: -0.0917, longitude: 34.7680 },
-      { marketName: 'Kakamega Market',         location: 'Kakamega', commodity: 'maize', pricePerKg: 72, demandLevel: 'medium', priceTrend: 'stable',     latitude:  0.2827, longitude: 34.7519 },
-      { marketName: 'Eldoret Town Market',     location: 'Eldoret',  commodity: 'maize', pricePerKg: 75, demandLevel: 'high',   priceTrend: 'increasing', latitude:  0.5143, longitude: 35.2698 },
-      { marketName: 'Wakulima Market',         location: 'Nairobi',  commodity: 'maize', pricePerKg: 85, demandLevel: 'high',   priceTrend: 'increasing', latitude: -1.2833, longitude: 36.8269 },
-      { marketName: 'Nakuru Municipal Market', location: 'Nakuru',   commodity: 'maize', pricePerKg: 78, demandLevel: 'medium', priceTrend: 'stable',     latitude: -0.3031, longitude: 36.0800 },
-      // Wheat markets
-      { marketName: 'Eldoret Grain Hub',       location: 'Eldoret',  commodity: 'wheat', pricePerKg: 65, demandLevel: 'medium', priceTrend: 'stable',     latitude:  0.5143, longitude: 35.2698 },
-      { marketName: 'Nairobi Cereal Market',   location: 'Nairobi',  commodity: 'wheat', pricePerKg: 70, demandLevel: 'high',   priceTrend: 'increasing', latitude: -1.2921, longitude: 36.8219 },
-      { marketName: 'Nakuru Grain Market',     location: 'Nakuru',   commodity: 'wheat', pricePerKg: 62, demandLevel: 'low',    priceTrend: 'decreasing', latitude: -0.3031, longitude: 36.0800 },
-      // Beans markets
-      { marketName: 'Nyeri Town Market',       location: 'Nyeri',    commodity: 'beans', pricePerKg: 120, demandLevel: 'high',   priceTrend: 'increasing', latitude: -0.4169, longitude: 36.9458 },
-      { marketName: 'Gikomba Market',          location: 'Nairobi',  commodity: 'beans', pricePerKg: 130, demandLevel: 'high',   priceTrend: 'increasing', latitude: -1.2853, longitude: 36.8424 },
-      { marketName: 'Embu Market',             location: 'Embu',     commodity: 'beans', pricePerKg: 115, demandLevel: 'medium', priceTrend: 'stable',     latitude: -0.5389, longitude: 37.4596 },
-      // Tomatoes markets
-      { marketName: 'Marikiti Market',         location: 'Nairobi',  commodity: 'tomatoes', pricePerKg: 90, demandLevel: 'high',   priceTrend: 'increasing', latitude: -1.2840, longitude: 36.8270 },
-      { marketName: 'Naivasha Market',         location: 'Naivasha', commodity: 'tomatoes', pricePerKg: 70, demandLevel: 'medium', priceTrend: 'decreasing', latitude: -0.7172, longitude: 36.4310 },
-      // Avocado markets
-      { marketName: 'Thika Market',            location: 'Thika',    commodity: 'avocados', pricePerKg: 150, demandLevel: 'medium', priceTrend: 'stable',     latitude: -1.0396, longitude: 37.0900 },
-      { marketName: 'Mombasa Export Hub',      location: 'Mombasa',  commodity: 'avocados', pricePerKg: 200, demandLevel: 'high',   priceTrend: 'increasing', latitude: -4.0435, longitude: 39.6682 },
-      // Green grams markets
-      { marketName: 'Machakos Open Market',    location: 'Machakos', commodity: 'grams', pricePerKg: 140, demandLevel: 'medium', priceTrend: 'stable',     latitude: -1.5177, longitude: 37.2634 },
-      { marketName: 'Kitui Market',            location: 'Kitui',    commodity: 'grams', pricePerKg: 135, demandLevel: 'low',    priceTrend: 'decreasing', latitude: -1.3667, longitude: 38.0106 },
-    ],
-  })
+  // Import comprehensive Kenya markets data
+  const { KENYA_COUNTIES_MARKETS } = await import('../lib/data/kenya-counties-markets')
+  
+  const allMarketsData: Array<{
+    marketName: string
+    location: string
+    commodity: string
+    pricePerKg: number
+    previousPricePerKg: number | null
+    demandLevel: string
+    priceTrend: string
+    latitude: number
+    longitude: number
+  }> = []
 
-  console.log('✅ Created markets')
+  // Generate markets from the comprehensive dataset
+  for (const countyData of KENYA_COUNTIES_MARKETS) {
+    for (const market of countyData.markets) {
+      // Find matching commodity prices for this market
+      for (const commodity of countyData.commodities) {
+        // Calculate previous price for trend (simulate 2-5% fluctuation)
+        const fluctuation = 0.02 + Math.random() * 0.03
+        const previousPrice = commodity.priceTrend === 'increasing' 
+          ? commodity.pricePerKg * (1 - fluctuation)
+          : commodity.priceTrend === 'decreasing'
+          ? commodity.pricePerKg * (1 + fluctuation)
+          : commodity.pricePerKg
+
+        allMarketsData.push({
+          marketName: market.name,
+          location: countyData.county,
+          commodity: commodity.commodity,
+          pricePerKg: commodity.pricePerKg,
+          previousPricePerKg: Math.round(previousPrice * 2) / 2, // Round to nearest 0.5
+          demandLevel: commodity.demandLevel,
+          priceTrend: commodity.priceTrend,
+          latitude: market.latitude,
+          longitude: market.longitude,
+        })
+      }
+    }
+  }
+
+  // Batch create markets in chunks of 500 to avoid overwhelming the database
+  const CHUNK_SIZE = 500
+  for (let i = 0; i < allMarketsData.length; i += CHUNK_SIZE) {
+    const chunk = allMarketsData.slice(i, i + CHUNK_SIZE)
+    await prisma.market.createMany({ data: chunk })
+    console.log(`  Seeded markets ${i + 1} to ${Math.min(i + CHUNK_SIZE, allMarketsData.length)} of ${allMarketsData.length}`)
+  }
+
+  console.log(`✅ Created ${allMarketsData.length} market entries across all ${KENYA_COUNTIES_MARKETS.length} counties`)
 
   console.log('\n🎉 Seeding complete! Demo accounts:')
   console.log('  Farmer: john@farmer.com / password123')

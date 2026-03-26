@@ -3,9 +3,9 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, TrendingUp, Wheat, BarChart3, Settings,
-  Thermometer, AlertTriangle, Store, Package, Bell, ShieldAlert, CloudSun, Briefcase,
-  Search, MessageCircle, User, List, Plus, TrendingDown, Droplets,
+  LayoutDashboard, Wheat, BarChart3, Settings,
+  Thermometer, AlertTriangle, Store, Package, Bell, CloudSun, Briefcase,
+  MessageCircle, List, Plus, TrendingDown, Droplets,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
@@ -23,7 +23,7 @@ const farmerNav: NavItem[] = [
   { href: '/dashboard/alerts', icon: AlertTriangle, label: 'Storage Alerts' },
   { href: '/dashboard/humidity-alerts', icon: Droplets, label: 'Humidity Alerts' },
   { href: '/dashboard/spoilage-predictions', icon: TrendingDown, label: 'Spoilage Predictions' },
-  { href: '/dashboard/market-analysis', icon: ShieldAlert, label: 'Risk & Markets' },
+  { href: '/market-intelligence', icon: BarChart3, label: 'Market Intelligence' },
   { href: '/dashboard/weather', icon: CloudSun, label: 'Weather Insights' },
   { href: '/jobs', icon: Briefcase, label: 'Farm Jobs' },
   { href: '/dashboard/jobs', icon: Briefcase, label: 'My Job Posts' },
@@ -31,7 +31,6 @@ const farmerNav: NavItem[] = [
   { href: '/marketplace/add-product', icon: Plus, label: 'Add Product' },
   { href: '/marketplace/my-listings', icon: List, label: 'My Listings' },
   { href: '/dashboard/messages', icon: MessageCircle, label: 'Messages' },
-  { href: '/market', icon: TrendingUp, label: 'Market Analysis' },
   { href: '/dashboard/notifications', icon: Bell, label: 'Notifications' },
 ]
 
@@ -40,7 +39,6 @@ const buyerNav: NavItem[] = [
   { href: '/dashboard/messages', icon: MessageCircle, label: 'Messages' },
   { href: '/jobs', icon: Briefcase, label: 'Farm Jobs' },
   { href: '/dashboard/my-applications', icon: Briefcase, label: 'My Applications' },
-  { href: '/market', icon: TrendingUp, label: 'Market Trends' },
 ]
 
 const bottomNav: NavItem[] = [

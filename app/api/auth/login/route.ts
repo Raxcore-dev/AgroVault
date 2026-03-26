@@ -70,6 +70,15 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('[Login] Error:', error)
+    
+    // Check if it's a database connection error
+    if (error instanceof Error && error.message.includes('ETIMEDOUT')) {
+      return NextResponse.json(
+        { error: 'Database connection timeout. Please try again in a moment.' },
+        { status: 503 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error.' },
       { status: 500 }

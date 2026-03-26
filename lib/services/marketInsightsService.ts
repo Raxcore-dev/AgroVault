@@ -13,6 +13,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import { KENYA_COUNTIES_MARKETS, COUNTY_COORDS } from '@/lib/data/kenya-counties-markets'
 
 // ─── Exported Types ────────────────────────────────────────────────────────────
 
@@ -72,34 +73,27 @@ export function normalizeCommodity(name: string): string {
 
 // ─── Geographic Utilities ──────────────────────────────────────────────────────
 
-const LOCATION_COORDS: Record<string, { lat: number; lng: number }> = {
-  nairobi:        { lat: -1.2921, lng: 36.8219 },
-  nakuru:         { lat: -0.3031, lng: 36.0800 },
-  kisumu:         { lat: -0.0917, lng: 34.7680 },
-  eldoret:        { lat:  0.5143, lng: 35.2698 },
-  mombasa:        { lat: -4.0435, lng: 39.6682 },
-  nyeri:          { lat: -0.4169, lng: 36.9458 },
-  thika:          { lat: -1.0396, lng: 37.0900 },
-  machakos:       { lat: -1.5177, lng: 37.2634 },
-  kiambu:         { lat: -1.1714, lng: 36.8355 },
-  meru:           { lat:  0.0480, lng: 37.6559 },
-  kericho:        { lat: -0.3692, lng: 35.2863 },
-  naivasha:       { lat: -0.7172, lng: 36.4310 },
-  kakamega:       { lat:  0.2827, lng: 34.7519 },
-  bungoma:        { lat:  0.5635, lng: 34.5607 },
-  kitale:         { lat:  1.0187, lng: 35.0020 },
-  nanyuki:        { lat:  0.0067, lng: 37.0722 },
-  embu:           { lat: -0.5389, lng: 37.4596 },
-  'nakuru town':  { lat: -0.3031, lng: 36.0800 },
-}
-
+/**
+ * Resolve coordinates from either explicit lat/lng or location name.
+ * Uses the comprehensive Kenya counties dataset for coordinate lookup.
+ */
 function resolveCoords(
   lat: number | null | undefined,
   lng: number | null | undefined,
   location: string | null | undefined,
 ): { lat: number; lng: number } {
   if (lat != null && lng != null) return { lat, lng }
-  return LOCATION_COORDS[(location ?? '').toLowerCase().trim()] ?? LOCATION_COORDS['nairobi']
+  
+  // Try to find county coordinates from our comprehensive dataset
+  const locationKey = (location ?? '').toLowerCase().trim()
+  for (const [key, coords] of Object.entries(COUNTY_COORDS)) {
+    if (locationKey.includes(key) || key.includes(locationKey)) {
+      return { lat: coords.lat, lng: coords.lon }
+    }
+  }
+  
+  // Fallback to Nairobi
+  return { lat: -1.2921, lng: 36.8219 }
 }
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -443,9 +437,17 @@ function sortByDistance(
 
   return entries
     .map((e) => {
-      const coords = LOCATION_COORDS[(e.county ?? '').toLowerCase().trim()]
+      // Try to find county coordinates from our comprehensive dataset
+      const countyKey = (e.county ?? '').toLowerCase().trim()
+      let coords: { lat: number; lng: number } | null = null
+      for (const [key, countyCoords] of Object.entries(COUNTY_COORDS)) {
+        if (countyKey.includes(key) || key.includes(countyKey)) {
+          coords = { lat: countyCoords.lat, lng: countyCoords.lon }
+          break
+        }
+      }
       if (!coords) return { ...e, distanceKm: null }
-      return { ...e, distanceKm: Math.round(haversineKm(userLat, userLng, coords.lat, coords.lng)) }
+      return { ...e, distanceKm: Math.round(haversineKm(userLat, userLng, coords!.lat, coords!.lng)) }
     })
     .sort((a, b) => {
       if (a.distanceKm == null && b.distanceKm == null) return 0
