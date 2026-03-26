@@ -21,6 +21,7 @@ export const FARMER_ONLY_ROUTES = [
   '/temperature',
   '/market',
   '/market-intelligence',
+  '/risk',
 ]
 
 /** Routes that are exclusively for job applicants */

@@ -9,36 +9,27 @@ import { Sidebar } from './sidebar'
 import { MobileNav } from './mobile-nav'
 import { Sprout } from 'lucide-react'
 
-const PUBLIC_ROUTES = ['/login', '/register']
-
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const { user, isLoading } = useAuth()
   const router = useRouter()
 
-  const isPublicRoute = PUBLIC_ROUTES.includes(pathname)
-
   // Redirect unauthenticated users to login
   useEffect(() => {
-    if (!isLoading && !user && !isPublicRoute) {
+    if (!isLoading && !user) {
       router.push('/login')
     }
-  }, [isLoading, user, isPublicRoute, router])
+  }, [isLoading, user, router])
 
   // Role-based route protection: redirect if accessing a restricted route
   useEffect(() => {
-    if (isLoading || !user || isPublicRoute) return
+    if (isLoading || !user) return
 
     const redirect = getRestrictedRedirect(pathname, user.role as UserRole)
     if (redirect) {
       router.replace(redirect)
     }
-  }, [isLoading, user, pathname, isPublicRoute, router])
-
-  // Public routes (login/register) — render without shell
-  if (isPublicRoute) {
-    return <>{children}</>
-  }
+  }, [isLoading, user, pathname, router])
 
   // Show branded loading spinner while checking auth
   if (isLoading) {
@@ -57,7 +48,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return null
   }
 
-  // Authenticated — render full app shell
+  // Authenticated — render full app shell with sidebar
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
