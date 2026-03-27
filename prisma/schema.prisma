@@ -33,6 +33,7 @@ model User {
   location_data UserLocation?
   buyerConversations Conversation[] @relation("BuyerConversations")
   farmerConversations Conversation[] @relation("FarmerConversations")
+  weatherAdvisories WeatherCropAdvisory[]
 }
 
 // ─── Storage Unit Model ───
@@ -56,6 +57,7 @@ model StorageUnit {
   alerts      Alert[]
   readings    StorageReading[]
   products    Product[]
+  weatherAdvisories WeatherCropAdvisory[]
 }
 
 // ─── Commodity Model ───
@@ -309,4 +311,42 @@ model JobApplication {
   worker   User @relation(fields: [workerId], references: [id], onDelete: Cascade)
 
   @@unique([jobId, workerId]) // a worker can only apply once per job
+}
+
+// ─── Weather Crop Advisory Model ───
+// Stores AI-generated weather-based crop advisories
+model WeatherCropAdvisory {
+  id        String   @id @default(cuid())
+  
+  // References
+  storageUnitId  String
+  storageUnit    StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
+  
+  farmerId       String
+  farmer         User @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  
+  // Conditions
+  currentTemp    Float
+  currentHumidity Float
+  forecastedTemp Float
+  forecastedHumidity Float
+  
+  // Risk
+  currentSpoilageRisk     Float
+  forecastedSpoilageRisk  Float
+  riskChange              Float
+  
+  // Recommendations
+  recommendations    Json  // Array of {commodity, action, urgency, confidence}
+  overallStrategy    String
+  rawAiAnalysis      String
+  
+  // Metadata
+  weatherForecastData Json
+  confidenceScore    Float
+  createdAt DateTime @default(now())
+  expiresAt DateTime // When prediction becomes stale (12-24 hours)
+  
+  @@index([storageUnitId, farmerId, createdAt])
+  @@index([expiresAt])
 }

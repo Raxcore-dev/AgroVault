@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Wheat, BarChart3, Settings,
   Thermometer, AlertTriangle, Store, Package, Bell, CloudSun, Briefcase,
-  MessageCircle, List, Plus, TrendingDown, Droplets,
+  MessageCircle, List, Plus, TrendingDown, Droplets, Cloud,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
@@ -25,6 +25,7 @@ const farmerNav: NavItem[] = [
   { href: '/dashboard/spoilage-predictions', icon: TrendingDown, label: 'Spoilage Predictions' },
   { href: '/market-intelligence', icon: BarChart3, label: 'Market Intelligence' },
   { href: '/dashboard/weather', icon: CloudSun, label: 'Weather Insights' },
+  { href: '/dashboard/weather-advisory', icon: Cloud, label: 'Crop Weather Advisory' },
   { href: '/jobs', icon: Briefcase, label: 'Farm Jobs' },
   { href: '/dashboard/jobs', icon: Briefcase, label: 'My Job Posts' },
   { href: '/marketplace', icon: Store, label: 'Marketplace' },

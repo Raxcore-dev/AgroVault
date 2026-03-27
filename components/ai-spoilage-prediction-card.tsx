@@ -30,6 +30,9 @@ import {
   Target,
   ArrowRight,
   Sparkles,
+  ShoppingCart,
+  TrendingUp as TrendingUpIcon,
+  DollarSign,
 } from 'lucide-react'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -91,6 +94,28 @@ interface Prediction {
   humidityTrend: TrendAnalysis
   durationExposure: DurationExposure
   aiPrediction: AIPrediction
+  marketIntelligence?: {
+    marketAssessment: string
+    urgencyLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM'
+    recommendedAction: string
+    nearbyMarkets: Array<{
+      marketName: string
+      distance_km: number
+      currentPrice: number
+      priceHistory: {
+        '7dayTrend': string
+        '30dayTrend': string
+        direction: 'UP' | 'DOWN' | 'STABLE'
+      }
+      demandLevel: string
+      aiInsight: string
+    }>
+    marketTrendAnalysis: string
+    sellingStrategy: string
+    potentialLossPreventionValue: number
+    aiConfidence: number
+    timestamp: string
+  }
   estimatedLoss?: {
     percentage: number
     quantity: number
@@ -254,6 +279,7 @@ export function AISpoilagePredictionCard({ prediction }: AISpoilagePredictionCar
     humidityTrend,
     durationExposure,
     aiPrediction,
+    marketIntelligence,
     estimatedLoss,
     readingsAnalyzed,
   } = prediction
@@ -494,6 +520,167 @@ export function AISpoilagePredictionCard({ prediction }: AISpoilagePredictionCar
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* MARKET INTELLIGENCE - AI-Powered Market Insights */}
+        {marketIntelligence && (
+          <div className={`rounded-xl border-2 overflow-hidden ${
+            marketIntelligence.urgencyLevel === 'CRITICAL'
+              ? 'bg-red-50 border-red-300'
+              : marketIntelligence.urgencyLevel === 'HIGH'
+              ? 'bg-orange-50 border-orange-300'
+              : 'bg-yellow-50 border-yellow-300'
+          }`}>
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5 text-primary" />
+                <h4 className="font-bold text-primary">📊 AI MARKET INTELLIGENCE</h4>
+                <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-bold ${
+                  marketIntelligence.urgencyLevel === 'CRITICAL'
+                    ? 'bg-red-600 text-white'
+                    : marketIntelligence.urgencyLevel === 'HIGH'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-yellow-600 text-white'
+                }`}>
+                  {marketIntelligence.urgencyLevel} URGENCY
+                </span>
+              </div>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {/* Market Assessment */}
+              <div className="rounded-lg bg-white border border-border p-3">
+                <p className="text-sm font-semibold text-foreground mb-2">Market Assessment</p>
+                <p className="text-sm text-muted-foreground">{marketIntelligence.marketAssessment}</p>
+              </div>
+
+              {/* Selling Strategy */}
+              <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="h-4 w-4 text-primary" />
+                  <p className="text-sm font-bold text-primary">AI-Generated Selling Strategy</p>
+                </div>
+                <p className="text-sm text-muted-foreground">{marketIntelligence.sellingStrategy}</p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  💡 AI Confidence: {marketIntelligence.aiConfidence}%
+                </p>
+              </div>
+
+              {/* Recommended Action */}
+              <div className="rounded-lg bg-green-50 border border-green-200 p-3">
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-bold text-green-800">Recommended Action</p>
+                    <p className="text-sm text-green-700 mt-1">{marketIntelligence.recommendedAction}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Nearby Markets */}
+              {marketIntelligence.nearbyMarkets.length > 0 && (
+                <div className="rounded-lg bg-white border border-border p-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    <p className="text-sm font-bold text-foreground">Nearby Markets (Ranked by AI)</p>
+                  </div>
+                  <div className="space-y-3">
+                    {marketIntelligence.nearbyMarkets.slice(0, 5).map((market: {
+                      marketName: string
+                      distance_km: number
+                      currentPrice: number
+                      priceHistory: {
+                        '7dayTrend': string
+                        '30dayTrend': string
+                        direction: 'UP' | 'DOWN' | 'STABLE'
+                      }
+                      demandLevel: string
+                      aiInsight: string
+                    }, index: number) => (
+                      <div
+                        key={index}
+                        className={`rounded-lg border-2 p-3 ${
+                          index === 0
+                            ? 'bg-green-50 border-green-300'
+                            : 'bg-muted/30 border-border'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-lg font-bold text-foreground">
+                                {index === 0 ? '🏆' : `#${index + 1}`} {market.marketName}
+                              </span>
+                              {index === 0 && (
+                                <span className="px-2 py-0.5 bg-green-600 text-white text-xs font-bold rounded-full">
+                                  BEST CHOICE
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              <span>📏 {market.distance_km} km</span>
+                              <span>💰 KES {market.currentPrice}/kg</span>
+                              <span className={`flex items-center gap-1 ${
+                                market.priceHistory.direction === 'UP'
+                                  ? 'text-green-600'
+                                  : market.priceHistory.direction === 'DOWN'
+                                  ? 'text-red-600'
+                                  : 'text-muted-foreground'
+                              }`}>
+                                <TrendingUpIcon className="h-3 w-3" />
+                                7d: {market.priceHistory['7dayTrend']}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${
+                              market.demandLevel === 'high'
+                                ? 'bg-green-100 text-green-700'
+                                : market.demandLevel === 'medium'
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}>
+                              {market.demandLevel.toUpperCase()} DEMAND
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          💡 {market.aiInsight}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Market Trend Analysis */}
+              <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUpIcon className="h-4 w-4 text-blue-600" />
+                  <p className="text-sm font-bold text-blue-800">Market Trend Analysis</p>
+                </div>
+                <p className="text-sm text-blue-700">{marketIntelligence.marketTrendAnalysis}</p>
+              </div>
+
+              {/* Potential Loss Prevention */}
+              {marketIntelligence.potentialLossPreventionValue > 0 && (
+                <div className="rounded-lg bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-300 p-4">
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="h-6 w-6 text-green-600" />
+                    <div className="flex-1">
+                      <p className="text-xs font-bold text-green-800">POTENTIAL LOSS PREVENTION VALUE</p>
+                      <p className="text-2xl font-bold text-green-700">
+                        KES {marketIntelligence.potentialLossPreventionValue.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-green-600 mt-1">
+                        Amount you could save by acting on this recommendation
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

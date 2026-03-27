@@ -13,6 +13,7 @@
 
 import { RaxAI } from 'rax-ai'
 import { prisma } from '@/lib/prisma'
+import { getSpoilageTriggeredMarketIntelligence } from '@/lib/services/market-intelligence-rax'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -90,28 +91,52 @@ export interface ComprehensivePrediction {
   quantityStored: number
   unit: string
   daysInStorage: number
-  
+
   // Current conditions
   temperature: number
   humidity: number
-  
+
   // Trend analysis
   temperatureTrend: TrendAnalysis
   humidityTrend: TrendAnalysis
-  
+
   // Duration analysis
   durationExposure: DurationExposure
-  
+
   // AI Prediction
   aiPrediction: AIPredictionOutput
-  
+
+  // Market Intelligence (when risk is high)
+  marketIntelligence?: {
+    marketAssessment: string
+    urgencyLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM'
+    recommendedAction: string
+    nearbyMarkets: Array<{
+      marketName: string
+      distance_km: number
+      currentPrice: number
+      priceHistory: {
+        '7dayTrend': string
+        '30dayTrend': string
+        direction: 'UP' | 'DOWN' | 'STABLE'
+      }
+      demandLevel: string
+      aiInsight: string
+    }>
+    marketTrendAnalysis: string
+    sellingStrategy: string
+    potentialLossPreventionValue: number
+    aiConfidence: number
+    timestamp: string
+  }
+
   // Economic impact
   estimatedLoss?: {
     percentage: number
     quantity: number
     value: number
   }
-  
+
   // Metadata
   readingsAnalyzed: number
   lastUpdated: string
@@ -675,7 +700,7 @@ export async function predictSpoilageWithAI(
   
   // Generate AI prediction
   const aiPrediction = await generateAIPrediction(aiInput)
-  
+
   // Calculate estimated loss
   let estimatedLoss: ComprehensivePrediction['estimatedLoss']
   if (aiPrediction.spoilageProbability > 0) {
@@ -683,18 +708,69 @@ export async function predictSpoilageWithAI(
     let quantityInKg = quantityStored
     if (unit.toLowerCase().includes('bag')) quantityInKg = quantityStored * 90
     else if (unit.toLowerCase().includes('tonne')) quantityInKg = quantityStored * 1000
-    
+
     // Get market price
     const marketPrice = await getMarketPriceForCommodity(commodityName)
     const value = quantityInKg * spoilagePercentage * marketPrice
-    
+
     estimatedLoss = {
       percentage: aiPrediction.spoilageProbability,
       quantity: quantityInKg * spoilagePercentage,
       value,
     }
   }
-  
+
+  // Generate market intelligence if risk is HIGH (≥50% probability or ≥60 risk score)
+  let marketIntelligence: ComprehensivePrediction['marketIntelligence']
+  const shouldTriggerMarketIntelligence = 
+    aiPrediction.spoilageProbability >= 50 || 
+    aiPrediction.riskLevel === 'high_risk' || 
+    aiPrediction.riskLevel === 'critical'
+
+  if (shouldTriggerMarketIntelligence) {
+    try {
+      const { latitude, longitude } = await getStorageUnitCoordinates(storageUnitId)
+      
+      const marketIntel = await getSpoilageTriggeredMarketIntelligence({
+        commodityName,
+        quantity: quantityStored,
+        unit,
+        location,
+        latitude: latitude || 0,
+        longitude: longitude || 0,
+        currentTemperature: currentTemp,
+        currentHumidity,
+        temperatureTrend: tempTrend.direction,
+        humidityTrend: humTrend.direction,
+        spoilageRiskScore: aiPrediction.riskLevel === 'critical' ? 85 : aiPrediction.riskLevel === 'high_risk' ? 70 : 50,
+        spoilageProbability: aiPrediction.spoilageProbability,
+        predictedTimeToSpoilage: aiPrediction.predictedTimeToSpoilage,
+        daysInStorage,
+        optimalStorageConditions: {
+          tempRange: commodityProfile.optimalTempRange,
+          humidityRange: commodityProfile.optimalHumidityRange,
+          maxStorageDays: commodityProfile.maxStorageDays,
+        },
+        timeInDangerousConditions: durationExposure.minutesInHighRisk,
+      })
+
+      marketIntelligence = {
+        marketAssessment: marketIntel.marketAssessment,
+        urgencyLevel: marketIntel.urgencyLevel,
+        recommendedAction: marketIntel.recommendedAction,
+        nearbyMarkets: marketIntel.nearbyMarkets,
+        marketTrendAnalysis: marketIntel.marketTrendAnalysis,
+        sellingStrategy: marketIntel.sellingStrategy,
+        potentialLossPreventionValue: marketIntel.potentialLossPreventionValue,
+        aiConfidence: marketIntel.aiConfidence,
+        timestamp: marketIntel.timestamp,
+      }
+    } catch (error) {
+      console.error('[Spoilage Prediction] Market intelligence error:', error)
+      // Continue without market intelligence - don't fail the whole prediction
+    }
+  }
+
   return {
     storageUnitId,
     storageUnitName,
@@ -709,9 +785,26 @@ export async function predictSpoilageWithAI(
     humidityTrend: humTrend,
     durationExposure,
     aiPrediction,
+    marketIntelligence,
     estimatedLoss,
     readingsAnalyzed: historicalReadings.length,
     lastUpdated: new Date().toISOString(),
+  }
+}
+
+/**
+ * Get storage unit coordinates
+ */
+async function getStorageUnitCoordinates(storageUnitId: string): Promise<{ latitude: number | null; longitude: number | null }> {
+  try {
+    const unit = await prisma.storageUnit.findUnique({
+      where: { id: storageUnitId },
+      select: { latitude: true, longitude: true },
+    })
+    return { latitude: unit?.latitude || null, longitude: unit?.longitude || null }
+  } catch (error) {
+    console.error('Error fetching storage unit coordinates:', error)
+    return { latitude: null, longitude: null }
   }
 }
 
