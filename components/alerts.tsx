@@ -11,7 +11,7 @@ export function Alerts({ riskData }: AlertsProps) {
 
   if (highRiskItems.length === 0 && mediumRiskItems.length === 0) {
     return (
-      <div className="card-elevated rounded-xl p-6">
+      <div className="card-elevated rounded-lg p-6">
         <h3 className="text-lg font-semibold text-foreground">Alert System</h3>
         <div className="mt-4 rounded-lg bg-success/5 border border-success/15 p-4">
           <p className="text-sm text-success">All storage units are operating within normal parameters. No alerts at this time.</p>
@@ -21,7 +21,7 @@ export function Alerts({ riskData }: AlertsProps) {
   }
 
   return (
-    <div className="card-elevated rounded-xl p-6">
+    <div className="card-elevated rounded-lg p-6">
       <h3 className="text-lg font-semibold text-foreground">Alert System</h3>
 
       {highRiskItems.length > 0 && (

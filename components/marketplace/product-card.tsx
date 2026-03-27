@@ -39,7 +39,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/marketplace/${product.id}`}>
-      <div className="card-elevated rounded-xl overflow-hidden group cursor-pointer">
+      <div className="card-elevated rounded-lg overflow-hidden group cursor-pointer">
         {/* Product Image */}
         <div className="relative h-48 bg-muted overflow-hidden">
           {product.productImage ? (

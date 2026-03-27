@@ -40,7 +40,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary mb-4">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-lg bg-primary mb-4">
             <Sprout className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">
@@ -52,7 +52,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Form */}
-        <div className="card-elevated rounded-2xl p-8">
+        <div className="card-elevated rounded-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="rounded-lg bg-danger/10 border border-danger/20 p-3 text-sm text-danger">

@@ -163,7 +163,7 @@ export function SpoilagePredictionCardEnhanced({ prediction }: SpoilagePredictio
   }
 
   return (
-    <div className={`card-elevated rounded-xl border-2 overflow-hidden ${riskColors[riskLevel.level]}`}>
+    <div className={`card-elevated rounded-lg border overflow-hidden ${riskColors[riskLevel.level]}`}>
       {/* Header */}
       <div className="border-b border-border bg-background/50 px-5 py-4">
         <div className="flex items-start justify-between gap-4">

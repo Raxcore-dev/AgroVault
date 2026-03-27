@@ -35,7 +35,7 @@ export function FarmerMap({ latitude, longitude, farmerName, locationName }: Far
 
   if (!MapComponent) {
     return (
-      <div className="h-[300px] rounded-xl bg-muted flex items-center justify-center">
+      <div className="h-[300px] rounded-lg bg-muted flex items-center justify-center">
         <p className="text-sm text-muted-foreground">Loading map...</p>
       </div>
     )

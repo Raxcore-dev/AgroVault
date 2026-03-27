@@ -146,7 +146,7 @@ export default function HumidityAlertsPage() {
 
       {/* Urgent Alerts Banner */}
       {alerts.length > 0 && (
-        <div className="rounded-xl border-2 border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/30 p-5">
+        <div className="rounded-lg border-2 border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/30 p-5">
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
             <div className="flex-1">
@@ -163,7 +163,7 @@ export default function HumidityAlertsPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20 p-4">
+        <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">High Risk</p>
@@ -172,7 +172,7 @@ export default function HumidityAlertsPage() {
             <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400 opacity-50" />
           </div>
         </div>
-        <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20 p-4">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Moderate Risk</p>
@@ -181,7 +181,7 @@ export default function HumidityAlertsPage() {
             <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400 opacity-50" />
           </div>
         </div>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20 p-4">
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20 p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Safe</p>
@@ -250,7 +250,7 @@ export default function HumidityAlertsPage() {
 
       {/* Error */}
       {!loading && error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20 p-6 text-center">
+        <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20 p-6 text-center">
           <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-3" />
           <p className="text-sm font-semibold text-red-700 dark:text-red-300">{error}</p>
         </div>
@@ -258,7 +258,7 @@ export default function HumidityAlertsPage() {
 
       {/* No Data */}
       {!loading && !error && readings.length === 0 && (
-        <div className="rounded-xl border border-dashed border-border bg-muted/10 p-12 text-center">
+        <div className="rounded-lg border border-dashed border-border bg-muted/10 p-12 text-center">
           <Droplets className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
           <p className="text-sm font-medium text-foreground">No sensor readings available yet.</p>
           <p className="text-xs text-muted-foreground mt-1">
@@ -290,7 +290,7 @@ export default function HumidityAlertsPage() {
 
       {/* No Results */}
       {!loading && !error && readings.length > 0 && filteredReadings.length === 0 && (
-        <div className="rounded-xl border border-dashed border-border bg-muted/10 p-8 text-center">
+        <div className="rounded-lg border border-dashed border-border bg-muted/10 p-8 text-center">
           <p className="text-sm text-muted-foreground">
             No storage units match the selected filter.
           </p>

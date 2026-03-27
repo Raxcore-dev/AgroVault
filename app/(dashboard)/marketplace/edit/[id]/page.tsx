@@ -304,7 +304,7 @@ export default function EditProductPage() {
             Back to My Listings
           </Link>
 
-          <div className="card-elevated rounded-2xl p-8">
+          <div className="card-elevated rounded-lg p-8">
             <h1 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
               <Plus className="h-5 w-5 text-primary" />
               Edit Product

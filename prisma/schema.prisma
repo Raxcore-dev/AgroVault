@@ -233,6 +233,31 @@ model Market {
   @@index([location])
 }
 
+// ─── Commodity Price Model ───
+// Admin-controlled commodity prices per county
+// This is the source of truth for commodity pricing in the system
+model CommodityPrice {
+  id              String   @id @default(cuid())
+  county          String   // e.g. "Kisumu", "Nairobi", "Madera"
+  commodity       String   // e.g. "maize", "beans", "wheat", "rice"
+  pricePerKg      Float    // current price in KES per kg
+  pricePerBag     Float?   // optional: price per 90kg bag (common unit in Kenya)
+  previousPrice   Float?   // previous price for trend calculation
+  priceTrend      String   @default("stable") // "increasing" | "stable" | "decreasing"
+  demandLevel     String   @default("medium") // "low" | "medium" | "high"
+  unit            String   @default("kg") // "kg" | "bag" | "tonne"
+  isActive        Boolean  @default(true) // whether this price is currently active
+  source          String   @default("admin") // "admin" | "market_survey" | "government"
+  notes           String?  // admin notes about this pricing
+  lastUpdated     DateTime @default(now())
+  updatedBy       String?  // admin user ID who last updated
+
+  @@unique([county, commodity])
+  @@index([county])
+  @@index([commodity])
+  @@index([isActive])
+}
+
 // ─── User Location Model ───
 // Stores GPS-detected location for a user (captured via Browser Geolocation API).
 // One record per user – updated each time the user grants location permission.

@@ -152,7 +152,7 @@ export default function JobsPage() {
           </div>
 
           {showFilters && (
-            <div className="card-elevated rounded-xl p-5 animate-fade-up">
+            <div className="card-elevated rounded-lg p-5 animate-fade-up">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-foreground">Filter Jobs</h3>
                 {hasActiveFilters && (
@@ -194,7 +194,7 @@ export default function JobsPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="card-elevated rounded-xl p-5 animate-pulse">
+              <div key={i} className="card-elevated rounded-lg p-5 animate-pulse">
                 <div className="h-5 bg-muted rounded w-3/4 mb-3" />
                 <div className="h-4 bg-muted rounded w-1/2 mb-2" />
                 <div className="h-16 bg-muted rounded mb-3" />
@@ -221,7 +221,7 @@ export default function JobsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {jobs.map((job) => (
                 <Link key={job.id} href={`/jobs/${job.id}`}>
-                  <div className="card-elevated rounded-xl p-5 group cursor-pointer hover:shadow-md transition-shadow h-full flex flex-col">
+                  <div className="card-elevated rounded-lg p-5 group cursor-pointer hover:shadow-md transition-shadow h-full flex flex-col">
                     {/* Crop badge */}
                     <span className="inline-flex items-center self-start rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary capitalize mb-3">
                       <Wheat className="h-3 w-3 mr-1" />

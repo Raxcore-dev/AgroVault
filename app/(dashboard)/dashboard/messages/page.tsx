@@ -118,7 +118,7 @@ export default function MessagesPage() {
         </div>
 
         {conversations.length === 0 ? (
-          <div className="card-elevated rounded-xl p-12 text-center">
+          <div className="card-elevated rounded-lg p-12 text-center">
             <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">No conversations yet</h3>
             <p className="text-muted-foreground">
@@ -136,7 +136,7 @@ export default function MessagesPage() {
                 <button
                   key={conversation.id}
                   onClick={() => setSelectedConversation(conversation)}
-                  className="card-elevated rounded-xl p-5 hover:shadow-md transition-shadow text-left w-full"
+                  className="card-elevated rounded-lg p-5 hover:shadow-md transition-shadow text-left w-full"
                 >
                   <div className="flex items-start gap-4">
                     {/* Product Image */}

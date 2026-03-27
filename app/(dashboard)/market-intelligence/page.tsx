@@ -117,7 +117,7 @@ function StatCard({
   color: string
 }) {
   return (
-    <div className="card-elevated rounded-xl border border-border p-5 flex items-start gap-4">
+    <div className="card-elevated rounded-lg border border-border p-5 flex items-start gap-4">
       <div className={`rounded-lg p-2.5 ${color}`}>
         <Icon className="h-5 w-5" />
       </div>
@@ -140,21 +140,21 @@ function BestMarketCard({
   market: MarketData
 }) {
   return (
-    <div className="rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide">
+          <p className="text-xs font-medium text-primary uppercase tracking-wide">
             Best Price for {commodity}
           </p>
-          <p className="mt-1 text-lg font-bold text-green-800 dark:text-green-200">
+          <p className="mt-1 text-lg font-bold text-primary">
             KES {market.pricePerKg.toFixed(2)}/kg
           </p>
-          <p className="mt-1 text-sm text-green-700 dark:text-green-300 flex items-center gap-1">
+          <p className="mt-1 text-sm text-primary/70 flex items-center gap-1">
             <MapPin className="h-3.5 w-3.5" />
             {market.marketName}, {market.location}
           </p>
         </div>
-        <Award className="h-8 w-8 text-green-600 dark:text-green-400" />
+        <Award className="h-8 w-8 text-primary" />
       </div>
     </div>
   )
@@ -382,7 +382,7 @@ export default function MarketIntelligencePage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="card-elevated rounded-xl border border-red-200 bg-red-50 p-8 max-w-sm w-full text-center">
+        <div className="card-elevated rounded-lg border border-danger/20 bg-danger/5 p-8 max-w-sm w-full text-center">
           <AlertCircle className="h-10 w-10 text-red-500 mx-auto mb-3" />
           <p className="font-semibold text-red-800">Could not load market data</p>
           <p className="text-sm text-red-600 mt-1">{error}</p>
@@ -457,10 +457,10 @@ export default function MarketIntelligencePage() {
 
       {/* ── Best Markets Section ── */}
       {showBestMarkets && Object.keys(bestMarkets).length > 0 && (
-        <div className="card-elevated rounded-xl border border-border overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
+        <div className="card-elevated rounded-lg border border-border overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/10">
             <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-green-600" />
+              <Award className="h-5 w-5 text-primary" />
               <h2 className="font-semibold text-foreground">Best Markets by Commodity</h2>
             </div>
             <Button
@@ -480,7 +480,7 @@ export default function MarketIntelligencePage() {
       )}
 
       {/* ── Filters ── */}
-      <div className="card-elevated rounded-xl border border-border p-4">
+      <div className="card-elevated rounded-lg border border-border p-4">
         <div className="flex flex-col gap-3">
           {/* Search and County Selector */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -549,7 +549,7 @@ export default function MarketIntelligencePage() {
       </div>
 
       {/* ── Market Table ── */}
-      <div className="card-elevated rounded-xl border border-border overflow-hidden">
+      <div className="card-elevated rounded-lg border border-border overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
           <h2 className="font-semibold text-foreground">
             Market Price Board

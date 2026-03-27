@@ -93,7 +93,7 @@ function StatCard({
   sub?: string
 }) {
   return (
-    <div className="rounded-xl border border-border bg-muted/30 p-3 flex flex-col gap-1">
+    <div className="rounded-lg border border-border bg-muted/30 p-3 flex flex-col gap-1">
       <div className="flex items-center gap-1.5 text-muted-foreground">
         <Icon className="h-3.5 w-3.5" />
         <span className="text-xs font-medium">{label}</span>
@@ -179,7 +179,7 @@ export function CountyTransportAdvisory({ className }: CountyTransportAdvisoryPr
   const RiskIcon = cfg.icon
 
   return (
-    <div className={cn('rounded-2xl border border-border bg-card shadow-sm', className)}>
+    <div className={cn('rounded-lg border border-border bg-card', className)}>
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <div className="flex items-center gap-2">
@@ -226,10 +226,10 @@ export function CountyTransportAdvisory({ className }: CountyTransportAdvisoryPr
         {/* ── Loading skeleton ── */}
         {loading && (
           <div className="space-y-3 animate-pulse">
-            <div className="h-16 rounded-xl bg-muted/50" />
+            <div className="h-16 rounded-lg bg-muted/50" />
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-20 rounded-xl bg-muted/50" />
+                <div key={i} className="h-20 rounded-lg bg-muted/50" />
               ))}
             </div>
           </div>
@@ -237,7 +237,7 @@ export function CountyTransportAdvisory({ className }: CountyTransportAdvisoryPr
 
         {/* ── Error ── */}
         {error && !loading && (
-          <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-800 p-4 text-sm text-red-700 dark:text-red-400 flex items-center gap-2">
+          <div className="rounded-lg border border-danger/20 bg-danger/5 p-4 text-sm text-danger flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 flex-shrink-0" />
             {error}
           </div>
@@ -247,7 +247,7 @@ export function CountyTransportAdvisory({ className }: CountyTransportAdvisoryPr
         {advisory && !loading && (
           <>
             {/* Risk banner */}
-            <div className={cn('rounded-xl border p-4', cfg.bg, cfg.border)}>
+            <div className={cn('rounded-lg border p-4', cfg.bg, cfg.border)}>
               <div className="flex items-start gap-3">
                 <RiskIcon className={cn('h-5 w-5 flex-shrink-0 mt-0.5', cfg.text)} />
                 <div className="min-w-0 flex-1">
@@ -311,7 +311,7 @@ export function CountyTransportAdvisory({ className }: CountyTransportAdvisoryPr
 
             {/* Combined market insight */}
             {advisory.combined_insight && (
-              <div className="rounded-xl border border-border bg-muted/20 p-4">
+              <div className="rounded-lg border border-border bg-muted/20 p-4">
                 <p className="text-xs font-semibold text-foreground mb-1">Market Insight</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {advisory.combined_insight}

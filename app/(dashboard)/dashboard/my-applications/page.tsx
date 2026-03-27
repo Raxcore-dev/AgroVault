@@ -85,7 +85,7 @@ export default function MyApplicationsPage() {
       <div className="px-6 py-6 lg:px-8">
         <div className="max-w-3xl mx-auto space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="card-elevated rounded-xl p-5 animate-pulse">
+            <div key={i} className="card-elevated rounded-lg p-5 animate-pulse">
               <div className="h-5 bg-muted rounded w-1/2 mb-3" />
               <div className="h-4 bg-muted rounded w-1/3 mb-2" />
               <div className="h-12 bg-muted rounded" />
@@ -129,7 +129,7 @@ export default function MyApplicationsPage() {
         )}
 
         {applications.length === 0 ? (
-          <div className="card-elevated rounded-xl p-12 text-center">
+          <div className="card-elevated rounded-lg p-12 text-center">
             <Briefcase className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
             <h2 className="text-lg font-semibold text-foreground mb-2">No applications yet</h2>
             <p className="text-sm text-muted-foreground mb-4">
@@ -145,7 +145,7 @@ export default function MyApplicationsPage() {
         ) : (
           <div className="space-y-4">
             {applications.map((app) => (
-              <div key={app.id} className="card-elevated rounded-xl p-5">
+              <div key={app.id} className="card-elevated rounded-lg p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     {/* Job title & status */}

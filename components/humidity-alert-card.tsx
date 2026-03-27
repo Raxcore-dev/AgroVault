@@ -45,10 +45,10 @@ export function HumidityAlertCard({
   return (
     <div
       className={cn(
-        'rounded-xl border p-5 space-y-4 transition-all',
-        isHighRisk && 'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/30',
-        isModerate && 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30',
-        !isHighRisk && !isModerate && 'border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30',
+        'rounded-lg border p-5 space-y-4 transition-all',
+        isHighRisk && 'border-red-300 bg-red-50/50',
+        isModerate && 'border-amber-300 bg-amber-50/50',
+        !isHighRisk && !isModerate && 'border-emerald-300 bg-emerald-50/50',
       )}
     >
       {/* Header */}

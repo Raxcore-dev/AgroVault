@@ -54,7 +54,7 @@ export function SpoilageAlertCard({ assessment }: { assessment: SpoilageAssessme
   )
 
   return (
-    <div className={`rounded-xl border ${config.border} ${config.bg} p-5`}>
+    <div className={`rounded-lg border ${config.border} ${config.bg} p-5`}>
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -176,7 +176,7 @@ export function SpoilageAlertCard({ assessment }: { assessment: SpoilageAssessme
 
 export function SpoilageAlertSkeleton() {
   return (
-    <div className="rounded-xl border border-border bg-muted/30 p-5 animate-pulse">
+    <div className="rounded-lg border border-border bg-muted/30 p-5 animate-pulse">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="h-5 w-5 rounded bg-muted" />

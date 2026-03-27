@@ -15,7 +15,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Profile Section */}
-        <div className="card-elevated rounded-xl p-6 mb-4">
+        <div className="card-elevated rounded-lg p-6 mb-4">
           <div className="flex items-center gap-3 mb-4">
             <User className="h-5 w-5 text-primary" />
             <h2 className="font-semibold text-foreground">Profile</h2>
@@ -45,7 +45,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Notifications Section */}
-        <div className="card-elevated rounded-xl p-6 mb-4">
+        <div className="card-elevated rounded-lg p-6 mb-4">
           <div className="flex items-center gap-3 mb-4">
             <Bell className="h-5 w-5 text-primary" />
             <h2 className="font-semibold text-foreground">Notifications</h2>
@@ -56,7 +56,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Security Section */}
-        <div className="card-elevated rounded-xl p-6">
+        <div className="card-elevated rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <Shield className="h-5 w-5 text-primary" />
             <h2 className="font-semibold text-foreground">Security</h2>

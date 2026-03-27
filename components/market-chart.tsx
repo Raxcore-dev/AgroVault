@@ -10,7 +10,7 @@ interface MarketChartProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-lg bg-white p-3 border border-border shadow-lg">
+      <div className="rounded-lg bg-white p-3 border border-border">
         <p className="mb-1 text-sm font-semibold text-foreground">{label}</p>
         <p className="text-sm text-primary font-bold">
           {new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(payload[0].value)}

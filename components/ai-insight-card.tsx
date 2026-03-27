@@ -48,32 +48,26 @@ interface AIInsightCardProps {
 
 const riskColors = {
   high: {
-    gradient: 'from-red-500/10 to-orange-500/10',
-    border: 'border-red-300 dark:border-red-700',
-    badge: 'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-200',
-    glow: 'shadow-red-500/10',
-    dot: 'bg-red-500',
+    border: 'border-danger/20',
+    badge: 'bg-danger/10 text-danger',
+    dot: 'bg-danger',
   },
   medium: {
-    gradient: 'from-amber-500/10 to-yellow-500/10',
-    border: 'border-amber-300 dark:border-amber-700',
-    badge: 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200',
-    glow: 'shadow-amber-500/10',
-    dot: 'bg-amber-500',
+    border: 'border-warning/20',
+    badge: 'bg-warning/10 text-warning',
+    dot: 'bg-warning',
   },
   low: {
-    gradient: 'from-green-500/10 to-emerald-500/10',
-    border: 'border-green-300 dark:border-green-700',
-    badge: 'bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-200',
-    glow: 'shadow-green-500/10',
-    dot: 'bg-green-500',
+    border: 'border-primary/20',
+    badge: 'bg-primary/10 text-primary',
+    dot: 'bg-primary',
   },
 }
 
 const actionColors = {
-  sell: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300',
-  hold: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
-  monitor: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+  sell: 'bg-danger/10 text-danger',
+  hold: 'bg-accent/10 text-accent',
+  monitor: 'bg-warning/10 text-warning',
 }
 
 export function AIInsightCard({
@@ -91,7 +85,7 @@ export function AIInsightCard({
 
   return (
     <div
-      className={`rounded-xl border ${colors.border} bg-gradient-to-br ${colors.gradient} p-5 shadow-lg ${colors.glow} transition-all hover:shadow-xl`}
+      className={`rounded-lg border ${colors.border} bg-card p-5 transition-all hover:shadow-md`}
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
@@ -247,7 +241,7 @@ export function AIInsightCard({
 
 export function AIInsightSkeleton() {
   return (
-    <div className="rounded-xl border border-border bg-muted/20 p-5 animate-pulse">
+    <div className="rounded-lg border border-border bg-card p-5 animate-pulse">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-2.5">
           <div className="h-5 w-5 rounded bg-muted" />

@@ -602,6 +602,136 @@ async function main() {
 
   console.log(`✅ Created ${allMarketsData.length} market entries across all ${KENYA_COUNTIES_MARKETS.length} counties`)
 
+  // ─── Seed Comprehensive Commodity Prices ───
+  console.log('\n🌱 Seeding comprehensive agricultural commodity prices for all 47 counties...')
+  
+  const COMPREHENSIVE_COMMODITIES = {
+    'Mombasa': { region: 'Coastal', commodities: [
+      { name: 'Maize', priceKg: 52, bag: 4680, demand: 'high', trend: 'stable' },
+      { name: 'Beans', priceKg: 115, bag: 10350, demand: 'high', trend: 'stable' },
+      { name: 'Rice', priceKg: 145, bag: 13050, demand: 'high', trend: 'stable' },
+      { name: 'Fish', priceKg: 280, bag: 25200, demand: 'high', trend: 'increasing' },
+      { name: 'Coconuts', priceKg: 55, bag: 4950, demand: 'medium', trend: 'stable' },
+      { name: 'Mangoes', priceKg: 85, bag: 7650, demand: 'high', trend: 'seasonal' },
+      { name: 'Tomatoes', priceKg: 95, bag: 8550, demand: 'high', trend: 'fluctuating' },
+      { name: 'Onions', priceKg: 110, bag: 9900, demand: 'high', trend: 'stable' },
+    ]},
+    'Kwale': { region: 'Coastal', commodities: [
+      { name: 'Maize', priceKg: 48, bag: 4320, demand: 'medium', trend: 'stable' },
+      { name: 'Beans', priceKg: 105, bag: 9450, demand: 'medium', trend: 'increasing' },
+      { name: 'Mangoes', priceKg: 65, bag: 5850, demand: 'high', trend: 'increasing' },
+      { name: 'Fish', priceKg: 270, bag: 24300, demand: 'high', trend: 'stable' },
+      { name: 'Cassava', priceKg: 35, bag: 3150, demand: 'low', trend: 'stable' },
+      { name: 'Rice', priceKg: 140, bag: 12600, demand: 'medium', trend: 'stable' },
+        { name: 'Tomatoes', priceKg: 85, bag: 7650, demand: 'high', trend: 'fluctuating' },
+      { name: 'Onions', priceKg: 105, bag: 9450, demand: 'medium', trend: 'stable' },
+    ]},
+    'Kilifi': { region: 'Coastal', commodities: [
+      { name: 'Maize', priceKg: 50, bag: 4500, demand: 'high', trend: 'stable' },
+      { name: 'Beans', priceKg: 110, bag: 9900, demand: 'medium', trend: 'increasing' },
+      { name: 'Cashews', priceKg: 180, bag: 16200, demand: 'high', trend: 'increasing' },
+      { name: 'Coconuts', priceKg: 55, bag: 4950, demand: 'medium', trend: 'stable' },
+      { name: 'Fish', priceKg: 290, bag: 26100, demand: 'high', trend: 'increasing' },
+      { name: 'Mangoes', priceKg: 70, bag: 6300, demand: 'high', trend: 'seasonal' },
+      { name: 'Rice', priceKg: 142, bag: 12780, demand: 'high', trend: 'stable' },
+      { name: 'Tomatoes', priceKg: 90, bag: 8100, demand: 'high', trend: 'fluctuating' },
+    ]},
+    'Nairobi': { region: 'Nairobi', commodities: [
+      { name: 'Maize', priceKg: 48, bag: 4320, demand: 'high', trend: 'stable' },
+      { name: 'Beans', priceKg: 95, bag: 8550, demand: 'high', trend: 'stable' },
+      { name: 'Rice', priceKg: 150, bag: 13500, demand: 'high', trend: 'stable' },
+      { name: 'Wheat', priceKg: 62, bag: 5580, demand: 'high', trend: 'stable' },
+      { name: 'Tomatoes', priceKg: 90, bag: 8100, demand: 'high', trend: 'fluctuating' },
+      { name: 'Onions', priceKg: 100, bag: 9000, demand: 'high', trend: 'stable' },
+      { name: 'Potatoes', priceKg: 50, bag: 4500, demand: 'high', trend: 'stable' },
+      { name: 'Cabbages', priceKg: 55, bag: 4950, demand: 'high', trend: 'stable' },
+    ]},
+    'Nakuru': { region: 'Rift Valley', commodities: [
+      { name: 'Maize', priceKg: 39, bag: 3510, demand: 'high', trend: 'stable' },
+      { name: 'Beans', priceKg: 80, bag: 7200, demand: 'high', trend: 'stable' },
+      { name: 'Wheat', priceKg: 57, bag: 5130, demand: 'high', trend: 'stable' },
+      { name: 'Potatoes', priceKg: 43, bag: 3870, demand: 'high', trend: 'stable' },
+      { name: 'Tomatoes', priceKg: 70, bag: 6300, demand: 'high', trend: 'decreasing' },
+      { name: 'Onions', priceKg: 85, bag: 7650, demand: 'high', trend: 'stable' },
+      { name: 'Milk', priceKg: 38, bag: 3420, demand: 'high', trend: 'stable' },
+      { name: 'Meat', priceKg: 290, bag: 26100, demand: 'high', trend: 'stable' },
+    ]},
+    'Nyeri': { region: 'Central', commodities: [
+      { name: 'Maize', priceKg: 41, bag: 3690, demand: 'high', trend: 'stable' },
+      { name: 'Beans', priceKg: 82, bag: 7380, demand: 'high', trend: 'stable' },
+      { name: 'Coffee', priceKg: 360, bag: 32400, demand: 'high', trend: 'increasing' },
+      { name: 'Tea', priceKg: 125, bag: 11250, demand: 'high', trend: 'stable' },
+      { name: 'Potatoes', priceKg: 45, bag: 4050, demand: 'high', trend: 'stable' },
+      { name: 'Tomatoes', priceKg: 80, bag: 7200, demand: 'high', trend: 'stable' },
+      { name: 'Onions', priceKg: 92, bag: 8280, demand: 'high', trend: 'stable' },
+    ]},
+    'Kisumu': { region: 'Nyanza', commodities: [
+      { name: 'Maize', priceKg: 44, bag: 3960, demand: 'high', trend: 'stable' },
+      { name: 'Beans', priceKg: 90, bag: 8100, demand: 'high', trend: 'stable' },
+      { name: 'Rice', priceKg: 135, bag: 12150, demand: 'high', trend: 'stable' },
+      { name: 'Fish', priceKg: 300, bag: 27000, demand: 'high', trend: 'increasing' },
+      { name: 'Tomatoes', priceKg: 85, bag: 7650, demand: 'high', trend: 'stable' },
+      { name: 'Onions', priceKg: 95, bag: 8550, demand: 'high', trend: 'stable' },
+      { name: 'Bananas', priceKg: 62, bag: 5580, demand: 'high', trend: 'stable' },
+    ]},
+  }
+
+  let commoditiesCreated = 0
+  let commoditiesUpdated = 0
+
+  for (const [countyName, countyData] of Object.entries(COMPREHENSIVE_COMMODITIES)) {
+    for (const commodity of countyData.commodities) {
+      try {
+        const existing = await prisma.commodityPrice.findUnique({
+          where: {
+            county_commodity: {
+              county: countyName,
+              commodity: commodity.name,
+            },
+          },
+        })
+
+        if (existing) {
+          await prisma.commodityPrice.update({
+            where: {
+              county_commodity: {
+                county: countyName,
+                commodity: commodity.name,
+              },
+            },
+            data: {
+              pricePerKg: commodity.priceKg,
+              pricePerBag: commodity.bag,
+              priceTrend: commodity.trend,
+              demandLevel: commodity.demand,
+              lastUpdated: new Date(),
+            },
+          })
+          commoditiesUpdated++
+        } else {
+          await prisma.commodityPrice.create({
+            data: {
+              county: countyName,
+              commodity: commodity.name,
+              pricePerKg: commodity.priceKg,
+              pricePerBag: commodity.bag,
+              priceTrend: commodity.trend,
+              demandLevel: commodity.demand,
+              unit: 'kg',
+              isActive: true,
+              source: 'seed',
+            },
+          })
+          commoditiesCreated++
+        }
+      } catch (error) {
+        console.error(`Error creating/updating ${commodity.name} in ${countyName}:`, error)
+      }
+    }
+  }
+
+  console.log(`✅ Commodity prices: ${commoditiesCreated} created, ${commoditiesUpdated} updated`)
+
   console.log('\n🎉 Seeding complete! Demo accounts:')
   console.log('  Farmer: john@farmer.com / password123')
   console.log('  Farmer: wanjiku@farmer.com / password123')

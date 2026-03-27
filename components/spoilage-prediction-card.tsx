@@ -80,7 +80,7 @@ export function SpoilagePredictionCard({ prediction }: SpoilagePredictionCardPro
   const colors = riskColors[riskLevel.level]
 
   return (
-    <div className={`card-elevated rounded-xl border-2 ${colors.border} ${colors.bg} overflow-hidden`}>
+    <div className={`card-elevated rounded-lg border ${colors.border} ${colors.bg} overflow-hidden`}>
       {/* Header */}
       <div className="p-5 border-b border-border bg-white">
         <div className="flex items-start justify-between">

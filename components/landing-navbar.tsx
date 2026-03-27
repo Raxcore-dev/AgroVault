@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Sprout, Menu, X } from 'lucide-react'
+import { Logo } from '@/components/ui/logo'
+import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function LandingNavbar() {
@@ -20,13 +21,8 @@ export function LandingNavbar() {
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-600 to-emerald-700 shadow-lg group-hover:shadow-xl transition-shadow">
-              <Sprout className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-700 bg-clip-text text-transparent">
-              AgroVault
-            </span>
+          <Link href="/">
+            <Logo size="sm" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -47,7 +43,7 @@ export function LandingNavbar() {
             <Button variant="ghost" asChild>
               <Link href="/login">Login</Link>
             </Button>
-            <Button asChild className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800">
+            <Button asChild className="bg-primary hover:bg-primary/90">
               <Link href="/register">Sign Up</Link>
             </Button>
           </div>
@@ -84,7 +80,7 @@ export function LandingNavbar() {
                 <Button variant="outline" asChild className="w-full">
                   <Link href="/login">Login</Link>
                 </Button>
-                <Button asChild className="w-full bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800">
+                <Button asChild className="w-full bg-primary hover:bg-primary/90">
                   <Link href="/register">Sign Up</Link>
                 </Button>
               </div>
