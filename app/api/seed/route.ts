@@ -1,19 +1,21 @@
 /**
  * Database Seed API Route
- * 
+ *
  * POST /api/seed
- * 
+ *
  * Populates the database with demo data for testing:
  *   - 2 farmers and 2 buyers
  *   - 10 sample products across Kenyan counties
  *   - Sample chat messages
- * 
+ *   - Market data for all Kenyan counties
+ *
  * Usage: curl -X POST http://localhost:3000/api/seed
  */
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
+import { KENYA_COUNTIES_MARKETS } from '@/lib/data/kenya-counties-markets'
 
 export async function POST() {
   try {
@@ -259,6 +261,38 @@ export async function POST() {
       ],
     })
 
+    // ─── Seed Market Data ───
+    console.log('🌱 Seeding market data...')
+    await prisma.market.deleteMany()
+    
+    const marketsToCreate = []
+    for (const countyData of KENYA_COUNTIES_MARKETS) {
+      for (const market of countyData.markets) {
+        for (const commodity of countyData.commodities) {
+          marketsToCreate.push({
+            marketName: market.name,
+            location: countyData.county,
+            commodity: commodity.commodity.toLowerCase(),
+            pricePerKg: commodity.pricePerKg,
+            previousPricePerKg: commodity.pricePerKg * 0.95,
+            demandLevel: commodity.demandLevel,
+            priceTrend: commodity.priceTrend === 'increasing' ? 'increasing' : commodity.priceTrend === 'decreasing' ? 'decreasing' : 'stable',
+            latitude: market.latitude,
+            longitude: market.longitude,
+            lastUpdated: new Date(),
+          })
+        }
+      }
+    }
+
+    // Create markets in batches
+    const batchSize = 100
+    for (let i = 0; i < marketsToCreate.length; i += batchSize) {
+      const batch = marketsToCreate.slice(i, batchSize)
+      await prisma.market.createMany({ data: batch })
+    }
+    console.log(`✅ Seeded ${marketsToCreate.length} markets`)
+
     return NextResponse.json({
       success: true,
       message: 'Database seeded successfully!',
@@ -266,6 +300,7 @@ export async function POST() {
         users: 4,
         products: products.length,
         messages: 4,
+        markets: marketsToCreate.length,
       },
       accounts: [
         { email: 'john@farmer.com', password: 'password123', role: 'farmer' },

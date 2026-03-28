@@ -58,6 +58,7 @@ model StorageUnit {
   readings    StorageReading[]
   products    Product[]
   weatherAdvisories WeatherCropAdvisory[]
+  sensors     Sensor[]
 }
 
 // ─── Commodity Model ───
@@ -80,6 +81,33 @@ model Commodity {
   alerts Alert[]
 }
 
+// ─── Sensor Model ───
+// Represents individual IoT sensor devices monitoring storage units.
+model Sensor {
+  id          String   @id @default(cuid())
+  name        String   // e.g. "Temp Sensor A", "Humidity Sensor 1"
+  deviceType  String   // "temperature" | "humidity" | "combined" | "gas" | "moisture"
+  deviceId    String   @unique // unique hardware identifier (MAC address, serial number)
+  status      String   @default("active") // "active" | "inactive" | "maintenance" | "offline"
+  batteryLevel Float?  // battery percentage (0-100), null for powered devices
+  firmwareVersion String? // sensor firmware version
+  lastSyncAt  DateTime? // last time the sensor synced data
+  location    String?  // specific location within storage unit (e.g. "Zone A", "Top Section")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Linked storage unit
+  storageUnitId String
+  storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
+
+  // Sensor readings
+  readings StorageReading[]
+
+  @@index([storageUnitId])
+  @@index([deviceId])
+  @@index([status])
+}
+
 // ─── Storage Reading Model ───
 // Sensor readings (temperature, humidity) for a storage unit.
 model StorageReading {
@@ -91,6 +119,10 @@ model StorageReading {
 
   storageUnitId String
   storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
+
+  // Optional link to specific sensor that took this reading
+  sensorId    String?
+  sensor      Sensor? @relation(fields: [sensorId], references: [id], onDelete: SetNull)
 }
 
 // ─── Alert Model ───
