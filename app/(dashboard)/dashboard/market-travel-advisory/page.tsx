@@ -76,7 +76,7 @@ export default function MarketTravelAdvisoryPage() {
           ].map(({ step, title, desc }) => (
             <div
               key={step}
-              className="flex gap-3 rounded-xl border border-border bg-card p-4"
+              className="flex gap-3 rounded-lg border border-border bg-card p-4"
             >
               <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                 {step}
@@ -90,7 +90,7 @@ export default function MarketTravelAdvisoryPage() {
         </div>
 
         {/* Market search widget */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
           <MarketTravelAdvisoryWidget />
         </div>
 

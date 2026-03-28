@@ -32,7 +32,7 @@ interface FarmerMapInnerProps {
 
 export function FarmerMapInner({ latitude, longitude, farmerName, locationName }: FarmerMapInnerProps) {
   return (
-    <div className="h-[300px] rounded-xl overflow-hidden border border-border">
+    <div className="h-[300px] rounded-lg overflow-hidden border border-border">
       <MapContainer
         center={[latitude, longitude]}
         zoom={13}

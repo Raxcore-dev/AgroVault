@@ -299,7 +299,7 @@ export function AISpoilagePredictionCard({ prediction }: AISpoilagePredictionCar
   const riskColorClass = getRiskColor(riskLevel)
 
   return (
-    <div className={`card-elevated rounded-xl border-2 overflow-hidden transition-all ${riskColorClass}`}>
+    <div className={`card-elevated rounded-lg border overflow-hidden transition-all ${riskColorClass}`}>
       {/* Header with Risk Badge */}
       <div className="border-b border-border bg-background/50 px-5 py-4">
         <div className="flex items-start justify-between gap-4">
@@ -373,7 +373,7 @@ export function AISpoilagePredictionCard({ prediction }: AISpoilagePredictionCar
         </div>
 
         {/* AI Prediction Section */}
-        <div className="rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 p-4">
+        <div className="rounded-lg bg-primary/5 border border-primary/20 p-4">
           <div className="flex items-center gap-2 mb-3">
             <Brain className="h-4 w-4 text-primary" />
             <span className="text-sm font-bold text-primary">AI Prediction Analysis</span>
@@ -525,14 +525,14 @@ export function AISpoilagePredictionCard({ prediction }: AISpoilagePredictionCar
 
         {/* MARKET INTELLIGENCE - AI-Powered Market Insights */}
         {marketIntelligence && (
-          <div className={`rounded-xl border-2 overflow-hidden ${
+          <div className={`rounded-lg border overflow-hidden ${
             marketIntelligence.urgencyLevel === 'CRITICAL'
               ? 'bg-red-50 border-red-300'
               : marketIntelligence.urgencyLevel === 'HIGH'
               ? 'bg-orange-50 border-orange-300'
               : 'bg-yellow-50 border-yellow-300'
           }`}>
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-3 border-b border-border">
+            <div className="bg-primary/5 px-4 py-3 border-b border-border">
               <div className="flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5 text-primary" />
                 <h4 className="font-bold text-primary">📊 AI MARKET INTELLIGENCE</h4>
@@ -665,7 +665,7 @@ export function AISpoilagePredictionCard({ prediction }: AISpoilagePredictionCar
 
               {/* Potential Loss Prevention */}
               {marketIntelligence.potentialLossPreventionValue > 0 && (
-                <div className="rounded-lg bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-300 p-4">
+                <div className="rounded-lg bg-primary/5 border border-primary/20 p-4">
                   <div className="flex items-center gap-3">
                     <DollarSign className="h-6 w-6 text-green-600" />
                     <div className="flex-1">

@@ -83,7 +83,7 @@ export default function CommoditiesPage() {
       <div className="px-6 py-6 lg:px-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-48 rounded bg-muted" />
-          <div className="h-64 rounded-xl bg-muted" />
+          <div className="h-64 rounded-lg bg-muted" />
         </div>
       </div>
     )
@@ -100,7 +100,7 @@ export default function CommoditiesPage() {
         </div>
 
         {allCommodities.length === 0 ? (
-          <div className="card-elevated rounded-xl p-8 text-center">
+          <div className="card-elevated rounded-lg p-8 text-center">
             <Wheat className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
             <h3 className="font-semibold text-foreground">No commodities stored</h3>
             <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -115,7 +115,7 @@ export default function CommoditiesPage() {
             </Link>
           </div>
         ) : (
-          <div className="card-elevated rounded-xl overflow-hidden">
+          <div className="card-elevated rounded-lg overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">

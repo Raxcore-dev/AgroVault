@@ -1,12 +1,4 @@
-export const counties = [
-  { id: 'all', name: 'All Counties' },
-  { id: 'nairobi', name: 'Nairobi' },
-  { id: 'mombasa', name: 'Mombasa' },
-  { id: 'kisumu', name: 'Kisumu' },
-  { id: 'nakuru', name: 'Nakuru' },
-  { id: 'kiambu', name: 'Kiambu' },
-  { id: 'machakos', name: 'Machakos' },
-]
+export const counties = [] // Populated dynamically from CommodityPrice table - see /api/counties
 
 export const storages = [
   { id: '1', name: 'Storage A', location: 'Nairobi CBD', capacity: 5000 },

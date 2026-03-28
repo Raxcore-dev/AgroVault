@@ -121,7 +121,7 @@ export default function AlertsPage() {
       <div className="px-6 py-6 lg:px-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-48 rounded bg-muted" />
-          {[...Array(3)].map((_, i) => <div key={i} className="h-20 rounded-xl bg-muted" />)}
+          {[...Array(3)].map((_, i) => <div key={i} className="h-20 rounded-lg bg-muted" />)}
         </div>
       </div>
     )
@@ -149,7 +149,7 @@ export default function AlertsPage() {
         </div>
 
         {alerts.length === 0 ? (
-          <div className="card-elevated rounded-xl p-8 text-center">
+          <div className="card-elevated rounded-lg p-8 text-center">
             <CheckCircle className="h-12 w-12 mx-auto text-primary/50 mb-3" />
             <h3 className="font-semibold text-foreground">No alerts</h3>
             <p className="text-sm text-muted-foreground mt-1">
@@ -161,7 +161,7 @@ export default function AlertsPage() {
             {alerts.map((alert) => (
               <div
                 key={alert.id}
-                className={`card-elevated rounded-xl p-4 flex items-start gap-4 transition-all ${!alert.isRead ? 'border-l-4 border-l-primary' : 'opacity-75'}`}
+                className={`card-elevated rounded-lg p-4 flex items-start gap-4 transition-all ${!alert.isRead ? 'border-l-4 border-l-primary' : 'opacity-75'}`}
               >
                 <div className={`rounded-lg p-2 ${getSeverityColor(alert.severity)}`}>
                   {getAlertIcon(alert.alertType)}

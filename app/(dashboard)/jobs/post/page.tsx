@@ -128,7 +128,7 @@ export default function PostJobPage() {
             Back
           </button>
 
-          <div className="card-elevated rounded-xl p-6 lg:p-8">
+          <div className="card-elevated rounded-lg p-6 lg:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Briefcase className="h-5 w-5 text-primary" />

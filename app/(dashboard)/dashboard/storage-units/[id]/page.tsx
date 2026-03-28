@@ -144,7 +144,7 @@ export default function StorageUnitDetailPage() {
         <div className="animate-pulse space-y-4">
           <div className="h-6 w-32 rounded bg-muted" />
           <div className="h-8 w-64 rounded bg-muted" />
-          <div className="h-48 rounded-xl bg-muted" />
+          <div className="h-48 rounded-lg bg-muted" />
         </div>
       </div>
     )
@@ -191,7 +191,7 @@ export default function StorageUnitDetailPage() {
 
         {/* Quick Stats */}
         <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <p className="text-sm font-medium text-muted-foreground">Capacity</p>
             <p className="mt-2 text-2xl font-bold text-foreground">{unit.capacity} tons</p>
             <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
@@ -203,7 +203,7 @@ export default function StorageUnitDetailPage() {
             <p className="mt-1 text-xs text-muted-foreground">{capacityPercent.toFixed(0)}% used ({totalStored} tons)</p>
           </div>
 
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <p className="text-sm font-medium text-muted-foreground">Temperature</p>
             <p className={`mt-2 text-2xl font-bold ${displayedReading && displayedReading.temperature > 35 ? 'text-danger' : displayedReading && displayedReading.temperature > 30 ? 'text-warning' : 'text-primary'}`}>
               {displayedReading ? `${displayedReading.temperature.toFixed(1)}°C` : '—'}
@@ -211,7 +211,7 @@ export default function StorageUnitDetailPage() {
             <p className="mt-1 text-xs text-muted-foreground">Auto updates every 10 seconds</p>
           </div>
 
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <p className="text-sm font-medium text-muted-foreground">Humidity</p>
             <p className={`mt-2 text-2xl font-bold ${displayedReading && displayedReading.humidity > 75 ? 'text-danger' : 'text-accent'}`}>
               {displayedReading ? `${displayedReading.humidity.toFixed(1)}%` : '—'}
@@ -219,7 +219,7 @@ export default function StorageUnitDetailPage() {
             <p className="mt-1 text-xs text-muted-foreground">Auto updates every 10 seconds</p>
           </div>
 
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <p className="text-sm font-medium text-muted-foreground">Commodities</p>
             <p className="mt-2 text-2xl font-bold text-foreground">{unit.commodities.length}</p>
             <p className="mt-1 text-xs text-muted-foreground">Items stored</p>
@@ -227,7 +227,7 @@ export default function StorageUnitDetailPage() {
         </div>
 
         {/* Live Storage Monitoring Status */}
-        <div className="mb-6 card-elevated rounded-xl p-5">
+        <div className="mb-6 card-elevated rounded-lg p-5">
           <h2 className="text-base font-semibold text-foreground">Storage Monitoring Status</h2>
           {!displayedReading && (
             <p className="text-sm text-muted-foreground mt-2">
@@ -268,7 +268,7 @@ export default function StorageUnitDetailPage() {
           </div>
 
           {showAddCommodity && (
-            <div className="card-elevated rounded-xl p-6 mb-4">
+            <div className="card-elevated rounded-lg p-6 mb-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-foreground">Add Commodity</h3>
                 <button onClick={() => setShowAddCommodity(false)} className="text-muted-foreground hover:text-foreground">
@@ -331,12 +331,12 @@ export default function StorageUnitDetailPage() {
           )}
 
           {unit.commodities.length === 0 ? (
-            <div className="card-elevated rounded-xl p-6 text-center">
+            <div className="card-elevated rounded-lg p-6 text-center">
               <Wheat className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
               <p className="text-sm text-muted-foreground">No commodities stored yet.</p>
             </div>
           ) : (
-            <div className="card-elevated rounded-xl overflow-hidden">
+            <div className="card-elevated rounded-lg overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
@@ -369,7 +369,7 @@ export default function StorageUnitDetailPage() {
         {unit.readings.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-foreground mb-4">Recent Readings</h2>
-            <div className="card-elevated rounded-xl overflow-hidden">
+            <div className="card-elevated rounded-lg overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">

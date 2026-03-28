@@ -1,47 +1,47 @@
 @import 'tailwindcss';
 
 :root {
-  /* ─── Clean Light Fintech Theme ─── */
-  --background: 150 10% 96%;       /* #F5F7F6 */
-  --foreground: 0 0% 13%;          /* #212121 */
-  --card: 0 0% 100%;               /* white */
-  --card-foreground: 0 0% 13%;
+  /* ─── Minimi-Inspired Minimalist Professional Theme ─── */
+  --background: 0 0% 99%;          /* #FCFCFC - pure white, max clean */
+  --foreground: 210 12% 18%;       /* #1E2839 - deep navy */
+  --card: 0 0% 100%;               /* white - cards stand out cleanly */
+  --card-foreground: 210 12% 18%;
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 13%;
-  --primary: 122 63% 33%;          /* #2E7D32 deep green */
+  --popover-foreground: 210 12% 18%;
+  --primary: 133 100% 29%;         /* #00B050 vibrant professional green */
   --primary-foreground: 0 0% 100%;
-  --secondary: 33 97% 49%;         /* #FB8C00 harvest orange */
+  --secondary: 210 12% 18%;        /* #1E2839 deep navy - secondary actions */
   --secondary-foreground: 0 0% 100%;
-  --accent: 210 75% 46%;           /* #1976D2 tech blue */
+  --accent: 133 100% 29%;          /* same as primary - consistent */
   --accent-foreground: 0 0% 100%;
-  --muted: 150 6% 90%;
-  --muted-foreground: 0 0% 45%;
-  --success: 122 63% 33%;
-  --warning: 33 97% 49%;
-  --danger: 0 65% 51%;
-  --destructive: 0 65% 51%;
+  --muted: 0 0% 94%;               /* #F0F0F0 light gray */
+  --muted-foreground: 0 0% 55%;    /* #8C8C8C medium gray text */
+  --success: 133 100% 29%;         /* green */
+  --warning: 38 100% 50%;          /* #FFC700 warm yellow */
+  --danger: 0 85% 56%;             /* #E53935 clean red */
+  --destructive: 0 85% 56%;
   --destructive-foreground: 0 0% 100%;
-  --border: 150 6% 88%;
-  --input: 150 6% 88%;
-  --ring: 122 63% 33%;
-  --radius: 0.75rem;
+  --border: 0 0% 92%;              /* #EBEBEB subtle border */
+  --input: 0 0% 97%;               /* #F7F7F7 input background */
+  --ring: 133 100% 29%;            /* green focus ring */
+  --radius: 0.5rem;                /* slightly tighter radius */
 
-  /* Chart palette */
-  --chart-1: 122 63% 33%;
-  --chart-2: 210 75% 46%;
-  --chart-3: 33 97% 49%;
-  --chart-4: 280 60% 50%;
-  --chart-5: 0 65% 51%;
+  /* Chart palette - professional & minimal */
+  --chart-1: 133 100% 29%;         /* primary green */
+  --chart-2: 210 12% 18%;          /* navy */
+  --chart-3: 38 100% 50%;          /* yellow */
+  --chart-4: 0 85% 56%;            /* red */
+  --chart-5: 200 80% 50%;          /* clean blue */
 
   /* Sidebar */
   --sidebar: 0 0% 100%;
-  --sidebar-foreground: 0 0% 13%;
-  --sidebar-primary: 122 63% 33%;
+  --sidebar-foreground: 210 12% 18%;
+  --sidebar-primary: 133 100% 29%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 150 10% 95%;
-  --sidebar-accent-foreground: 0 0% 13%;
-  --sidebar-border: 150 6% 90%;
-  --sidebar-ring: 122 63% 33%;
+  --sidebar-accent: 0 0% 95%;
+  --sidebar-accent-foreground: 210 12% 18%;
+  --sidebar-border: 0 0% 92%;
+  --sidebar-ring: 133 100% 29%;
 }
 
 @theme inline {

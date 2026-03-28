@@ -67,7 +67,7 @@ function InsightCard({ insight }: { insight: MarketInsight }) {
     insight.priceTrend === 'decreasing' ? 'text-red-700'   : 'text-blue-700'
 
   return (
-    <div className={`card-elevated rounded-xl overflow-hidden border ${riskBorder} flex flex-col`}>
+    <div className={`card-elevated rounded-lg overflow-hidden border ${riskBorder} flex flex-col`}>
       {/* Header */}
       <div className={`px-5 py-4 flex items-start justify-between gap-3 ${headerBg}`}>
         <div className="flex items-start gap-2 min-w-0">
@@ -167,7 +167,7 @@ function InsightCard({ insight }: { insight: MarketInsight }) {
 
 function InsightSkeleton() {
   return (
-    <div className="card-elevated rounded-xl overflow-hidden animate-pulse">
+    <div className="card-elevated rounded-lg overflow-hidden animate-pulse">
       <div className="bg-muted/50 px-5 py-4 flex items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="h-4 w-32 rounded bg-muted" />
@@ -299,21 +299,21 @@ export default function MarketInsightsPage() {
         {/* ── Summary Stats ── */}
         {!loading && insights.length > 0 && (
           <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <div className="card-elevated rounded-xl p-4">
+            <div className="card-elevated rounded-lg p-4">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Commodities Tracked
               </p>
               <p className="mt-2 text-2xl font-bold text-foreground">{insights.length}</p>
               <p className="text-xs text-muted-foreground mt-0.5">Across your storage units</p>
             </div>
-            <div className="card-elevated rounded-xl p-4">
+            <div className="card-elevated rounded-lg p-4">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 High Demand
               </p>
               <p className="mt-2 text-2xl font-bold text-green-600">{highDemandCount}</p>
               <p className="text-xs text-muted-foreground mt-0.5">Commodities in high demand</p>
             </div>
-            <div className="card-elevated rounded-xl p-4">
+            <div className="card-elevated rounded-lg p-4">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Prices Rising
               </p>
@@ -321,7 +321,7 @@ export default function MarketInsightsPage() {
               <p className="text-xs text-muted-foreground mt-0.5">Favourable price trend</p>
             </div>
             <div
-              className={`card-elevated rounded-xl p-4 ${
+              className={`card-elevated rounded-lg p-4 ${
                 spoilageCount > 0 ? 'border border-red-200 bg-red-50/50' : ''
               }`}
             >
@@ -342,7 +342,7 @@ export default function MarketInsightsPage() {
 
         {/* ── Error State ── */}
         {error && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 flex items-start gap-3">
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-5 py-4 flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-red-800">Unable to load market insights</p>
@@ -360,7 +360,7 @@ export default function MarketInsightsPage() {
 
         {/* ── Empty State ── */}
         {!loading && !error && insights.length === 0 && (
-          <div className="card-elevated rounded-xl p-12 text-center">
+          <div className="card-elevated rounded-lg p-12 text-center">
             <Package className="mx-auto h-12 w-12 text-muted-foreground opacity-40 mb-4" />
             <h3 className="text-base font-semibold text-foreground mb-1">No commodities found</h3>
             <p className="text-sm text-muted-foreground max-w-sm mx-auto">
@@ -375,7 +375,7 @@ export default function MarketInsightsPage() {
           <>
             {/* Spoilage urgency banner */}
             {spoilageCount > 0 && (
-              <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 flex items-start gap-3">
+              <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-5 py-4 flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-semibold text-red-800">
@@ -401,7 +401,7 @@ export default function MarketInsightsPage() {
             </div>
 
             {/* Summary table */}
-            <div className="mt-8 card-elevated rounded-xl overflow-hidden">
+            <div className="mt-8 card-elevated rounded-lg overflow-hidden">
               <div className="px-5 py-4 border-b border-border">
                 <h2 className="text-base font-semibold text-foreground">
                   Market Insights Summary
@@ -473,7 +473,7 @@ export default function MarketInsightsPage() {
 
         {/* ── Travel Advisory CTA ── */}
         {!loading && (
-          <div className="mt-8 rounded-xl border border-primary/20 bg-primary/5 p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-8 rounded-lg border border-primary/20 bg-primary/5 p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
               <Navigation className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>

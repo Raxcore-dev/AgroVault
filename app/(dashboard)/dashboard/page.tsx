@@ -144,21 +144,21 @@ function JobApplicantDashboard() {
 
         {/* Stats overview */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <div className="card-elevated rounded-xl border border-border p-5 flex items-start gap-4">
+          <div className="card-elevated rounded-lg border border-border p-5 flex items-start gap-4">
             <div className="rounded-lg bg-primary/10 p-2.5"><Briefcase className="h-5 w-5 text-primary" /></div>
             <div>
               <p className="text-sm text-muted-foreground">Total Applied</p>
               <p className="text-2xl font-bold text-foreground">{applications.length}</p>
             </div>
           </div>
-          <div className="card-elevated rounded-xl border border-border p-5 flex items-start gap-4">
+          <div className="card-elevated rounded-lg border border-border p-5 flex items-start gap-4">
             <div className="rounded-lg bg-amber-50 p-2.5"><Activity className="h-5 w-5 text-amber-600" /></div>
             <div>
               <p className="text-sm text-muted-foreground">Pending</p>
               <p className="text-2xl font-bold text-foreground">{pending}</p>
             </div>
           </div>
-          <div className="card-elevated rounded-xl border border-border p-5 flex items-start gap-4">
+          <div className="card-elevated rounded-lg border border-border p-5 flex items-start gap-4">
             <div className="rounded-lg bg-green-50 p-2.5"><ShieldAlert className="h-5 w-5 text-green-600" /></div>
             <div>
               <p className="text-sm text-muted-foreground">Accepted</p>
@@ -169,7 +169,7 @@ function JobApplicantDashboard() {
 
         {/* Quick actions */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Link href="/jobs" className="card-elevated rounded-xl p-6 hover:shadow-md transition-shadow group border border-border">
+          <Link href="/jobs" className="card-elevated rounded-lg p-6 hover:shadow-md transition-shadow group border border-border">
             <div className="flex items-center gap-3 mb-3">
               <div className="rounded-lg bg-primary/10 p-2.5"><Briefcase className="h-5 w-5 text-primary" /></div>
               <h3 className="font-semibold text-foreground">Available Jobs</h3>
@@ -180,7 +180,7 @@ function JobApplicantDashboard() {
             </div>
           </Link>
 
-          <Link href="/dashboard/my-applications" className="card-elevated rounded-xl p-6 hover:shadow-md transition-shadow group border border-border">
+          <Link href="/dashboard/my-applications" className="card-elevated rounded-lg p-6 hover:shadow-md transition-shadow group border border-border">
             <div className="flex items-center gap-3 mb-3">
               <div className="rounded-lg bg-accent/10 p-2.5"><Activity className="h-5 w-5 text-accent" /></div>
               <h3 className="font-semibold text-foreground">My Applications</h3>
@@ -193,7 +193,7 @@ function JobApplicantDashboard() {
         </div>
 
         {/* Recent Jobs */}
-        <div className="card-elevated rounded-xl border border-border overflow-hidden">
+        <div className="card-elevated rounded-lg border border-border overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
             <h2 className="font-semibold text-foreground">Recent Job Openings</h2>
             <Link href="/jobs" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
@@ -240,7 +240,7 @@ function JobApplicantDashboard() {
 
         {/* Recent applications */}
         {applications.length > 0 && (
-          <div className="card-elevated rounded-xl border border-border overflow-hidden">
+          <div className="card-elevated rounded-lg border border-border overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
               <h2 className="font-semibold text-foreground">Recent Applications</h2>
               <Link href="/dashboard/my-applications" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
@@ -392,10 +392,10 @@ function FarmerDashboard() {
           <div className="h-8 w-48 rounded bg-muted" />
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-28 rounded-xl bg-muted" />
+              <div key={i} className="h-28 rounded-lg bg-muted" />
             ))}
           </div>
-          <div className="h-64 rounded-xl bg-muted" />
+          <div className="h-64 rounded-lg bg-muted" />
         </div>
       </div>
     )
@@ -423,7 +423,7 @@ function FarmerDashboard() {
 
         {/* Stats Overview */}
         <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-muted-foreground">Storage Units</p>
               <div className="rounded-lg bg-primary/10 p-2">
@@ -434,7 +434,7 @@ function FarmerDashboard() {
             <p className="mt-1 text-xs text-muted-foreground">Active facilities</p>
           </div>
 
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-muted-foreground">Commodities</p>
               <div className="rounded-lg bg-accent/10 p-2">
@@ -445,7 +445,7 @@ function FarmerDashboard() {
             <p className="mt-1 text-xs text-muted-foreground">Items stored</p>
           </div>
 
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-muted-foreground">Avg Temperature</p>
               <div className="rounded-lg bg-secondary/10 p-2">
@@ -458,7 +458,7 @@ function FarmerDashboard() {
             <p className="mt-1 text-xs text-muted-foreground">Across all units</p>
           </div>
 
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-muted-foreground">Unread Alerts</p>
               <div className={`rounded-lg p-2 ${(stats?.unreadAlerts ?? 0) > 0 ? 'bg-danger/10' : 'bg-primary/10'}`}>
@@ -484,7 +484,7 @@ function FarmerDashboard() {
           </div>
 
           {units.length === 0 ? (
-            <div className="card-elevated rounded-xl p-8 text-center">
+            <div className="card-elevated rounded-lg p-8 text-center">
               <Package className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
               <h3 className="font-semibold text-foreground">No storage units yet</h3>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -504,7 +504,7 @@ function FarmerDashboard() {
                 <Link
                   key={unit.id}
                   href={`/dashboard/storage-units/${unit.id}`}
-                  className="card-elevated rounded-xl p-5 hover:shadow-md transition-shadow"
+                  className="card-elevated rounded-lg p-5 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -573,7 +573,7 @@ function FarmerDashboard() {
                 .map((assessment) => (
                   <div
                     key={`${assessment.storageUnitId}-${assessment.commodityId}`}
-                    className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4"
+                    className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -623,7 +623,7 @@ function FarmerDashboard() {
 
               {spoilageAssessments.filter((a) => a.riskLevel === 'high').length === 0 &&
                spoilageAssessments.filter((a) => a.riskLevel === 'medium').length > 0 && (
-                <div className="card-elevated rounded-xl p-4 border-amber-200 dark:border-amber-800">
+                <div className="card-elevated rounded-lg p-4 border-amber-200 dark:border-amber-800">
                   <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                     <AlertTriangle className="h-4 w-4" />
                     <p className="text-sm font-medium">
@@ -669,12 +669,12 @@ function FarmerDashboard() {
               <AIInsightSkeleton />
             </div>
           ) : aiError ? (
-            <div className="card-elevated rounded-xl p-6 text-center">
+            <div className="card-elevated rounded-lg p-6 text-center">
               <Brain className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
               <p className="text-sm text-muted-foreground">{aiError}</p>
             </div>
           ) : aiAnalyses.length === 0 ? (
-            <div className="card-elevated rounded-xl p-6 text-center">
+            <div className="card-elevated rounded-lg p-6 text-center">
               <Brain className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
               <p className="text-sm text-muted-foreground">
                 No AI analyses available yet. Add sensor readings to trigger AI analysis.
@@ -844,7 +844,7 @@ function FarmerDashboard() {
               </Button>
             </Link>
           </div>
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <MarketTravelAdvisoryWidget compact />
           </div>
         </div>

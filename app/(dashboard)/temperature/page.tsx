@@ -45,7 +45,7 @@ export default function TemperaturePage() {
       </div>
 
       {/* Temperature Trend Chart */}
-      <div className="card-elevated rounded-xl p-6">
+      <div className="card-elevated rounded-lg p-6">
         <h2 className="mb-6 text-lg font-semibold text-foreground">24-Hour Trend</h2>
         <TemperatureChart sensorData={sensorData} />
       </div>
@@ -60,7 +60,7 @@ export default function TemperaturePage() {
               !sensor ? 'N/A' : sensor.temperature < 15 ? '❄️ Cold' : sensor.temperature > 25 ? '🔥 Hot' : '✅ Optimal'
 
             return (
-              <div key={storage.id} className="card-elevated rounded-xl p-5 transition-all hover:shadow-md">
+              <div key={storage.id} className="card-elevated rounded-lg p-5 transition-all hover:shadow-md">
                 <h3 className="font-semibold text-foreground">{storage.name}</h3>
                 <p className="mt-1 text-xs text-muted-foreground">{storage.location}</p>
                 <div className="mt-4 space-y-3">

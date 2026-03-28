@@ -66,7 +66,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary mb-4">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-lg bg-primary mb-4">
             <Sprout className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">
@@ -78,7 +78,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Register Form */}
-        <div className="card-elevated rounded-2xl p-8">
+        <div className="card-elevated rounded-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="rounded-lg bg-danger/10 border border-danger/20 p-3 text-sm text-danger">
@@ -95,7 +95,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setFormData((p) => ({ ...p, role: 'farmer' }))}
-                  className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${
+                  className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
                     formData.role === 'farmer'
                       ? 'border-primary bg-primary/5 text-primary'
                       : 'border-border text-muted-foreground hover:border-primary/30'
@@ -108,7 +108,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setFormData((p) => ({ ...p, role: 'job_applicant' }))}
-                  className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${
+                  className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
                     formData.role === 'job_applicant'
                       ? 'border-primary bg-primary/5 text-primary'
                       : 'border-border text-muted-foreground hover:border-primary/30'

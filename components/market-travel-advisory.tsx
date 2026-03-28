@@ -86,7 +86,7 @@ function RiskBadge({ level }: { level: 'safe' | 'moderate' | 'high' }) {
 function WeatherStatGrid({ weather }: { weather: TravelForecastSummary }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <div className="rounded-xl border border-border bg-muted/30 p-3 flex flex-col gap-1">
+      <div className="rounded-lg border border-border bg-muted/30 p-3 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <CloudRain className="h-3.5 w-3.5" />
           Rain (24h)
@@ -94,7 +94,7 @@ function WeatherStatGrid({ weather }: { weather: TravelForecastSummary }) {
         <p className="text-lg font-bold text-foreground">{weather.rain_probability_24h}%</p>
         <p className="text-xs text-muted-foreground">{weather.rainfall_mm_24h.toFixed(1)} mm</p>
       </div>
-      <div className="rounded-xl border border-border bg-muted/30 p-3 flex flex-col gap-1">
+      <div className="rounded-lg border border-border bg-muted/30 p-3 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Thermometer className="h-3.5 w-3.5" />
           Temperature
@@ -102,7 +102,7 @@ function WeatherStatGrid({ weather }: { weather: TravelForecastSummary }) {
         <p className="text-lg font-bold text-foreground">{weather.temperature}°C</p>
         <p className="text-xs text-muted-foreground capitalize">{weather.description}</p>
       </div>
-      <div className="rounded-xl border border-border bg-muted/30 p-3 flex flex-col gap-1">
+      <div className="rounded-lg border border-border bg-muted/30 p-3 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Droplets className="h-3.5 w-3.5" />
           Humidity
@@ -110,7 +110,7 @@ function WeatherStatGrid({ weather }: { weather: TravelForecastSummary }) {
         <p className="text-lg font-bold text-foreground">{weather.humidity}%</p>
         <p className="text-xs text-muted-foreground">Relative humidity</p>
       </div>
-      <div className="rounded-xl border border-border bg-muted/30 p-3 flex flex-col gap-1">
+      <div className="rounded-lg border border-border bg-muted/30 p-3 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Wind className="h-3.5 w-3.5" />
           Wind Speed
@@ -142,7 +142,7 @@ function ForecastStrip({ days }: { days: ForecastDay[] }) {
           {days.map((d) => (
             <div
               key={d.date}
-              className="rounded-xl border border-border bg-muted/20 p-3 space-y-1"
+              className="rounded-lg border border-border bg-muted/20 p-3 space-y-1"
             >
               <p className="text-xs font-semibold text-foreground">{d.day}</p>
               <p className="text-xs text-muted-foreground capitalize">{d.description}</p>
@@ -171,7 +171,7 @@ function CombinedInsightPanel({ insight }: { insight: CombinedInsight }) {
       : 'text-muted-foreground'
 
   return (
-    <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
+    <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-3">
       <div className="flex items-center gap-2">
         <TrendingUp className="h-4 w-4 text-primary" />
         <h3 className="text-sm font-semibold text-foreground">Market + Weather Combined Insight</h3>
@@ -245,7 +245,7 @@ function LocationInput({
         />
       </div>
       {open && filtered.length > 0 && (
-        <ul className="absolute z-20 mt-1 w-full rounded-lg border border-border bg-popover shadow-lg max-h-48 overflow-y-auto">
+        <ul className="absolute z-20 mt-1 w-full rounded-lg border border-border bg-popover max-h-48 overflow-y-auto">
           {filtered.map((s) => (
             <li key={s}>
               <button
@@ -338,10 +338,10 @@ export function MarketTravelAdvisoryWidget({
   const risk = advisory?.recommendation.risk_level
 
   const bannerClasses = cn(
-    'rounded-xl border p-4 space-y-2',
-    risk === 'safe' && 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20',
-    risk === 'moderate' && 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20',
-    risk === 'high' && 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20',
+    'rounded-lg border p-4 space-y-2',
+    risk === 'safe' && 'border-emerald-200/50 bg-emerald-50/50',
+    risk === 'moderate' && 'border-amber-200/50 bg-amber-50/50',
+    risk === 'high' && 'border-red-200/50 bg-red-50/50',
     (!risk) && 'border-border bg-muted/20',
   )
 
@@ -475,7 +475,7 @@ export function MarketTravelAdvisoryWidget({
 
       {/* Empty state */}
       {!advisory && !loading && !error && (
-        <div className="rounded-xl border border-dashed border-border bg-muted/10 p-8 text-center">
+        <div className="rounded-lg border border-dashed border-border bg-muted/10 p-8 text-center">
           <Navigation className="mx-auto h-8 w-8 text-muted-foreground/50 mb-3" />
           <p className="text-sm text-muted-foreground">
             Enter a destination market and click <strong>Check Weather</strong> to get your travel advisory.

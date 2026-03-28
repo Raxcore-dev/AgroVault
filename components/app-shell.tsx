@@ -7,7 +7,7 @@ import { getRestrictedRedirect, type UserRole } from '@/lib/role-routes'
 import { Header } from './header'
 import { Sidebar } from './sidebar'
 import { MobileNav } from './mobile-nav'
-import { Sprout } from 'lucide-react'
+import { Logo } from './ui/logo'
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -35,10 +35,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary animate-pulse">
-          <Sprout className="h-8 w-8 text-white" />
-        </div>
-        <p className="text-sm text-muted-foreground">Loading AgroVault...</p>
+        <Logo size="lg" showText={false} className="animate-pulse" />
+        <p className="text-sm text-muted-foreground font-medium">Loading AgroVault...</p>
       </div>
     )
   }

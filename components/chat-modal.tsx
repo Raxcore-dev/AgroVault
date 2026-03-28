@@ -167,7 +167,7 @@ export function ChatModal({ productId, farmerId, farmerName, productName, onClos
   if (loading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+        <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">Starting conversation...</p>
@@ -185,7 +185,7 @@ export function ChatModal({ productId, farmerId, farmerName, productName, onClos
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full h-[600px] flex flex-col">
+      <div className="bg-white rounded-lg max-w-2xl w-full h-[600px] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -255,7 +255,7 @@ export function ChatModal({ productId, farmerId, farmerName, productName, onClos
                 >
                   <div className={`max-w-[70%] ${isOwnMessage ? 'order-2' : 'order-1'}`}>
                     <div
-                      className={`rounded-2xl px-4 py-2 ${
+                      className={`rounded-lg px-4 py-2 ${
                         isOwnMessage
                           ? 'bg-primary text-white'
                           : 'bg-muted text-foreground'

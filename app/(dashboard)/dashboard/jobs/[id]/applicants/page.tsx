@@ -121,7 +121,7 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
         <div className="max-w-3xl mx-auto space-y-4 animate-pulse">
           <div className="h-8 bg-muted rounded w-48 mb-6" />
           {[1, 2, 3].map((i) => (
-            <div key={i} className="card-elevated rounded-xl p-5">
+            <div key={i} className="card-elevated rounded-lg p-5">
               <div className="h-5 bg-muted rounded w-1/3 mb-2" />
               <div className="h-12 bg-muted rounded" />
             </div>
@@ -180,7 +180,7 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
 
         {/* Applications list */}
         {applications.length === 0 ? (
-          <div className="card-elevated rounded-xl p-12 text-center">
+          <div className="card-elevated rounded-lg p-12 text-center">
             <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
             <h2 className="text-lg font-semibold text-foreground mb-2">No applicants yet</h2>
             <p className="text-sm text-muted-foreground">Share the job listing to attract workers.</p>
@@ -188,7 +188,7 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
         ) : (
           <div className="space-y-4">
             {applications.map((app) => (
-              <div key={app.id} className="card-elevated rounded-xl p-5">
+              <div key={app.id} className="card-elevated rounded-lg p-5">
                 <div className="flex items-start gap-4">
                   {/* Avatar */}
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">

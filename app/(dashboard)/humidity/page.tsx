@@ -68,7 +68,7 @@ export default function HumidityPage() {
         {/* Current Humidity Cards */}
         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {sensorData.map((data, idx) => (
-            <div key={data.storageId} className="card-elevated rounded-xl p-5">
+            <div key={data.storageId} className="card-elevated rounded-lg p-5">
               <p className="text-sm font-medium text-muted-foreground">
                 {storages[idx]?.name || `Storage ${idx + 1}`}
               </p>
@@ -92,7 +92,7 @@ export default function HumidityPage() {
         </div>
 
         {/* Humidity Trend Chart */}
-        <div className="card-elevated rounded-xl p-6">
+        <div className="card-elevated rounded-lg p-6">
           <h2 className="mb-6 text-lg font-semibold text-foreground">24-Hour Humidity Trends</h2>
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={chartData}>

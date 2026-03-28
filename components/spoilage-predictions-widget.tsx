@@ -56,7 +56,7 @@ export function SpoilagePredictionsWidget() {
 
   if (loading) {
     return (
-      <div className="card-elevated rounded-xl p-6">
+      <div className="card-elevated rounded-lg p-6">
         <div className="flex items-center justify-center py-8">
           <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
@@ -66,7 +66,7 @@ export function SpoilagePredictionsWidget() {
 
   if (predictions.length === 0) {
     return (
-      <div className="card-elevated rounded-xl p-6">
+      <div className="card-elevated rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <TrendingDown className="h-5 w-5 text-primary" />
@@ -92,20 +92,20 @@ export function SpoilagePredictionsWidget() {
   }
 
   return (
-    <div className="card-elevated rounded-xl overflow-hidden border-2 border-red-200">
+      <div className="card-elevated rounded-lg overflow-hidden border border-danger/20">
       {/* Header */}
-      <div className="p-5 bg-red-50 border-b border-red-200">
+      <div className="p-5 bg-danger/5 border-b border-danger/20">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600" />
-            <h3 className="font-semibold text-red-900">High Spoilage Risk</h3>
+            <AlertTriangle className="h-5 w-5 text-danger" />
+            <h3 className="font-semibold text-danger">High Spoilage Risk</h3>
           </div>
-          <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-800 text-xs font-semibold">
+          <span className="px-2.5 py-1 rounded-full bg-danger/10 text-danger text-xs font-semibold">
             {summary?.highRiskCount || 0} Alert{summary?.highRiskCount !== 1 ? 's' : ''}
           </span>
         </div>
         {summary?.totalEstimatedLoss > 0 && (
-          <p className="text-sm text-red-700">
+          <p className="text-sm text-danger">
             Potential loss: <span className="font-semibold">{formatKES(summary.totalEstimatedLoss)}</span>
           </p>
         )}
@@ -117,7 +117,7 @@ export function SpoilagePredictionsWidget() {
           {predictions.map((prediction, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100"
+              className="flex items-center justify-between p-3 rounded-lg bg-danger/5 border border-danger/10"
             >
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
@@ -128,7 +128,7 @@ export function SpoilagePredictionsWidget() {
                 </p>
               </div>
               <div className="text-right ml-3">
-                <p className="text-lg font-bold text-red-600">
+                <p className="text-lg font-bold text-danger">
                   {prediction.estimatedSpoilagePercentage}%
                 </p>
                 {prediction.estimatedEconomicLoss && (
@@ -143,7 +143,7 @@ export function SpoilagePredictionsWidget() {
 
         <Link
           href="/dashboard/spoilage-predictions"
-          className="flex items-center justify-center gap-2 text-sm text-red-600 hover:text-red-700 font-medium mt-4 py-2 rounded-lg hover:bg-red-50 transition-colors"
+          className="flex items-center justify-center gap-2 text-sm text-danger hover:text-danger/80 font-medium mt-4 py-2 rounded-lg hover:bg-danger/5 transition-colors"
         >
           View All Predictions & Actions
           <ArrowRight className="h-4 w-4" />

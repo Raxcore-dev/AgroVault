@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Sprout, Bell, Search, LogIn, LogOut } from 'lucide-react'
+import { Logo } from './ui/logo'
+import { Bell, Search, LogIn, LogOut } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 
 export function Header() {
@@ -9,20 +10,15 @@ export function Header() {
 
   // Get user initials for the avatar
   const initials = user
-    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
     : 'JK'
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-white">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <Sprout className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-xl font-bold text-foreground tracking-tight">
-            Agro<span className="text-primary">Vault</span>
-          </span>
+        <Link href="/">
+          <Logo size="sm" />
         </Link>
 
         {/* Search bar - center */}

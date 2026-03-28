@@ -145,7 +145,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
               <div className="h-32 bg-muted rounded" />
             </div>
             <div className="lg:col-span-2 space-y-4">
-              <div className="h-[300px] bg-muted rounded-xl" />
+              <div className="h-[300px] bg-muted rounded-lg" />
               <div className="h-24 bg-muted rounded" />
             </div>
           </div>
@@ -283,7 +283,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
               )}
 
               {/* Farmer Info */}
-              <div className="card-elevated rounded-xl p-5">
+              <div className="card-elevated rounded-lg p-5">
                 <h3 className="text-sm font-semibold text-foreground mb-3">Posted By</h3>
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2.5">
@@ -323,7 +323,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
 
               {/* Application Form */}
               {!isOwner && job.isOpen && user && (
-                <div className="card-elevated rounded-xl p-5">
+                <div className="card-elevated rounded-lg p-5">
                   <h3 className="text-sm font-semibold text-foreground mb-3">Apply for this Job</h3>
 
                   {myApplication ? (
@@ -390,7 +390,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
 
               {/* Owner actions */}
               {isOwner && (
-                <div className="card-elevated rounded-xl p-5 space-y-3">
+                <div className="card-elevated rounded-lg p-5 space-y-3">
                   <h3 className="text-sm font-semibold text-foreground">Manage Job</h3>
                   <Link
                     href={`/dashboard/jobs/${job.id}/applicants`}
@@ -409,7 +409,7 @@ export default function JobDetailsPage({ params }: { params: Promise<{ id: strin
 
               {/* Not logged in */}
               {!user && (
-                <div className="card-elevated rounded-xl p-5 text-center">
+                <div className="card-elevated rounded-lg p-5 text-center">
                   <p className="text-sm text-muted-foreground mb-3">Log in to apply for this job</p>
                   <Link
                     href="/login"

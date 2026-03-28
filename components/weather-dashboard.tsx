@@ -125,7 +125,7 @@ export function WeatherDashboard() {
 
   if (loading) {
     return (
-      <div className="card-elevated rounded-xl p-8 flex items-center justify-center">
+      <div className="card-elevated rounded-lg p-8 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="h-8 w-8 animate-spin text-primary mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">Loading weather data...</p>
@@ -136,7 +136,7 @@ export function WeatherDashboard() {
 
   if (error) {
     return (
-      <div className="card-elevated rounded-xl p-8 border-2 border-red-200">
+      <div className="card-elevated rounded-lg p-8 border border-danger/20">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-3" />
           <h3 className="font-semibold text-foreground mb-2">Weather Data Unavailable</h3>
@@ -199,7 +199,7 @@ export function WeatherDashboard() {
       {/* Main Weather Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* External Weather */}
-        <div className="card-elevated rounded-xl p-6 border-2 border-blue-200">
+        <div className="card-elevated rounded-lg p-6 border border-accent/20">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
               <CloudSun className="h-5 w-5 text-blue-500" />
@@ -237,7 +237,7 @@ export function WeatherDashboard() {
         </div>
 
         {/* Storage Conditions */}
-        <div className="card-elevated rounded-xl p-6 border-2 border-green-200">
+        <div className="card-elevated rounded-lg p-6 border border-primary/20">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
               <Thermometer className="h-5 w-5 text-green-500" />
@@ -307,7 +307,7 @@ export function WeatherDashboard() {
       </div>
 
       {/* 7-Day Forecast */}
-      <div className="card-elevated rounded-xl p-6">
+      <div className="card-elevated rounded-lg p-6">
         <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
           <Calendar className="h-5 w-5 text-primary" />
           7-Day Forecast

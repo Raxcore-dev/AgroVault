@@ -84,7 +84,7 @@ function relativeTime(iso: string) {
 function SensorCard({ reading }: { reading: SensorReading }) {
   return (
     <div className={cn(
-      'rounded-xl border p-4 space-y-3 transition-colors',
+      'rounded-lg border p-4 space-y-3 transition-colors',
       statusBg(reading.status),
     )}>
       {/* Header */}
@@ -162,7 +162,7 @@ function SensorCard({ reading }: { reading: SensorReading }) {
 
 function SensorCardSkeleton() {
   return (
-    <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3 animate-pulse">
+    <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-3 animate-pulse">
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-1.5">
           <div className="h-4 w-32 rounded bg-muted" />
@@ -325,7 +325,7 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
 
       {/* Error */}
       {!loading && error && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20 p-4">
+        <div className="flex items-start gap-3 rounded-lg border border-danger/20 bg-danger/5 p-4">
           <WifiOff className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
           <div>
             <p className="text-sm font-semibold text-red-700 dark:text-red-300">{error}</p>
@@ -340,7 +340,7 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
 
       {/* No readings */}
       {!loading && !error && readings.length === 0 && (
-        <div className="rounded-xl border border-dashed border-border bg-muted/10 p-8 text-center">
+        <div className="rounded-lg border border-dashed border-border bg-muted/10 p-8 text-center">
           <Activity className="mx-auto h-8 w-8 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-foreground">No sensor readings available yet.</p>
           <p className="text-xs text-muted-foreground mt-1">

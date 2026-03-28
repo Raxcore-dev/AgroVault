@@ -94,7 +94,7 @@ export function ProductFilters({ filters, onChange }: ProductFiltersProps) {
 
       {/* Filter Panel */}
       {showFilters && (
-        <div className="card-elevated rounded-xl p-5 animate-fade-up">
+        <div className="card-elevated rounded-lg p-5 animate-fade-up">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-foreground">Filter Products</h3>
             {hasActiveFilters && (

@@ -49,19 +49,19 @@ export default function RiskPage() {
 
         {/* Risk Summary Cards */}
         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <p className="text-sm font-medium text-primary">Low Risk</p>
             <p className="mt-2 text-3xl font-bold text-primary">
               {riskData.filter((r) => r.riskLevel === 'low').length}
             </p>
           </div>
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <p className="text-sm font-medium text-warning">Medium Risk</p>
             <p className="mt-2 text-3xl font-bold text-warning">
               {riskData.filter((r) => r.riskLevel === 'medium').length}
             </p>
           </div>
-          <div className="card-elevated rounded-xl p-5">
+          <div className="card-elevated rounded-lg p-5">
             <p className="text-sm font-medium text-danger">High Risk</p>
             <p className="mt-2 text-3xl font-bold text-danger">
               {riskData.filter((r) => r.riskLevel === 'high').length}
@@ -77,7 +77,7 @@ export default function RiskPage() {
             return (
               <div
                 key={risk.storageId}
-                className="card-elevated rounded-xl p-6"
+                className="card-elevated rounded-lg p-6"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex gap-4">

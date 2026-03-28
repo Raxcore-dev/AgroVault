@@ -26,7 +26,7 @@ export function StorageCard({ storageId, sensorData, riskData }: StorageCardProp
   }
 
   return (
-    <div className="card-elevated rounded-xl p-6 transition-all hover:shadow-md">
+    <div className="card-elevated rounded-lg p-6 transition-all hover:shadow-md">
       <h3 className="text-lg font-semibold text-foreground">{storage.name}</h3>
       <p className="mt-1 text-sm text-muted-foreground">{storage.location}</p>
 

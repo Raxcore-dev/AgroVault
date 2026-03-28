@@ -1,5 +1,6 @@
 'use client'
 
+import NextImage from 'next/image'
 import Link from 'next/link'
 import {
   Thermometer,
@@ -17,6 +18,7 @@ import { LandingNavbar } from '@/components/landing-navbar'
 import { LandingFooter } from '@/components/landing-footer'
 import { FeatureCard } from '@/components/feature-card'
 import { StepCard } from '@/components/step-card'
+import { HeroSection } from '@/components/hero-section'
 
 /**
  * AgroVault Landing Page
@@ -26,33 +28,33 @@ export default function LandingPage() {
   const features = [
     {
       icon: Warehouse,
-      title: 'Storage Monitoring',
-      description: 'Track temperature and humidity in real-time with IoT sensors',
+      title: 'Smart Storage & Drying',
+      description: 'Solar drying and monitoring for smallholders and commercial silos',
     },
     {
       icon: Brain,
-      title: 'AI Recommendations',
-      description: 'Get intelligent advice to prevent spoilage and optimize storage',
+      title: 'Post-Harvest AI',
+      description: 'Intelligent advice to prevent spoilage and optimize your harvest value',
     },
     {
       icon: CloudSun,
-      title: 'Weather Insights',
-      description: 'Plan harvesting and selling using accurate weather forecasts',
+      title: 'Dynamic Planning',
+      description: 'Climate-aware harvesting and drying schedules for your specific area',
     },
     {
       icon: Users,
-      title: 'Labor Connection',
-      description: 'Find workers easily for harvesting and farm operations',
+      title: 'Farmer Cooperatives',
+      description: 'Connect with local clusters to share resources and logistics',
     },
     {
       icon: ShoppingCart,
-      title: 'Marketplace',
-      description: 'Connect with buyers and sell your produce at fair prices',
+      title: 'Direct Market Access',
+      description: 'Sell directly to verified buyers and skip the expensive middlemen',
     },
     {
       icon: TrendingUp,
-      title: 'Market Analysis',
-      description: 'Access real-time market prices and trends for better decisions',
+      title: 'Real-time Intelligence',
+      description: 'Transparent market prices across all major Kenyan agricultural hubs',
     },
   ]
 
@@ -84,130 +86,18 @@ export default function LandingPage() {
       <LandingNavbar />
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section id="home" className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
-          {/* Background Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-green-50 via-emerald-50 to-background dark:from-green-950/20 dark:via-emerald-950/20 dark:to-background" />
-          
-          {/* Decorative Elements */}
-          <div className="absolute top-20 right-10 w-72 h-72 bg-green-200/30 dark:bg-green-800/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 left-10 w-96 h-96 bg-emerald-200/30 dark:bg-emerald-800/20 rounded-full blur-3xl" />
-
-          <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              {/* Hero Content */}
-              <div className="text-center md:text-left">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm font-medium mb-6">
-                  <CheckCircle className="h-4 w-4" />
-                  Trusted by Farmers Across Kenya
-                </div>
-                
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-                  Smart Post-Harvest{' '}
-                  <span className="bg-gradient-to-r from-green-600 to-emerald-700 bg-clip-text text-transparent">
-                    Management
-                  </span>{' '}
-                  for Farmers
-                </h1>
-                
-                <p className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto md:mx-0 leading-relaxed">
-                  Monitor storage, prevent spoilage, and make data-driven decisions using AI and IoT technology.
-                  Reduce crop losses and maximize your profits.
-                </p>
-
-                <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                  <Button
-                    size="lg"
-                    asChild
-                    className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white shadow-lg shadow-green-500/25"
-                  >
-                    <Link href="/register">Get Started</Link>
-                  </Button>
-                  <Button size="lg" variant="outline" asChild>
-                    <Link href="/login">Login</Link>
-                  </Button>
-                </div>
-
-                {/* Stats */}
-                <div className="mt-12 grid grid-cols-3 gap-6">
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-bold text-green-600">500+</div>
-                    <div className="text-sm text-muted-foreground mt-1">Farmers</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-bold text-green-600">1000+</div>
-                    <div className="text-sm text-muted-foreground mt-1">Storage Units</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl sm:text-3xl font-bold text-green-600">30%</div>
-                    <div className="text-sm text-muted-foreground mt-1">Loss Reduction</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Hero Illustration */}
-              <div className="relative hidden md:block">
-                <div className="relative">
-                  {/* Main Card */}
-                  <div className="bg-card rounded-2xl shadow-2xl border border-border p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
-                        <Warehouse className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <div className="font-semibold">Storage Unit A1</div>
-                        <div className="text-xs text-muted-foreground">Maize - 500 bags</div>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20">
-                        <Thermometer className="h-5 w-5 text-green-600 mb-2" />
-                        <div className="text-2xl font-bold">24°C</div>
-                        <div className="text-xs text-muted-foreground">Temperature</div>
-                      </div>
-                      <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20">
-                        <CloudSun className="h-5 w-5 text-blue-600 mb-2" />
-                        <div className="text-2xl font-bold">65%</div>
-                        <div className="text-xs text-muted-foreground">Humidity</div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 p-3 rounded-xl bg-green-100 dark:bg-green-900/30">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                          All conditions optimal
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Floating Alert Card */}
-                  <div className="absolute -top-4 -right-4 bg-card rounded-xl shadow-xl border border-border p-4 animate-bounce">
-                    <div className="flex items-center gap-2">
-                      <Bell className="h-5 w-5 text-green-600" />
-                      <span className="text-sm font-medium">No Alerts</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Advanced Hero Section with County Search and AI Chat */}
+        <HeroSection />
 
         {/* Features Section */}
-        <section id="features" className="py-16 md:py-24 bg-muted/30">
+        <section id="features" className="py-20 md:py-28 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold">
-                Everything You Need to{' '}
-                <span className="bg-gradient-to-r from-green-600 to-emerald-700 bg-clip-text text-transparent">
-                  Protect Your Harvest
-                </span>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                Solutions for <span className="text-primary">Every Stage</span> of the Harvest
               </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Comprehensive tools and insights to help you manage post-harvest operations efficiently
+              <p className="text-lg text-muted-foreground">
+                From high-tech solar drying to AI-powered market intelligence, we support smallholders and large farms alike.
               </p>
             </div>
 
@@ -224,36 +114,47 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* How It Works Section */}
-        <section id="how-it-works" className="py-16 md:py-24">
+        {/* Quality Assurance Section */}
+        <section className="py-20 md:py-28 bg-background overflow-hidden">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold">
-                How{' '}
-                <span className="bg-gradient-to-r from-green-600 to-emerald-700 bg-clip-text text-transparent">
-                  AgroVault
-                </span>{' '}
-                Works
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                Get started in minutes and take control of your post-harvest management
-              </p>
-            </div>
-
-            <div className="relative">
-              {/* Connection Line */}
-              <div className="hidden lg:block absolute top-8 left-1/2 w-1/2 h-0.5 bg-gradient-to-r from-green-200 to-emerald-200 dark:from-green-800 dark:to-emerald-800 -translate-x-1/2" />
-              
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {steps.map((step) => (
-                  <div key={step.stepNumber} className="relative">
-                    <StepCard
-                      stepNumber={step.stepNumber}
-                      title={step.title}
-                      description={step.description}
-                    />
-                  </div>
-                ))}
+            <div className="flex flex-col lg:flex-row-reverse items-center gap-12 lg:gap-20">
+              <div className="flex-1 text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-6">
+                  <CheckCircle className="h-3 w-3" />
+                  Quality First
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                  Precision <span className="text-primary">Quality Control</span> for Every Bag
+                </h2>
+                <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                  Our sensors don't just track storage; they verify the health of your harvest. From moisture content to spoilage biomarkers, AgroVault gives you the professional data needed to secure high-value contracts.
+                </p>
+                <ul className="space-y-4">
+                  {[
+                    'Instant moisture & temperature probes',
+                    'Aflatoxin & spoilage risk prediction',
+                    'Certified quality reports for buyers',
+                    'Actionable mitigation alerts'
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-3 text-foreground/80 font-medium">
+                      <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center">
+                        <div className="h-2 w-2 rounded-full bg-primary" />
+                      </div>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex-1 relative w-full aspect-square max-w-[550px]">
+                <div className="absolute inset-0 bg-primary/10 rounded-[2.5rem] -rotate-6 scale-95" />
+                <div className="relative h-full w-full rounded-lg overflow-hidden border border-border">
+                  <NextImage
+                    src="/quality-control.png"
+                    alt="Precision Quality Control"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -271,10 +172,10 @@ export default function LandingPage() {
 
               <div className="relative text-center">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
-                  Start Reducing Post-Harvest Losses Today
+                  Join the Future of African Agriculture
                 </h2>
                 <p className="mt-4 text-lg text-green-100 max-w-2xl mx-auto">
-                  Join hundreds of farmers who are already using AgroVault to protect their harvest and increase profits
+                  AgroVault is built in Africa, for Africa. We are empowering millions of smallholders to secure their future.
                 </p>
                 <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                   <Button

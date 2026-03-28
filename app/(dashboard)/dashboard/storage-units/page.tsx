@@ -105,7 +105,7 @@ export default function StorageUnitsPage() {
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-48 rounded bg-muted" />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-40 rounded-xl bg-muted" />)}
+            {[...Array(3)].map((_, i) => <div key={i} className="h-40 rounded-lg bg-muted" />)}
           </div>
         </div>
       </div>
@@ -134,7 +134,7 @@ export default function StorageUnitsPage() {
 
         {/* Add Form */}
         {showAddForm && (
-          <div className="card-elevated rounded-xl p-6 mb-6">
+          <div className="card-elevated rounded-lg p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">New Storage Unit</h2>
               <button onClick={() => setShowAddForm(false)} className="text-muted-foreground hover:text-foreground">
@@ -203,7 +203,7 @@ export default function StorageUnitsPage() {
 
         {/* Units Grid */}
         {units.length === 0 ? (
-          <div className="card-elevated rounded-xl p-8 text-center">
+          <div className="card-elevated rounded-lg p-8 text-center">
             <Package className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
             <h3 className="font-semibold text-foreground">No storage units yet</h3>
             <p className="text-sm text-muted-foreground mt-1 mb-4">
@@ -220,7 +220,7 @@ export default function StorageUnitsPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {units.map((unit) => (
-              <div key={unit.id} className="card-elevated rounded-xl p-5 group">
+              <div key={unit.id} className="card-elevated rounded-lg p-5 group">
                 <div className="flex items-start justify-between">
                   <Link href={`/dashboard/storage-units/${unit.id}`} className="flex-1">
                     <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">

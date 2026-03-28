@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { Sprout, Mail, Phone, MapPin } from 'lucide-react'
+import { Logo } from '@/components/ui/logo'
+import { Mail, Phone, MapPin } from 'lucide-react'
 
 export function LandingFooter() {
   const currentYear = new Date().getFullYear()
@@ -23,16 +24,11 @@ export function LandingFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-600 to-emerald-700 shadow-lg">
-                <Sprout className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-700 bg-clip-text text-transparent">
-                AgroVault
-              </span>
+            <Link href="/">
+              <Logo size="sm" />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-              Smart post-harvest management system using IoT, AI, and weather data to help farmers reduce crop losses.
+              Empowering African farmers with high-tech post-harvest solutions, from drying to market intelligence. Secure your harvest, secure your future.
             </p>
           </div>
 
@@ -44,7 +40,7 @@ export function LandingFooter() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -61,7 +57,7 @@ export function LandingFooter() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -75,15 +71,15 @@ export function LandingFooter() {
             <h4 className="text-sm font-semibold text-foreground mb-4">Contact</h4>
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4 text-green-600" />
+                <Mail className="h-4 w-4 text-primary" />
                 <span>info@agrovault.com</span>
               </li>
               <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4 text-green-600" />
+                <Phone className="h-4 w-4 text-primary" />
                 <span>+254 700 000 000</span>
               </li>
               <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4 text-green-600 mt-0.5" />
+                <MapPin className="h-4 w-4 text-primary mt-0.5" />
                 <span>Nairobi, Kenya</span>
               </li>
             </ul>
@@ -99,7 +95,7 @@ export function LandingFooter() {
             <div className="flex items-center gap-4">
               <Link
                 href="#"
-                className="text-muted-foreground hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Twitter"
               >
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -108,7 +104,7 @@ export function LandingFooter() {
               </Link>
               <Link
                 href="#"
-                className="text-muted-foreground hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="LinkedIn"
               >
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -117,7 +113,7 @@ export function LandingFooter() {
               </Link>
               <Link
                 href="#"
-                className="text-muted-foreground hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Facebook"
               >
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
