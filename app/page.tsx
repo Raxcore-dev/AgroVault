@@ -89,6 +89,98 @@ export default function LandingPage() {
         {/* Advanced Hero Section with County Search and AI Chat */}
         <HeroSection />
 
+        {/* Hardware Section - AgroVault Sentinel */}
+        <section className="py-20 md:py-32 bg-muted/40 overflow-hidden">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
+              {/* Product Layout - Three Angles Showcase */}
+              <div className="flex-1 relative w-full aspect-square max-w-[600px] lg:max-w-none">
+                <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-3xl -z-10 translate-x-4 translate-y-4" />
+                
+                {/* Main Hero Shot */}
+                <div className="relative h-full w-full rounded-2xl overflow-hidden border border-border shadow-2xl bg-black/5 z-0 group">
+                  <NextImage
+                    src="/gadget-hero.png"
+                    alt="AgroVault Sentinel IoT Device - Hero View"
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  {/* Floating Badge */}
+                  <div className="absolute top-8 left-8 px-5 py-2.5 rounded-full bg-primary/95 text-white text-xs font-bold shadow-2xl backdrop-blur-md border border-white/20 uppercase tracking-widest italic animate-pulse">
+                    Sentinel v1.2 Pro
+                  </div>
+                </div>
+
+                {/* Secondary Angles - Grid Layout */}
+                <div className="absolute -bottom-8 -right-8 flex gap-4 z-10 hidden md:flex">
+                  <div className="w-40 aspect-square rounded-xl overflow-hidden border-4 border-background shadow-2xl transition-transform hover:-translate-y-2 duration-300">
+                    <NextImage
+                      src="/gadget.png"
+                      alt="AgroVault Sentinel- Front"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="w-40 aspect-square rounded-xl overflow-hidden border-4 border-background shadow-2xl transition-transform hover:-translate-y-2 duration-300">
+                    <NextImage
+                      src="/gadget-angle.png"
+                      alt="AgroVault Sentinel - Side"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Product Details */}
+              <div className="flex-1 text-left lg:pl-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-6">
+                  <Brain className="h-3 w-3" />
+                  Engineering Excellence
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight italic">
+                  Meet the <span className="text-primary italic">AgroVault Sentinel</span>
+                </h2>
+                <p className="text-lg text-muted-foreground mb-10 leading-relaxed italic max-w-xl">
+                  The ultimate post-harvest guardian. A rugged, premium IoT device designed specifically for African farm conditions. Plug it in, or go completely off-grid.
+                </p>
+
+                <div className="grid sm:grid-cols-2 gap-10 mb-12">
+                  <div className="space-y-4">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                      <Thermometer className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-bold text-foreground italic">Inbuilt Power System</h3>
+                    <p className="text-sm text-muted-foreground italic leading-relaxed">
+                      Equipped with a high-capacity rechargeable battery that lasts up to 6 months on a single charge. No constant wiring needed.
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                      <Bell className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-bold text-foreground italic">Global SIM Connectivity</h3>
+                    <p className="text-sm text-muted-foreground italic leading-relaxed">
+                      Includes a side-access SIM slot. We handle the data plan so your sensors stay online even in the most remote areas.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Offer Box */}
+                <div className="p-8 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 space-y-4 shadow-sm">
+                  <h4 className="font-bold text-primary flex items-center gap-2 uppercase tracking-widest italic text-sm">
+                    <CheckCircle className="h-4 w-4" />
+                    Zero-Config Deployment
+                  </h4>
+                  <p className="text-sm text-muted-foreground italic leading-relaxed">
+                    Our team handles all the initial setups, including a <span className="font-bold text-foreground italic">complimentary one-month data plan</span> to get you started immediately. Just place it in your storage and forget it.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Features Section */}
         <section id="features" className="py-20 md:py-28 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
