@@ -22,6 +22,8 @@ import {
   Thermometer,
   Droplets,
   AlertCircle,
+  Brain,
+  Plus,
 } from 'lucide-react'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -84,6 +86,16 @@ interface Summary {
   withEarlyWarnings: number
 }
 
+interface UnitWithoutReadings {
+  storageUnitId: string
+  storageUnitName: string
+  storageLocation: string
+  commodityId: string
+  commodityName: string
+  quantityStored: number
+  unit: string
+}
+
 // ─── Helper Functions ──────────────────────────────────────────────────────────
 
 function formatKES(amount: number): string {
@@ -102,6 +114,7 @@ export default function SpoilagePredictionsPage() {
   const { token } = useAuth()
   const [predictions, setPredictions] = useState<Prediction[]>([])
   const [summary, setSummary] = useState<Summary | null>(null)
+  const [unitsWithoutReadings, setUnitsWithoutReadings] = useState<UnitWithoutReadings[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'critical' | 'high' | 'moderate'>('all')
   const [refreshing, setRefreshing] = useState(false)
@@ -122,6 +135,7 @@ export default function SpoilagePredictionsPage() {
         const data = await res.json()
         setPredictions(data.predictions || [])
         setSummary(data.summary || null)
+        setUnitsWithoutReadings(data.unitsWithoutReadings || [])
         setLastUpdated(new Date())
       }
     } catch (error) {
@@ -357,7 +371,7 @@ export default function SpoilagePredictionsPage() {
         )}
 
         {/* Predictions Grid */}
-        {filteredPredictions.length === 0 ? (
+        {filteredPredictions.length === 0 && unitsWithoutReadings.length === 0 ? (
           <div className="card-elevated rounded-lg p-12 text-center">
             <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">No Predictions Available</h3>
@@ -368,13 +382,76 @@ export default function SpoilagePredictionsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {filteredPredictions.map((prediction) => (
-              <SpoilagePredictionCardEnhanced
-                key={`${prediction.storageUnitId}-${prediction.commodityId}`}
-                prediction={prediction}
-              />
-            ))}
+          <div className="space-y-6">
+            {/* Units Without Sensor Readings */}
+            {unitsWithoutReadings.length > 0 && (
+              <div>
+                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-amber-600" />
+                  Commodities Without Sensor Data ({unitsWithoutReadings.length})
+                </h2>
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  {unitsWithoutReadings.map((item) => (
+                    <div
+                      key={`${item.storageUnitId}-${item.commodityId}`}
+                      className="card-elevated rounded-lg p-6 border-2 border-amber-200 bg-amber-50"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="h-12 w-12 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                          <Thermometer className="h-6 w-6 text-amber-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-foreground text-lg">
+                            {item.commodityName}
+                          </h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            📍 {item.storageUnitName} • {item.storageLocation}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-0.5">
+                            📦 Quantity: {item.quantityStored} {item.unit}
+                          </p>
+                          <div className="mt-4 p-3 rounded-lg bg-white border border-amber-200">
+                            <p className="text-sm text-amber-800 font-medium">
+                              ⚠️ No sensor readings available
+                            </p>
+                            <p className="text-xs text-amber-700 mt-1">
+                              Add an IoT sensor to this storage unit to get AI-powered spoilage predictions
+                            </p>
+                          </div>
+                          <Link
+                            href={`/dashboard/sensors?storageUnitId=${item.storageUnitId}`}
+                            className="mt-4 inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Add Sensor to {item.storageUnitName}
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Predictions with Sensor Data */}
+            {filteredPredictions.length > 0 && (
+              <div>
+                {unitsWithoutReadings.length > 0 && (
+                  <h2 className="text-lg font-semibold text-foreground mb-4 mt-8 flex items-center gap-2">
+                    <Brain className="h-5 w-5 text-primary" />
+                    AI Spoilage Predictions ({filteredPredictions.length})
+                  </h2>
+                )}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  {filteredPredictions.map((prediction) => (
+                    <SpoilagePredictionCardEnhanced
+                      key={`${prediction.storageUnitId}-${prediction.commodityId}`}
+                      prediction={prediction}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

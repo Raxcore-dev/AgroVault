@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
   const units = await prisma.storageUnit.findMany({
     where: { farmerId: user.userId },
     include: {
-      _count: { select: { commodities: true, alerts: true } },
-      readings: { orderBy: { recordedAt: 'desc' }, take: 1 },
+      _count: { select: { Commodity: true, Alert: true } },
+      StorageReading: { orderBy: { recordedAt: 'desc' }, take: 1 },
     },
     orderBy: { createdAt: 'desc' },
   })

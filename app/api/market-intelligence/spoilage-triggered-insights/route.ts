@@ -201,14 +201,14 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    if (!unit || unit.commodities.length === 0) {
+    if (!unit || unit.Commodity.length === 0) {
       return NextResponse.json(
         { error: 'Storage unit or commodity not found' },
         { status: 404 }
       )
     }
 
-    const commodity = unit.commodities[0]
+    const commodity = unit.Commodity[0]
 
     // Get latest sensor reading
     const latestReading = await prisma.storageReading.findFirst({

@@ -35,7 +35,7 @@ interface StorageUnit {
 
 type SensorStatus = 'normal' | 'warning' | 'danger'
 
-interface SimulatedSensorReading {
+interface SensorReading {
   id: string
   storage_unit_id: string
   storage_unit_name: string | null
@@ -62,7 +62,9 @@ export default function StorageUnitDetailPage() {
     expectedStorageDuration: '',
   })
   const [submitting, setSubmitting] = useState(false)
-  const [sensorReading, setSensorReading] = useState<SimulatedSensorReading | null>(null)
+  const [sensorReading, setSensorReading] = useState<SensorReading | null>(null)
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date())
+  const [sensorDeviceId, setSensorDeviceId] = useState<string | null>(null)
 
   const fetchUnit = async () => {
     if (!token || !id) return
@@ -87,7 +89,7 @@ export default function StorageUnitDetailPage() {
     if (!token || !id) return
 
     try {
-      const res = await fetch(`/api/sensors/latest?storageUnitId=${id}`, {
+      const res = await fetch(`/api/sensors/latest?storageUnitId=${id}&t=${Date.now()}`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: 'no-store',
       })
@@ -98,9 +100,10 @@ export default function StorageUnitDetailPage() {
       }
 
       const data = await res.json()
-      setSensorReading(data)
+      setSensorReading(data.reading ?? null)
+      setLastRefreshed(new Date())
     } catch (err) {
-      console.error('Failed to fetch simulated reading:', err)
+      console.error('Failed to fetch sensor reading:', err)
     }
   }
 
@@ -109,6 +112,71 @@ export default function StorageUnitDetailPage() {
     const interval = setInterval(fetchSensorReading, SENSOR_REFRESH_MS)
     return () => clearInterval(interval)
   }, [token, id])
+
+  // Fetch sensor device ID for this storage unit
+  useEffect(() => {
+    const fetchSensorDevice = async () => {
+      if (!token || !id) return
+      try {
+        const res = await fetch(`/api/sensors/register?t=${Date.now()}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store',
+        })
+        if (res.ok) {
+          const data = await res.json()
+          const sensor = data.sensors?.find((s: any) => s.StorageUnit?.id === id)
+          if (sensor) {
+            setSensorDeviceId(sensor.deviceId)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch sensor device:', err)
+      }
+    }
+    fetchSensorDevice()
+  }, [token, id])
+
+  const simulateReading = async () => {
+    if (!token || !sensorDeviceId) return
+    
+    try {
+      // Generate realistic test data with more variation
+      const testTemperature = 22 + Math.random() * 15 // 22-37°C
+      const testHumidity = 45 + Math.random() * 40 // 45-85%
+      
+      console.log('[Test Reading] Sending:', { 
+        deviceId: sensorDeviceId, 
+        temperature: testTemperature, 
+        humidity: testHumidity 
+      })
+      
+      const res = await fetch('/api/sensors/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          deviceId: sensorDeviceId,
+          temperature: testTemperature,
+          humidity: testHumidity,
+        }),
+      })
+
+      if (res.ok) {
+        console.log('[Test Reading] Success!')
+        // Immediately refresh to show new data
+        await fetchSensorReading()
+        alert(`✅ Test reading sent!\nTemperature: ${testTemperature.toFixed(1)}°C\nHumidity: ${testHumidity.toFixed(1)}%`)
+      } else {
+        const data = await res.json()
+        alert(`❌ Failed: ${data.error}`)
+      }
+    } catch (err) {
+      console.error('[Test Reading] Error:', err)
+      alert('❌ Failed to send test reading')
+    }
+  }
 
   const handleAddCommodity = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -161,7 +229,7 @@ export default function StorageUnitDetailPage() {
     )
   }
 
-  const latestReading = unit.readings?.[0]
+  const latestReading = unit.StorageReading?.[0]
   const displayedReading = sensorReading ?? latestReading
   const displayedReadingTimestamp = displayedReading
     ? ('timestamp' in displayedReading ? displayedReading.timestamp : displayedReading.recordedAt)
@@ -186,6 +254,25 @@ export default function StorageUnitDetailPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">{unit.name}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">{unit.location}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Sensor data updated: {lastRefreshed.toLocaleTimeString()} • Auto-refreshes every 10s
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={fetchSensorReading}
+              className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+              title="Refresh now"
+            >
+              🔄 Refresh
+            </button>
+            <Link
+              href={`/dashboard/sensors?storageUnitId=${unit.id}`}
+              className="btn-primary inline-flex items-center gap-2 text-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Add Sensor
+            </Link>
           </div>
         </div>
 
@@ -208,7 +295,9 @@ export default function StorageUnitDetailPage() {
             <p className={`mt-2 text-2xl font-bold ${displayedReading && displayedReading.temperature > 35 ? 'text-danger' : displayedReading && displayedReading.temperature > 30 ? 'text-warning' : 'text-primary'}`}>
               {displayedReading ? `${displayedReading.temperature.toFixed(1)}°C` : '—'}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">Auto updates every 10 seconds</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {displayedReading ? 'Live from ESP32 sensor' : 'No sensor data'}
+            </p>
           </div>
 
           <div className="card-elevated rounded-lg p-5">
@@ -216,7 +305,9 @@ export default function StorageUnitDetailPage() {
             <p className={`mt-2 text-2xl font-bold ${displayedReading && displayedReading.humidity > 75 ? 'text-danger' : 'text-accent'}`}>
               {displayedReading ? `${displayedReading.humidity.toFixed(1)}%` : '—'}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">Auto updates every 10 seconds</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {displayedReading ? 'Live from ESP32 sensor' : 'No sensor data'}
+            </p>
           </div>
 
           <div className="card-elevated rounded-lg p-5">
@@ -228,22 +319,41 @@ export default function StorageUnitDetailPage() {
 
         {/* Live Storage Monitoring Status */}
         <div className="mb-6 card-elevated rounded-lg p-5">
-          <h2 className="text-base font-semibold text-foreground">Storage Monitoring Status</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-base font-semibold text-foreground">Storage Monitoring Status</h2>
+            {sensorDeviceId && (
+              <button
+                onClick={simulateReading}
+                className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+                title="Generate a test reading for this storage unit"
+              >
+                🧪 Send Test Reading
+              </button>
+            )}
+          </div>
           {!displayedReading && (
             <p className="text-sm text-muted-foreground mt-2">
-              No sensor readings available yet for this unit.
+              No sensor readings available yet for this unit. {sensorDeviceId ? 'Click "Send Test Reading" to simulate data.' : 'Check that the ESP32 device is connected and sending data.'}
             </p>
           )}
           {displayedReading && (
             <div className="mt-3 space-y-2">
-              {displayedReading.humidity > 75 && (
-                <p className="text-sm font-medium text-warning">{`\u26a0 High Risk of Mold Growth`}</p>
-              )}
-              {displayedReading.temperature > 35 && (
-                <p className="text-sm font-medium text-danger">{`\u26a0 Grain Spoilage Risk`}</p>
-              )}
-              {displayedReading.humidity <= 75 && displayedReading.temperature <= 35 && (
-                <p className="text-sm font-medium text-primary">{`\u2705 Storage Conditions Normal`}</p>
+              {displayedReading.status_reasons.map((reason, i) => (
+                <p
+                  key={i}
+                  className={`text-sm font-medium ${
+                    displayedReading.status === 'danger'
+                      ? 'text-danger'
+                      : displayedReading.status === 'warning'
+                      ? 'text-warning'
+                      : 'text-primary'
+                  }`}
+                >
+                  ⚠ {reason}
+                </p>
+              ))}
+              {displayedReading.status === 'normal' && (
+                <p className="text-sm font-medium text-primary">✅ Storage Conditions Normal</p>
               )}
               {displayedReadingTimestamp && (
                 <p className="text-xs text-muted-foreground">
@@ -366,7 +476,7 @@ export default function StorageUnitDetailPage() {
         </div>
 
         {/* Recent Readings */}
-        {unit.readings.length > 0 && (
+        {unit.StorageReading.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-foreground mb-4">Recent Readings</h2>
             <div className="card-elevated rounded-lg overflow-hidden">
@@ -379,7 +489,7 @@ export default function StorageUnitDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {unit.readings.slice(0, 10).map((r) => (
+                  {unit.StorageReading.slice(0, 10).map((r) => (
                     <tr key={r.id} className="border-b border-border last:border-0">
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1 font-medium ${r.temperature > 28 ? 'text-danger' : r.temperature > 24 ? 'text-warning' : 'text-primary'}`}>

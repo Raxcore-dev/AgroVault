@@ -5,10 +5,11 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Wheat, BarChart3, Settings,
   Thermometer, AlertTriangle, Store, Package, Bell, CloudSun, Briefcase,
-  MessageCircle, List, Plus, TrendingDown, Droplets, Cloud,
+  MessageCircle, List, Plus, TrendingDown, Droplets, Cloud, Moon, Sun,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
+import { useTheme } from 'next-themes'
 
 interface NavItem {
   href: string
@@ -49,11 +50,12 @@ const bottomNav: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
+  const { theme, setTheme } = useTheme()
 
   const navItems = user?.role === 'farmer' ? farmerNav : buyerNav
 
   return (
-    <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 border-r border-border bg-white p-4 md:flex md:flex-col">
+    <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 border-r border-border bg-background p-4 md:flex md:flex-col">
       {/* Main Navigation */}
       <nav className="flex flex-1 flex-col gap-1">
         <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Menu</p>
@@ -83,6 +85,19 @@ export function Sidebar() {
 
       {/* Bottom section */}
       <div className="border-t border-border pt-3">
+        {/* Theme Toggle */}
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          {theme === 'dark' ? (
+            <Sun className="h-[18px] w-[18px]" />
+          ) : (
+            <Moon className="h-[18px] w-[18px]" />
+          )}
+          <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+        </button>
+
         {bottomNav.map((item) => {
           const Icon = item.icon
           return (

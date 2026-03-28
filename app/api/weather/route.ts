@@ -162,14 +162,14 @@ export async function GET(request: NextRequest) {
     })
 
     const storageData = storageUnits
-      .filter(unit => unit.readings.length > 0)
+      .filter(unit => unit.StorageReading.length > 0)
       .map(unit => ({
         id: unit.id,
         name: unit.name,
-        temperature: unit.readings[0].temperature,
-        humidity: unit.readings[0].humidity,
-        status: unit.readings[0].status,
-        recordedAt: unit.readings[0].recordedAt.toISOString()
+        temperature: unit.StorageReading[0].temperature,
+        humidity: unit.StorageReading[0].humidity,
+        status: unit.StorageReading[0].status,
+        recordedAt: unit.StorageReading[0].recordedAt.toISOString()
       }))
 
     const hasStorageData = storageData.length > 0

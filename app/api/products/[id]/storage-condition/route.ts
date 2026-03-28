@@ -49,7 +49,7 @@ export async function GET(
     }
 
     const storageUnit = product.storageUnit
-    const latestReading = storageUnit.readings[0] || null
+    const latestReading = storageUnit.StorageReading[0] || null
 
     // Determine condition status based on readings
     let condition: 'safe' | 'warning' | 'danger' = 'safe'

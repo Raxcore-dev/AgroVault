@@ -44,6 +44,49 @@
   --sidebar-ring: 133 100% 29%;
 }
 
+.dark {
+  /* ─── Dark Mode Theme ─── */
+  --background: 222 47% 11%;       /* #0f172a - deep slate */
+  --foreground: 210 40% 98%;       /* #f1f5f9 - light gray */
+  --card: 222 47% 13%;             /* #151f32 - slightly lighter card */
+  --card-foreground: 210 40% 98%;
+  --popover: 222 47% 13%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 133 100% 35%;         /* #00c862 - brighter green for dark mode */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 98%;        /* light - secondary actions */
+  --secondary-foreground: 222 47% 11%;
+  --accent: 133 100% 35%;          /* same as primary */
+  --accent-foreground: 0 0% 100%;
+  --muted: 217 33% 17%;            /* #1e293b - muted background */
+  --muted-foreground: 215 20% 65%; /* #94a3b8 - muted text */
+  --success: 133 100% 35%;         /* green */
+  --warning: 38 92% 55%;           /* #ffc107 - brighter yellow */
+  --danger: 0 85% 60%;             /* #ff4757 - brighter red */
+  --destructive: 0 85% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 217 33% 17%;           /* #1e293b - subtle border */
+  --input: 217 33% 17%;            /* #1e293b - input background */
+  --ring: 133 100% 35%;            /* green focus ring */
+
+  /* Chart palette - adjusted for dark mode */
+  --chart-1: 133 100% 35%;         /* primary green */
+  --chart-2: 210 40% 98%;          /* light */
+  --chart-3: 38 92% 55%;           /* yellow */
+  --chart-4: 0 85% 60%;            /* red */
+  --chart-5: 200 80% 60%;          /* blue */
+
+  /* Sidebar */
+  --sidebar: 222 47% 13%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 133 100% 35%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 217 33% 17%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 217 33% 17%;
+  --sidebar-ring: 133 100% 35%;
+}
+
 @theme inline {
   --font-sans: 'Geist', 'Geist Fallback', system-ui, sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback', monospace;

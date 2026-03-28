@@ -13,7 +13,13 @@ interface StorageUnit {
   location: string
   capacity: number
   createdAt: string
-  _count: { commodities: number; readings: number }
+  _count: { Commodity: number; Alert: number }
+  StorageReading: {
+    id: string
+    temperature: number
+    humidity: number
+    recordedAt: string
+  }[]
 }
 
 export default function StorageUnitsPage() {
@@ -246,11 +252,11 @@ export default function StorageUnitsPage() {
                   </div>
                   <div className="rounded-lg bg-muted/50 p-2.5 text-center">
                     <p className="text-[11px] text-muted-foreground">Items</p>
-                    <p className="text-sm font-bold text-foreground">{unit._count?.commodities ?? 0}</p>
+                    <p className="text-sm font-bold text-foreground">{unit._count?.Commodity ?? 0}</p>
                   </div>
                   <div className="rounded-lg bg-muted/50 p-2.5 text-center">
                     <p className="text-[11px] text-muted-foreground">Readings</p>
-                    <p className="text-sm font-bold text-foreground">{unit._count?.readings ?? 0}</p>
+                    <p className="text-sm font-bold text-foreground">{unit.StorageReading?.length ?? 0}</p>
                   </div>
                 </div>
                 <div className="mt-3">

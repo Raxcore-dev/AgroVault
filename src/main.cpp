@@ -6,18 +6,23 @@
 
 // ========== CONFIGURATION ==========
 // WiFi Settings
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
+const char* ssid = "TAMNET SYSTEMS";
+const char* password = "Tamnet123";
 
 // Backend Server Settings
-const char* serverURL = "http://your-backend-domain.com"; // Change this to your backend URL
+// IMPORTANT: Use your computer's actual IP address (not localhost)
+// ESP32 and computer must be on the same network
+const char* serverURL = "http://192.168.100.227:3000";
+
+// API Endpoint for sensor data
 const char* apiEndpoint = "/api/sensors/save";
 
-// Storage Unit ID (get this from your backend - should match a storageUnitId in your database)
-const char* storageUnitId = "your_storage_unit_id_here";
+// Storage Unit ID - Created via: POST /api/iot/setup
+// This ID links sensor data to a specific storage unit in the database
+const char* storageUnitId = "cmna283a600037yjmktql7nqw";
 
 // Sensor Settings
-#define DHTPIN 4        // GPIO pin connected to DHT data pin
+#define DHTPIN 14        // GPIO pin connected to DHT data pin
 #define DHTTYPE DHT22   // DHT 22 sensor (or DHT11)
 
 // Reading interval (milliseconds)

@@ -7,28 +7,28 @@
  * without creating new database connections on every reload.
  */
 
-import { PrismaClient } from '@/lib/generated/prisma/client'
+import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import pg from 'pg'
 
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL!
-  
+
   // Configure connection pool with better timeout settings for Neon
-  const pool = new pg.Pool({ 
+  const pool = new pg.Pool({
     connectionString,
     max: 10, // Maximum number of clients in the pool
     idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
     connectionTimeoutMillis: 5000, // Fail fast if can't connect (5 seconds)
     statement_timeout: 10000, // Query timeout of 10 seconds
   })
-  
+
   const adapter = new PrismaPg(pool, {
     maxRequests: 10,
     timeout: 10000, // 10 second timeout for queries
   })
-  
-  return new PrismaClient({ 
+
+  return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   })

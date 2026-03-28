@@ -24,25 +24,25 @@ export async function GET(request: NextRequest) {
     prisma.storageUnit.findMany({
       where: { farmerId: user.userId },
       include: {
-        readings: { orderBy: { recordedAt: 'desc' }, take: 1 },
-        _count: { select: { commodities: true, alerts: true } },
+        StorageReading: { orderBy: { recordedAt: 'desc' }, take: 1 },
+        _count: { select: { Commodity: true, Alert: true } },
       },
     }),
     prisma.commodity.count({
-      where: { storageUnit: { farmerId: user.userId } },
+      where: { StorageUnit: { farmerId: user.userId } },
     }),
     prisma.alert.count({
-      where: { storageUnit: { farmerId: user.userId }, isRead: false },
+      where: { StorageUnit: { farmerId: user.userId }, isRead: false },
     }),
     prisma.storageReading.findMany({
-      where: { storageUnit: { farmerId: user.userId } },
+      where: { StorageUnit: { farmerId: user.userId } },
       orderBy: { recordedAt: 'desc' },
       take: 10,
-      include: { storageUnit: { select: { name: true } } },
+      include: { StorageUnit: { select: { name: true } } },
     }),
     prisma.alert.count({
       where: {
-        storageUnit: { farmerId: user.userId },
+        StorageUnit: { farmerId: user.userId },
         severity: 'danger',
         isRead: false,
       },
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
 
   // Compute averages from the latest reading per unit
   const latestReadings = storageUnits
-    .map((u) => u.readings[0])
+    .map((u) => u.StorageReading[0])
     .filter(Boolean)
 
   const avgTemp = latestReadings.length
@@ -73,9 +73,9 @@ export async function GET(request: NextRequest) {
       name: u.name,
       location: u.location,
       capacity: u.capacity,
-      commodityCount: u._count.commodities,
-      alertCount: u._count.alerts,
-      latestReading: u.readings[0] ?? null,
+      commodityCount: u._count.Commodity,
+      alertCount: u._count.Alert,
+      latestReading: u.StorageReading[0] ?? null,
     })),
     recentReadings,
   })

@@ -1,409 +1,282 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client"
-  output   = "../lib/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-// ─── User Model ───
-// Stores farmer and buyer accounts. The `role` field distinguishes between them.
-model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String   // bcrypt-hashed password
-  role      String   @default("job_applicant") // "farmer" | "job_applicant"
-  phone     String?
-  location  String?  // county or town name
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  products     Product[]
-  sentMessages Message[] @relation("SentMessages")
-  recvMessages Message[] @relation("RecvMessages")
-  storageUnits StorageUnit[]
-  jobs         Job[]
-  jobApplications JobApplication[]
-  location_data UserLocation?
-  buyerConversations Conversation[] @relation("BuyerConversations")
-  farmerConversations Conversation[] @relation("FarmerConversations")
-  weatherAdvisories WeatherCropAdvisory[]
-}
-
-// ─── Storage Unit Model ───
-// Represents a physical storage facility owned by a farmer.
-model StorageUnit {
-  id        String   @id @default(cuid())
-  name      String   // e.g. "Grain Silo A", "Warehouse East"
-  location  String   // county or town, e.g. "Nakuru"
-  capacity  Float    // maximum capacity in tonnes
-  latitude  Float?   // GPS latitude for distance calculations
-  longitude Float?   // GPS longitude for distance calculations
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Owner (farmer only)
-  farmerId String
-  farmer   User @relation(fields: [farmerId], references: [id], onDelete: Cascade)
-
-  // Relations
-  commodities Commodity[]
-  alerts      Alert[]
-  readings    StorageReading[]
-  products    Product[]
-  weatherAdvisories WeatherCropAdvisory[]
-  sensors     Sensor[]
-}
-
-// ─── Commodity Model ───
-// Commodities stored inside a storage unit.
-model Commodity {
-  id                      String   @id @default(cuid())
-  commodityName           String   // e.g. "White Maize", "Beans"
-  quantity                Float    // quantity in the unit's context (kg, bags)
-  unit                    String   @default("kg")
-  dateStored              DateTime @default(now())
-  expectedStorageDuration Int      // days expected to remain in storage
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-
-  // Which storage unit this commodity belongs to
-  storageUnitId String
-  storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
-
-  // Relations
-  alerts Alert[]
-}
-
-// ─── Sensor Model ───
-// Represents individual IoT sensor devices monitoring storage units.
-model Sensor {
-  id          String   @id @default(cuid())
-  name        String   // e.g. "Temp Sensor A", "Humidity Sensor 1"
-  deviceType  String   // "temperature" | "humidity" | "combined" | "gas" | "moisture"
-  deviceId    String   @unique // unique hardware identifier (MAC address, serial number)
-  status      String   @default("active") // "active" | "inactive" | "maintenance" | "offline"
-  batteryLevel Float?  // battery percentage (0-100), null for powered devices
-  firmwareVersion String? // sensor firmware version
-  lastSyncAt  DateTime? // last time the sensor synced data
-  location    String?  // specific location within storage unit (e.g. "Zone A", "Top Section")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Linked storage unit
-  storageUnitId String
-  storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
-
-  // Sensor readings
-  readings StorageReading[]
-
-  @@index([storageUnitId])
-  @@index([deviceId])
-  @@index([status])
-}
-
-// ─── Storage Reading Model ───
-// Sensor readings (temperature, humidity) for a storage unit.
-model StorageReading {
-  id          String   @id @default(cuid())
-  temperature Float    // °C
-  humidity    Float    // %
-  status      String   @default("normal") // "normal" | "warning" | "danger"
-  recordedAt  DateTime @default(now())
-
-  storageUnitId String
-  storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
-
-  // Optional link to specific sensor that took this reading
-  sensorId    String?
-  sensor      Sensor? @relation(fields: [sensorId], references: [id], onDelete: SetNull)
-}
-
-// ─── Alert Model ───
-// Alerts raised when storage conditions breach safe thresholds.
 model Alert {
-  id        String   @id @default(cuid())
-  alertType String   // "high_temperature" | "low_humidity" | "high_humidity" | "capacity_exceeded" | "spoilage_risk" | "ai_spoilage_risk" | "weather_risk"
-  message   String
-  severity  String   // "warning" | "danger"
-  isRead    Boolean  @default(false)
-  timestamp DateTime @default(now())
-
-  storageUnitId String
-  storageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
-
-  commodityId String?
-  commodity   Commodity? @relation(fields: [commodityId], references: [id], onDelete: SetNull)
-
-  // Spoilage-specific fields
-  spoilageRisk      String?  // "low" | "medium" | "high"
-  recommendedAction String?  // e.g. "Sell immediately at Kibuye Market"
+  id                  String      @id @default(cuid())
+  alertType           String
+  message             String
+  severity            String
+  isRead              Boolean     @default(false)
+  timestamp           DateTime    @default(now())
+  storageUnitId       String
+  commodityId         String?
+  spoilageRisk        String?
+  recommendedAction   String?
   recommendedMarketId String?
-  recommendedMarket   Market? @relation(fields: [recommendedMarketId], references: [id], onDelete: SetNull)
+  Commodity           Commodity?  @relation(fields: [commodityId], references: [id])
+  Market              Market?     @relation(fields: [recommendedMarketId], references: [id])
+  StorageUnit         StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
 }
 
-// ─── Product Model ───
-// Represents a product listed by a farmer on the marketplace.
-model Product {
-  id           String   @id @default(cuid())
-  productName  String   // e.g. "Fresh Maize", "Organic Beans"
-  description  String
-  price        Float    // price in KES
-  quantity     Float    // available quantity (kg, bags, etc.)
-  unit         String   @default("kg") // "kg", "bag", "crate", etc.
-  productImage String?  // URL or base64 of the product image
-  locationName String   // county/town name, e.g. "Nakuru"
-  latitude     Float    // GPS latitude of the farm
-  longitude    Float    // GPS longitude of the farm
-  category     String   @default("general") // crop category for filtering
-  isAvailable  Boolean  @default(true)
-  harvestDate  DateTime? // when the product was harvested
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Optional link to a monitored storage unit
-  storageUnitId String?
-  storageUnit   StorageUnit? @relation(fields: [storageUnitId], references: [id], onDelete: SetNull)
-
-  // Relation to the farmer who listed the product
-  farmerId String
-  farmer   User      @relation(fields: [farmerId], references: [id])
-  messages Message[]
-  conversations Conversation[]
+model Commodity {
+  id                      String      @id @default(cuid())
+  commodityName           String
+  quantity                Float
+  unit                    String      @default("kg")
+  dateStored              DateTime    @default(now())
+  expectedStorageDuration Int
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime              @updatedAt
+  storageUnitId           String
+  Alert                   Alert[]
+  StorageUnit             StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
 }
 
-// ─── Conversation Model ───
-// Represents a chat conversation between a buyer and farmer about a product
+model CommodityThreshold {
+  id             String @id @default(cuid())
+  commodityName  String @unique
+  minTemp        Float
+  maxTemp        Float
+  minHumidity    Float
+  maxHumidity    Float
+  maxStorageDays Int
+}
+
 model Conversation {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Participants
-  buyerId  String
-  buyer    User @relation("BuyerConversations", fields: [buyerId], references: [id], onDelete: Cascade)
-  
-  farmerId String
-  farmer   User @relation("FarmerConversations", fields: [farmerId], references: [id], onDelete: Cascade)
-  
-  // Product context
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  // Messages in this conversation
-  messages Message[]
-  
-  // Track last message for sorting conversations
-  lastMessageAt DateTime @default(now())
-  
-  // Unique constraint: one conversation per buyer-farmer-product combination
+  id                               String    @id @default(cuid())
+  createdAt                        DateTime  @default(now())
+  updatedAt                        DateTime              @updatedAt
+  buyerId                          String
+  farmerId                         String
+  productId                        String
+  lastMessageAt                    DateTime  @default(now())
+  User_Conversation_buyerIdToUser  User      @relation("Conversation_buyerIdToUser", fields: [buyerId], references: [id], onDelete: Cascade)
+  User_Conversation_farmerIdToUser User      @relation("Conversation_farmerIdToUser", fields: [farmerId], references: [id], onDelete: Cascade)
+  Product                          Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  Message                          Message[]
+
   @@unique([buyerId, farmerId, productId])
   @@index([buyerId])
   @@index([farmerId])
-  @@index([productId])
   @@index([lastMessageAt])
+  @@index([productId])
 }
 
-// ─── Message Model ───
-// Stores chat messages between users for a specific product or job.
-model Message {
-  id         String   @id @default(cuid())
-  message    String   // the chat message text
-  timestamp  DateTime @default(now())
-  isRead     Boolean  @default(false)
+model Job {
+  id             String           @id @default(cuid())
+  title          String
+  cropType       String
+  description    String
+  workersNeeded  Int
+  payPerDay      Float
+  location       String
+  latitude       Float
+  longitude      Float
+  startDate      DateTime
+  isOpen         Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime              @updatedAt
+  farmerId       String
+  User           User             @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  JobApplication JobApplication[]
+  Message        Message[]
 
-  // Sender of the message
-  senderId   String
-  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
-
-  // Receiver of the message
-  receiverId String
-  receiver   User     @relation("RecvMessages", fields: [receiverId], references: [id])
-
-  // Conversation context (for marketplace chat)
-  conversationId String?
-  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  // Legacy: Conversation context – either about a product or a job
-  productId  String?
-  product    Product?  @relation(fields: [productId], references: [id])
-
-  jobId      String?
-  job        Job?      @relation(fields: [jobId], references: [id])
-  
-  @@index([conversationId])
-  @@index([senderId])
-  @@index([receiverId])
-  @@index([timestamp])
+  @@index([cropType])
+  @@index([isOpen])
+  @@index([location])
 }
 
-// ─── Market Model ───
-// Represents physical markets where farmers can sell commodities.
+model JobApplication {
+  id        String   @id @default(cuid())
+  message   String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime              @updatedAt
+  jobId     String
+  workerId  String
+  Job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, workerId])
+}
+
 model Market {
   id                 String   @id @default(cuid())
-  marketName         String   // e.g. "Kibuye Market"
-  location           String   // e.g. "Kisumu"
-  commodity          String   // e.g. "maize", "beans", "wheat"
-  pricePerKg         Float    // current price in KES per kg
-  previousPricePerKg Float?   // previous price – used to compute trend
-  demandLevel        String   @default("medium") // "low" | "medium" | "high"
-  priceTrend         String   @default("stable") // "increasing" | "stable" | "decreasing"
+  marketName         String
+  location           String
+  commodity          String
+  pricePerKg         Float
   latitude           Float
   longitude          Float
   lastUpdated        DateTime @default(now())
-
-  // Alerts that recommend this market
-  alerts Alert[]
+  demandLevel        String   @default("medium")
+  previousPricePerKg Float?
+  priceTrend         String   @default("stable")
+  Alert              Alert[]
 
   @@index([commodity])
   @@index([location])
 }
 
-// ─── Commodity Price Model ───
-// Admin-controlled commodity prices per county
-// This is the source of truth for commodity pricing in the system
-model CommodityPrice {
-  id              String   @id @default(cuid())
-  county          String   // e.g. "Kisumu", "Nairobi", "Madera"
-  commodity       String   // e.g. "maize", "beans", "wheat", "rice"
-  pricePerKg      Float    // current price in KES per kg
-  pricePerBag     Float?   // optional: price per 90kg bag (common unit in Kenya)
-  previousPrice   Float?   // previous price for trend calculation
-  priceTrend      String   @default("stable") // "increasing" | "stable" | "decreasing"
-  demandLevel     String   @default("medium") // "low" | "medium" | "high"
-  unit            String   @default("kg") // "kg" | "bag" | "tonne"
-  isActive        Boolean  @default(true) // whether this price is currently active
-  source          String   @default("admin") // "admin" | "market_survey" | "government"
-  notes           String?  // admin notes about this pricing
-  lastUpdated     DateTime @default(now())
-  updatedBy       String?  // admin user ID who last updated
+model Message {
+  id                            String        @id @default(cuid())
+  message                       String
+  timestamp                     DateTime      @default(now())
+  senderId                      String
+  receiverId                    String
+  productId                     String?
+  jobId                         String?
+  conversationId                String?
+  isRead                        Boolean       @default(false)
+  Conversation                  Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  Job                           Job?          @relation(fields: [jobId], references: [id])
+  Product                       Product?      @relation(fields: [productId], references: [id])
+  User_Message_receiverIdToUser User          @relation("Message_receiverIdToUser", fields: [receiverId], references: [id])
+  User_Message_senderIdToUser   User          @relation("Message_senderIdToUser", fields: [senderId], references: [id])
 
-  @@unique([county, commodity])
-  @@index([county])
-  @@index([commodity])
-  @@index([isActive])
+  @@index([conversationId])
+  @@index([receiverId])
+  @@index([senderId])
+  @@index([timestamp])
 }
 
-// ─── User Location Model ───
-// Stores GPS-detected location for a user (captured via Browser Geolocation API).
-// One record per user – updated each time the user grants location permission.
+model Product {
+  id            String         @id @default(cuid())
+  productName   String
+  description   String
+  price         Float
+  quantity      Float
+  unit          String         @default("kg")
+  productImage  String?
+  locationName  String
+  latitude      Float
+  longitude     Float
+  category      String         @default("general")
+  isAvailable   Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime              @updatedAt
+  farmerId      String
+  harvestDate   DateTime?
+  storageUnitId String?
+  Conversation  Conversation[]
+  Message       Message[]
+  User          User           @relation(fields: [farmerId], references: [id])
+  StorageUnit   StorageUnit?   @relation(fields: [storageUnitId], references: [id])
+}
+
+model Sensor {
+  id              String           @id @default(cuid())
+  name            String
+  deviceType      String
+  deviceId        String           @unique
+  status          String           @default("active")
+  batteryLevel    Float?
+  firmwareVersion String?
+  lastSyncAt      DateTime?
+  location        String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime              @updatedAt
+  storageUnitId   String
+  StorageUnit     StorageUnit      @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
+  StorageReading  StorageReading[]
+
+  @@index([deviceId])
+  @@index([status])
+  @@index([storageUnitId])
+}
+
+model StorageReading {
+  id            String      @id @default(cuid())
+  temperature   Float
+  humidity      Float
+  status        String      @default("normal")
+  recordedAt    DateTime    @default(now())
+  storageUnitId String
+  sensorId      String?
+  Sensor        Sensor?     @relation(fields: [sensorId], references: [id])
+  StorageUnit   StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
+}
+
+model StorageUnit {
+  id                  String                @id @default(cuid())
+  name                String
+  location            String
+  capacity            Float
+  latitude            Float?
+  longitude           Float?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  farmerId            String
+  Alert               Alert[]
+  Commodity           Commodity[]
+  Product             Product[]
+  Sensor              Sensor[]
+  StorageReading      StorageReading[]
+  User                User                  @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  WeatherCropAdvisory WeatherCropAdvisory[]
+}
+
+model User {
+  id                                       String                @id @default(cuid())
+  name                                     String
+  email                                    String                @unique
+  password                                 String
+  role                                     String                @default("job_applicant")
+  phone                                    String?
+  location                                 String?
+  createdAt                                DateTime              @default(now())
+  updatedAt                                DateTime              @updatedAt
+  Conversation_Conversation_buyerIdToUser  Conversation[]        @relation("Conversation_buyerIdToUser")
+  Conversation_Conversation_farmerIdToUser Conversation[]        @relation("Conversation_farmerIdToUser")
+  Job                                      Job[]
+  JobApplication                           JobApplication[]
+  Message_Message_receiverIdToUser         Message[]             @relation("Message_receiverIdToUser")
+  Message_Message_senderIdToUser           Message[]             @relation("Message_senderIdToUser")
+  Product                                  Product[]
+  StorageUnit                              StorageUnit[]
+  UserLocation                             UserLocation?
+  WeatherCropAdvisory                      WeatherCropAdvisory[]
+}
+
 model UserLocation {
   id        String   @id @default(cuid())
   userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   latitude  Float
   longitude Float
-  county    String?  // reverse-geocoded county name, e.g. "Kisumu"
-  region    String?  // broader region, e.g. "Nyanza"
-  updatedAt DateTime @updatedAt
+  county    String?
+  region    String?
+  updatedAt DateTime              @updatedAt
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
-// ─── Commodity Thresholds Model ───
-// Configurable safe thresholds per commodity type for spoilage detection.
-model CommodityThreshold {
-  id            String @id @default(cuid())
-  commodityName String @unique // e.g. "maize", "beans", "wheat"
-  minTemp       Float  // minimum safe temperature °C
-  maxTemp       Float  // maximum safe temperature °C
-  minHumidity   Float  // minimum safe humidity %
-  maxHumidity   Float  // maximum safe humidity %
-  maxStorageDays Int   // maximum recommended storage duration in days
-}
-
-// ─── Job Model ───
-// Farm labor marketplace: farmers post jobs that workers can apply to.
-model Job {
-  id            String   @id @default(cuid())
-  title         String   // e.g. "Maize Harvest Workers Needed"
-  cropType      String   // e.g. "maize", "wheat", "beans"
-  description   String
-  workersNeeded Int      // number of workers required
-  payPerDay     Float    // pay in KES per day
-  location      String   // county or town, e.g. "Kisumu"
-  latitude      Float    // GPS latitude
-  longitude     Float    // GPS longitude
-  startDate     DateTime // when the job starts
-  isOpen        Boolean  @default(true) // whether the job is still accepting applications
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Farmer who posted the job
-  farmerId String
-  farmer   User @relation(fields: [farmerId], references: [id], onDelete: Cascade)
-
-  // Applications from workers
-  applications JobApplication[]
-
-  // Chat messages about this job
-  messages Message[]
-
-  @@index([cropType])
-  @@index([location])
-  @@index([isOpen])
-}
-
-// ─── Job Application Model ───
-// A worker applies for a job with a message.
-model JobApplication {
-  id        String   @id @default(cuid())
-  message   String   // application message from the worker
-  status    String   @default("pending") // "pending" | "accepted" | "rejected"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // The job being applied to
-  jobId String
-  job   Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
-
-  // The worker applying
-  workerId String
-  worker   User @relation(fields: [workerId], references: [id], onDelete: Cascade)
-
-  @@unique([jobId, workerId]) // a worker can only apply once per job
-}
-
-// ─── Weather Crop Advisory Model ───
-// Stores AI-generated weather-based crop advisories
 model WeatherCropAdvisory {
-  id        String   @id @default(cuid())
-  
-  // References
-  storageUnitId  String
-  storageUnit    StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
-  
-  farmerId       String
-  farmer         User @relation(fields: [farmerId], references: [id], onDelete: Cascade)
-  
-  // Conditions
-  currentTemp    Float
-  currentHumidity Float
-  forecastedTemp Float
-  forecastedHumidity Float
-  
-  // Risk
-  currentSpoilageRisk     Float
-  forecastedSpoilageRisk  Float
-  riskChange              Float
-  
-  // Recommendations
-  recommendations    Json  // Array of {commodity, action, urgency, confidence}
-  overallStrategy    String
-  rawAiAnalysis      String
-  
-  // Metadata
-  weatherForecastData Json
-  confidenceScore    Float
-  createdAt DateTime @default(now())
-  expiresAt DateTime // When prediction becomes stale (12-24 hours)
-  
-  @@index([storageUnitId, farmerId, createdAt])
+  id                     String      @id @default(cuid())
+  storageUnitId          String
+  farmerId               String
+  currentTemp            Float
+  currentHumidity        Float
+  forecastedTemp         Float
+  forecastedHumidity     Float
+  currentSpoilageRisk    Float
+  forecastedSpoilageRisk Float
+  riskChange             Float
+  recommendations        Json
+  overallStrategy        String
+  rawAiAnalysis          String
+  weatherForecastData    Json
+  confidenceScore        Float
+  createdAt              DateTime    @default(now())
+  expiresAt              DateTime
+  User                   User        @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  StorageUnit            StorageUnit @relation(fields: [storageUnitId], references: [id], onDelete: Cascade)
+
   @@index([expiresAt])
+  @@index([storageUnitId, farmerId, createdAt])
 }

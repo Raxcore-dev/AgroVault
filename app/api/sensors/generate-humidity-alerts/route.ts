@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const storageUnits = await prisma.storageUnit.findMany({
       where: { farmerId: user.userId },
       include: {
-        commodities: {
+        Commodity: {
           orderBy: { dateStored: 'desc' },
           take: 1,
         },
@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
       storageUnits.map((unit) => [
         unit.id,
         {
-          cropType: unit.commodities[0]?.commodityName,
-          commodityId: unit.commodities[0]?.id,
+          cropType: unit.Commodity[0]?.commodityName,
+          commodityId: unit.Commodity[0]?.id,
         },
       ]),
     )

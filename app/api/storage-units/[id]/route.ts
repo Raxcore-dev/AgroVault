@@ -24,10 +24,10 @@ export async function GET(
   const unit = await prisma.storageUnit.findFirst({
     where: { id, farmerId: user.userId },
     include: {
-      commodities: { orderBy: { dateStored: 'desc' } },
-      readings: { orderBy: { recordedAt: 'desc' }, take: 24 },
-      alerts: { orderBy: { timestamp: 'desc' }, take: 20 },
-      _count: { select: { commodities: true } },
+      Commodity: { orderBy: { dateStored: 'desc' } },
+      StorageReading: { orderBy: { recordedAt: 'desc' }, take: 24 },
+      Alert: { orderBy: { timestamp: 'desc' }, take: 20 },
+      _count: { select: { Commodity: true } },
     },
   })
 
@@ -35,7 +35,15 @@ export async function GET(
     return NextResponse.json({ error: 'Storage unit not found.' }, { status: 404 })
   }
 
-  return NextResponse.json({ storageUnit: unit })
+  // Transform to match frontend expected format
+  const transformedUnit = {
+    ...unit,
+    commodities: unit.Commodity,
+    readings: unit.StorageReading,
+    alerts: unit.Alert,
+  }
+
+  return NextResponse.json({ storageUnit: transformedUnit })
 }
 
 export async function PATCH(

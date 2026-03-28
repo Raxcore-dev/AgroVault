@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     const storageUnits = await prisma.storageUnit.findMany({
       where,
       include: {
-        commodities: {
+        Commodity: {
           where: { quantity: { gt: 0 } },
         },
       },
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
         })
       }
 
-      for (const commodity of unit.commodities) {
+      for (const commodity of unit.Commodity) {
         try {
           // Check cache (unless forceAI)
           const cacheKey = `${unit.id}-${commodity.id}-${Math.round(sensorReading.temperature)}-${Math.round(sensorReading.humidity)}`
@@ -239,20 +239,20 @@ export async function POST(request: NextRequest) {
     const unit = await prisma.storageUnit.findUnique({
       where: { id: storageUnitId },
       include: {
-        commodities: {
+        Commodity: {
           where: { id: commodityId },
         },
       },
     })
 
-    if (!unit || unit.commodities.length === 0) {
+    if (!unit || unit.Commodity.length === 0) {
       return NextResponse.json(
         { error: 'Storage unit or commodity not found' },
         { status: 404 }
       )
     }
 
-    const commodity = unit.commodities[0]
+    const commodity = unit.Commodity[0]
 
     // Get sensor reading
     const { readings } = await getLatestSensorReadingsForFarmer(auth.userId)

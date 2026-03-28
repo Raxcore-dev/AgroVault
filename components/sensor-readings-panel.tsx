@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// ─── Types (mirror SensorReading from the service) ───────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 type SensorStatus = 'normal' | 'warning' | 'danger'
 
@@ -35,27 +35,25 @@ interface SensorSummary {
   last_updated: string | null
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-type SensorMode = 'simulation' | 'live'
+// ─── Constants ───────────────────────────────────────────────────────────────
 
 const REFRESH_INTERVAL_MS = 10_000
 
-// ─── Status helpers ───────────────────────────────────────────────────────────
+// ─── Status helpers ──────────────────────────────────────────────────────────
 
 function statusColor(status: SensorStatus) {
   return {
-    danger:  'text-red-600 dark:text-red-400',
+    danger: 'text-red-600 dark:text-red-400',
     warning: 'text-amber-600 dark:text-amber-400',
-    normal:  'text-emerald-600 dark:text-emerald-400',
+    normal: 'text-emerald-600 dark:text-emerald-400',
   }[status]
 }
 
 function statusBg(status: SensorStatus) {
   return {
-    danger:  'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20',
+    danger: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20',
     warning: 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20',
-    normal:  'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20',
+    normal: 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/20',
   }[status]
 }
 
@@ -64,7 +62,7 @@ function statusLabel(status: SensorStatus) {
 }
 
 function statusIcon(status: SensorStatus) {
-  if (status === 'danger')  return <AlertTriangle className="h-3.5 w-3.5" />
+  if (status === 'danger') return <AlertTriangle className="h-3.5 w-3.5" />
   if (status === 'warning') return <AlertTriangle className="h-3.5 w-3.5" />
   return <CheckCircle className="h-3.5 w-3.5" />
 }
@@ -72,21 +70,18 @@ function statusIcon(status: SensorStatus) {
 function relativeTime(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime()
   const mins = Math.floor(diffMs / 60_000)
-  if (mins < 1)  return 'just now'
+  if (mins < 1) return 'just now'
   if (mins < 60) return `${mins}m ago`
   const hrs = Math.floor(mins / 60)
-  if (hrs < 24)  return `${hrs}h ago`
+  if (hrs < 24) return `${hrs}h ago`
   return new Date(iso).toLocaleDateString()
 }
 
-// ─── Single Reading Card ──────────────────────────────────────────────────────
+// ─── Single Reading Card ─────────────────────────────────────────────────────
 
 function SensorCard({ reading }: { reading: SensorReading }) {
   return (
-    <div className={cn(
-      'rounded-lg border p-4 space-y-3 transition-colors',
-      statusBg(reading.status),
-    )}>
+    <div className={cn('rounded-lg border p-4 space-y-3 transition-colors', statusBg(reading.status))}>
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -99,12 +94,17 @@ function SensorCard({ reading }: { reading: SensorReading }) {
             </p>
           )}
         </div>
-        <span className={cn(
-          'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold shrink-0',
-          reading.status === 'danger'  && 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-          reading.status === 'warning' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-          reading.status === 'normal'  && 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
-        )}>
+        <span
+          className={cn(
+            'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold shrink-0',
+            reading.status === 'danger' &&
+              'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+            reading.status === 'warning' &&
+              'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+            reading.status === 'normal' &&
+              'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+          )}
+        >
           {statusIcon(reading.status)}
           {statusLabel(reading.status)}
         </span>
@@ -117,7 +117,16 @@ function SensorCard({ reading }: { reading: SensorReading }) {
             <Thermometer className="h-3.5 w-3.5" />
             Temperature
           </div>
-          <p className={cn('text-xl font-bold', reading.temperature > 32 ? 'text-red-600' : reading.temperature >= 30 ? 'text-amber-600' : 'text-emerald-600')}>
+          <p
+            className={cn(
+              'text-xl font-bold',
+              reading.temperature > 32
+                ? 'text-red-600'
+                : reading.temperature >= 30
+                ? 'text-amber-600'
+                : 'text-emerald-600'
+            )}
+          >
             {reading.temperature.toFixed(1)}°C
           </p>
         </div>
@@ -126,7 +135,16 @@ function SensorCard({ reading }: { reading: SensorReading }) {
             <Droplets className="h-3.5 w-3.5" />
             Humidity
           </div>
-          <p className={cn('text-xl font-bold', reading.humidity > 80 ? 'text-red-600' : reading.humidity >= 75 ? 'text-amber-600' : 'text-emerald-600')}>
+          <p
+            className={cn(
+              'text-xl font-bold',
+              reading.humidity > 80
+                ? 'text-red-600'
+                : reading.humidity >= 75
+                ? 'text-amber-600'
+                : 'text-emerald-600'
+            )}
+          >
             {reading.humidity.toFixed(1)}%
           </p>
         </div>
@@ -137,16 +155,14 @@ function SensorCard({ reading }: { reading: SensorReading }) {
         <div className="space-y-1">
           {reading.status_reasons.map((reason, i) => (
             <p key={i} className={cn('text-xs', statusColor(reading.status))}>
-              {`\u26a0 ${reason}`}
+              ⚠ {reason}
             </p>
           ))}
         </div>
       )}
 
       {reading.status === 'normal' && (
-        <p className="text-xs text-emerald-600 dark:text-emerald-400">
-          {`\u2705 Storage Conditions Normal`}
-        </p>
+        <p className="text-xs text-emerald-600 dark:text-emerald-400">✅ Storage Conditions Normal</p>
       )}
 
       {/* Timestamp */}
@@ -158,7 +174,7 @@ function SensorCard({ reading }: { reading: SensorReading }) {
   )
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// ─── Skeleton ────────────────────────────────────────────────────────────────
 
 function SensorCardSkeleton() {
   return (
@@ -178,7 +194,7 @@ function SensorCardSkeleton() {
   )
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main Component ──────────────────────────────────────────────────────────
 
 interface SensorReadingsPanelProps {
   className?: string
@@ -186,46 +202,54 @@ interface SensorReadingsPanelProps {
 
 export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
   const { token } = useAuth()
-  const [readings, setReadings]   = useState<SensorReading[]>([])
-  const [summary, setSummary]     = useState<SensorSummary | null>(null)
-  const [loading, setLoading]     = useState(true)
+  const [readings, setReadings] = useState<SensorReading[]>([])
+  const [summary, setSummary] = useState<SensorSummary | null>(null)
+  const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [error, setError]         = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [lastFetched, setLastFetched] = useState<Date | null>(null)
   const [countdown, setCountdown] = useState(REFRESH_INTERVAL_MS / 1000)
-  const [mode, setMode] = useState<SensorMode>('live')
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const fetchReadings = useCallback(async (isManual = false) => {
-    if (!token) return
-    if (isManual) setRefreshing(true)
+  const fetchReadings = useCallback(
+    async (isManual = false) => {
+      if (!token) return
+      if (isManual) setRefreshing(true)
 
-    try {
-      const res = await fetch('/api/sensors/latest', {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: 'no-store',
-      })
+      try {
+        const res = await fetch('/api/sensors/latest', {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store',
+        })
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        setError(body.error ?? 'Unable to fetch sensor data.')
-        return
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          setError(body.error ?? 'Unable to fetch sensor data.')
+          setLoading(false)
+          setRefreshing(false)
+          return
+        }
+
+        const data = await res.json()
+        
+        if (data.readings && data.readings.length > 0) {
+          setReadings(data.readings)
+          setSummary(data.summary ?? null)
+          setError(null)
+          setLastFetched(new Date())
+          setCountdown(REFRESH_INTERVAL_MS / 1000)
+        } else {
+          setError('No sensor readings available yet. Waiting for ESP32 device.')
+        }
+      } catch {
+        setError('Unable to fetch sensor data.')
+      } finally {
+        setLoading(false)
+        setRefreshing(false)
       }
-
-      const data = await res.json()
-      setReadings(data.readings ?? [])
-      setSummary(data.summary ?? null)
-      setMode(data.mode === 'simulation' ? 'simulation' : 'live')
-      setError(null)
-      setLastFetched(new Date())
-      setCountdown(REFRESH_INTERVAL_MS / 1000)
-    } catch {
-      setError('Unable to fetch sensor data.')
-    } finally {
-      setLoading(false)
-      setRefreshing(false)
-    }
-  }, [token])
+    },
+    [token]
+  )
 
   // Initial fetch
   useEffect(() => {
@@ -236,7 +260,9 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
   useEffect(() => {
     if (!token) return
     intervalRef.current = setInterval(() => fetchReadings(), REFRESH_INTERVAL_MS)
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
   }, [fetchReadings, token])
 
   // Countdown timer
@@ -255,16 +281,16 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
           <Activity className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold text-foreground">Storage Monitoring</h2>
           {!loading && (
-            <span className={cn(
-              'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-              error
-                ? 'bg-red-100 text-red-700'
-                : mode === 'simulation'
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-emerald-100 text-emerald-700',
-            )}>
+            <span
+              className={cn(
+                'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
+                error
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-emerald-100 text-emerald-700'
+              )}
+            >
               {error ? <WifiOff className="h-3 w-3" /> : <Wifi className="h-3 w-3" />}
-              {error ? 'Offline' : mode === 'simulation' ? 'Simulation Mode' : 'Supabase Live'}
+              {error ? 'Offline' : 'ESP32 IoT (Neon DB)'}
             </span>
           )}
         </div>
@@ -290,14 +316,25 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="rounded-lg border border-border bg-muted/20 p-3 text-center">
             <p className="text-xs text-muted-foreground">Units Monitored</p>
-            <p className="text-lg font-bold text-foreground mt-0.5">{summary.units_with_readings}</p>
+            <p className="text-lg font-bold text-foreground mt-0.5">
+              {summary.units_with_readings}
+            </p>
           </div>
-          <div className={cn(
-            'rounded-lg border p-3 text-center',
-            summary.danger_count > 0 ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20' : 'border-border bg-muted/20',
-          )}>
+          <div
+            className={cn(
+              'rounded-lg border p-3 text-center',
+              summary.danger_count > 0
+                ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20'
+                : 'border-border bg-muted/20'
+            )}
+          >
             <p className="text-xs text-muted-foreground">High Risk</p>
-            <p className={cn('text-lg font-bold mt-0.5', summary.danger_count > 0 ? 'text-red-600' : 'text-foreground')}>
+            <p
+              className={cn(
+                'text-lg font-bold mt-0.5',
+                summary.danger_count > 0 ? 'text-red-600' : 'text-foreground'
+              )}
+            >
               {summary.danger_count}
             </p>
           </div>
@@ -319,7 +356,9 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
       {/* Loading */}
       {loading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => <SensorCardSkeleton key={i} />)}
+          {[1, 2, 3].map((i) => (
+            <SensorCardSkeleton key={i} />
+          ))}
         </div>
       )}
 
@@ -330,9 +369,7 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
           <div>
             <p className="text-sm font-semibold text-red-700 dark:text-red-300">{error}</p>
             <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
-              {mode === 'simulation'
-                ? 'Simulation is unavailable right now. Please try again shortly.'
-                : 'Check your Supabase connection and ensure SUPABASE_URL and SUPABASE_ANON_KEY are set.'}
+              Check that your ESP32 device is connected and sending data to the system.
             </p>
           </div>
         </div>
@@ -344,9 +381,7 @@ export function SensorReadingsPanel({ className }: SensorReadingsPanelProps) {
           <Activity className="mx-auto h-8 w-8 text-muted-foreground/40 mb-3" />
           <p className="text-sm font-medium text-foreground">No sensor readings available yet.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            {mode === 'simulation'
-              ? 'Simulation mode is on. Add storage units to generate virtual readings every 10 seconds.'
-              : 'IoT sensors will appear here once they start sending readings to Supabase.'}
+            IoT sensors will appear here once they start sending readings from the ESP32 device.
           </p>
         </div>
       )}

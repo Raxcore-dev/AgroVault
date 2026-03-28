@@ -55,20 +55,32 @@ export async function GET(request: NextRequest) {
 
     // Generate enhanced predictions for each commodity
     const predictions = []
+    const unitsWithoutReadings = []
 
     for (const unit of storageUnits) {
       // Get historical readings for trend analysis
       const historicalReadings = await getHistoricalReadings(unit.id, 30) // Last 30 minutes
 
-      // Skip if no readings at all
+      // Track units without readings
       if (historicalReadings.length === 0) {
+        for (const commodity of unit.Commodity) {
+          unitsWithoutReadings.push({
+            storageUnitId: unit.id,
+            storageUnitName: unit.name,
+            storageLocation: unit.location,
+            commodityId: commodity.id,
+            commodityName: commodity.commodityName,
+            quantityStored: commodity.quantity,
+            unit: commodity.unit,
+          })
+        }
         continue
       }
 
       // Get current conditions (latest reading)
       const currentReading = historicalReadings[0]
 
-      for (const commodity of unit.commodities) {
+      for (const commodity of unit.Commodity) {
         // Get market price for this commodity
         const marketPrice = await getMarketPriceForCommodity(commodity.commodityName)
 
@@ -125,6 +137,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       predictions,
       summary,
+      unitsWithoutReadings,
       lastUpdated: new Date().toISOString(),
     })
   } catch (error) {

@@ -42,9 +42,9 @@ export async function POST(request: NextRequest) {
     for (const unit of storageUnits) {
       if (unit.readings.length === 0) continue
 
-      const latestReading = unit.readings[0]
+      const latestReading = unit.StorageReading[0]
 
-      for (const commodity of unit.commodities) {
+      for (const commodity of unit.Commodity) {
         // Get market price
         const marketPrice = await getMarketPrice(commodity.commodityName.toLowerCase())
 

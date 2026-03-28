@@ -11,6 +11,7 @@ import {
   Target,
   CheckCircle,
 } from 'lucide-react'
+import { useAuth } from '@/lib/auth-context'
 
 interface CommodityAdvisory {
   commodityId: string
@@ -68,6 +69,7 @@ export function WeatherCropAdvisoryCard({
   storageUnitId,
   storageUnitName,
 }: WeatherCropAdvisoryProps) {
+  const { token } = useAuth()
   const [advisory, setAdvisory] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -78,11 +80,17 @@ export function WeatherCropAdvisoryCard({
       try {
         setLoading(true)
         const response = await fetch(
-          `/api/weather/crop-advisory?storageUnitId=${storageUnitId}`
+          `/api/weather/crop-advisory?storageUnitId=${storageUnitId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         )
 
         if (!response.ok) {
-          throw new Error('Failed to fetch crop advisory')
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to fetch crop advisory')
         }
 
         const data = await response.json()
@@ -101,14 +109,14 @@ export function WeatherCropAdvisoryCard({
     // Refresh every 30 minutes
     const interval = setInterval(fetchAdvisory, 30 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [storageUnitId])
+  }, [storageUnitId, token])
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+      <div className="card-elevated rounded-lg border p-6">
         <div className="flex items-center justify-center space-x-2">
-          <div className="w-4 h-4 bg-purple-600 rounded-full animate-pulse"></div>
-          <p className="text-gray-600">Analyzing weather impact...</p>
+          <div className="w-4 h-4 bg-primary rounded-full animate-pulse"></div>
+          <p className="text-muted-foreground">Analyzing weather impact...</p>
         </div>
       </div>
     )
@@ -116,12 +124,12 @@ export function WeatherCropAdvisoryCard({
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow p-6 border border-red-200">
+      <div className="bg-destructive/10 rounded-lg border border-destructive/30 p-6">
         <div className="flex items-start space-x-3">
-          <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-red-900">Error</h3>
-            <p className="text-red-700 text-sm">{error}</p>
+            <h3 className="font-semibold text-destructive">Error</h3>
+            <p className="text-destructive/80 text-sm">{error}</p>
           </div>
         </div>
       </div>
@@ -130,8 +138,8 @@ export function WeatherCropAdvisoryCard({
 
   if (!advisory || advisory.commodityAdvisories.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-        <p className="text-gray-600 text-center py-4">
+      <div className="card-elevated rounded-lg border p-6">
+        <p className="text-muted-foreground text-center py-4">
           No commodities in storage to analyze
         </p>
       </div>

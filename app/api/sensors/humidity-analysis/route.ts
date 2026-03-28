@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     const storageUnits = await prisma.storageUnit.findMany({
       where: { farmerId: user.userId },
       include: {
-        commodities: {
+        Commodity: {
           orderBy: { dateStored: 'desc' },
           take: 1,
         },
@@ -75,10 +75,10 @@ export async function GET(request: NextRequest) {
       storageUnits.map((unit) => [
         unit.id,
         {
-          cropType: unit.commodities[0]?.commodityName,
-          storageDuration: unit.commodities[0]
+          cropType: unit.Commodity[0]?.commodityName,
+          storageDuration: unit.Commodity[0]
             ? Math.floor(
-                (Date.now() - new Date(unit.commodities[0].dateStored).getTime()) /
+                (Date.now() - new Date(unit.Commodity[0].dateStored).getTime()) /
                   (1000 * 60 * 60 * 24),
               )
             : undefined,

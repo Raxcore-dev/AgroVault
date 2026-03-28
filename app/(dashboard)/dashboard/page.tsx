@@ -43,7 +43,14 @@ interface StorageUnit {
   location: string
   capacity: number
   createdAt: string
-  _count: { commodities: number; readings: number }
+  commodityCount: number
+  alertCount: number
+  StorageReading: {
+    id: string
+    temperature: number
+    humidity: number
+    recordedAt: string
+  }[]
 }
 
 interface SpoilageAssessment {
@@ -522,7 +529,7 @@ function FarmerDashboard() {
                     </div>
                     <div className="rounded-lg bg-muted/50 p-2.5">
                       <p className="text-[11px] text-muted-foreground">Items</p>
-                      <p className="text-sm font-bold text-foreground">{unit._count?.commodities ?? 0}</p>
+                      <p className="text-sm font-bold text-foreground">{unit.commodityCount ?? 0}</p>
                     </div>
                   </div>
                 </Link>

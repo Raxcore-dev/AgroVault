@@ -1,5 +1,20 @@
+/**
+ * Mock Data Utilities
+ * 
+ * DEPRECATED: This file is maintained for backward compatibility only.
+ * All sensor data now comes from real ESP32 devices via the Neon PostgreSQL database.
+ * 
+ * For new components, use:
+ * - /api/sensors/latest for real-time sensor readings
+ * - /api/risk for risk assessments based on live data
+ * - Direct database queries via Prisma for historical data
+ */
+
 export const counties = [] // Populated dynamically from CommodityPrice table - see /api/counties
 
+/**
+ * @deprecated Static storage definitions - use database StorageUnit table instead
+ */
 export const storages = [
   { id: '1', name: 'Storage A', location: 'Nairobi CBD', capacity: 5000 },
   { id: '2', name: 'Storage B', location: 'Mombasa Port', capacity: 8000 },
@@ -7,6 +22,9 @@ export const storages = [
   { id: '4', name: 'Storage D', location: 'Nakuru', capacity: 6000 },
 ]
 
+/**
+ * @deprecated Use SensorReading interface from API responses instead
+ */
 export interface SensorData {
   storageId: string
   temperature: number
@@ -14,6 +32,9 @@ export interface SensorData {
   timestamp: number
 }
 
+/**
+ * Market data interface
+ */
 export interface MarketData {
   crop: string
   price: number
@@ -23,6 +44,9 @@ export interface MarketData {
   unit: string
 }
 
+/**
+ * @deprecated Use RiskAssessment from /api/risk instead
+ */
 export interface RiskData {
   storageId: string
   riskLevel: 'low' | 'medium' | 'high'
@@ -39,7 +63,14 @@ const STABLE_PRICES: Record<string, { price: number; trend: 'up' | 'down' | 'sta
   'Sorghum': { price: 6500, trend: 'up', change: 100 },
 }
 
+/**
+ * @deprecated This function is no longer used. Sensor data now comes from ESP32 devices.
+ * 
+ * Previously generated random sensor data for testing.
+ * Real sensor data is now fetched from /api/sensors/latest
+ */
 export function generateSensorData(): SensorData[] {
+  console.warn('[DEPRECATED] generateSensorData() is deprecated. Use /api/sensors/latest instead.')
   return storages.map((storage) => ({
     storageId: storage.id,
     temperature: 18 + Math.random() * 8,
@@ -48,6 +79,9 @@ export function generateSensorData(): SensorData[] {
   }))
 }
 
+/**
+ * Generate market data for a county
+ */
 export function generateMarketData(county: string): MarketData[] {
   return Object.entries(STABLE_PRICES).map(([crop, data]) => ({
     crop,
@@ -59,7 +93,14 @@ export function generateMarketData(county: string): MarketData[] {
   }))
 }
 
+/**
+ * @deprecated This function is no longer used. Risk data now comes from /api/risk.
+ * 
+ * Previously calculated risk based on sensor data.
+ * Real risk assessments are now fetched from /api/risk
+ */
 export function generateRiskData(sensorData: SensorData[]): RiskData[] {
+  console.warn('[DEPRECATED] generateRiskData() is deprecated. Use /api/risk instead.')
   return sensorData.map((sensor) => {
     const tempRisk = Math.abs(sensor.temperature - 20) / 10
     const humidityRisk = Math.abs(sensor.humidity - 65) / 20
