@@ -139,8 +139,16 @@ export async function analyzeWeatherImpactOnCommodities(
       getWeatherForecast(latitude, longitude, location),
     ])
 
-    // If no commodities or readings, return empty advisory
-    if (commodities.length === 0 || !currentReadings) {
+    // Debug logging
+    console.log(`[Weather Advisory] Data gathered for unit ${storageUnitId}:`, {
+      commoditiesCount: commodities.length,
+      hasReadings: !!currentReadings,
+      hasWeatherData: forecast && forecast.length > 0,
+    })
+
+    // If no commodities, return empty advisory
+    if (commodities.length === 0) {
+      console.log(`[Weather Advisory] No commodities found for unit ${storageUnitId}`)
       return {
         success: true,
         forecastPeriod: 'Next 7 days',
@@ -161,6 +169,38 @@ export async function analyzeWeatherImpactOnCommodities(
         },
         alertedCommodities: 0,
         recommendedActions: [],
+        lastUpdated: new Date().toISOString(),
+        confidence: 0,
+      }
+    }
+
+    // If no sensor readings, return advisory with placeholder data
+    if (!currentReadings) {
+      console.log(`[Weather Advisory] No sensor readings found for unit ${storageUnitId}. Using placeholder data.`)
+      return {
+        success: true,
+        forecastPeriod: 'Next 7 days',
+        weatherSummary: 'Waiting for sensor data',
+        currentDate: new Date().toISOString(),
+        forecastDate: new Date().toISOString(),
+        severity: 'NONE',
+        commodityAdvisories: [],
+        overallStrategy: 'Unable to analyze - no current storage conditions. Please ensure sensor is sending data.',
+        weatherImpact: {
+          description: forecast[0] ? `Temperature: ${forecast[0]?.temperature_min || 0}°C - ${forecast[0]?.temperature_max || 0}°C` : 'N/A',
+          duration: '3-6 hours',
+          expectedHumidityChange: 'Waiting for sensor data',
+          expectedTemperatureChange: 'Waiting for sensor data',
+          riskLevel: 'UNKNOWN',
+          affectedCommodities: commodities.map(c => c.commodityName),
+          explanation: 'Cannot analyze weather impact without current sensor readings. Please register and activate your ESP32 sensor.',
+        },
+        alertedCommodities: 0,
+        recommendedActions: [
+          'Register ESP32 sensor for this storage unit',
+          'Ensure sensor is powered and connected to WiFi',
+          'Check that sensor is sending data to /api/sensors/save',
+        ],
         lastUpdated: new Date().toISOString(),
         confidence: 0,
       }
@@ -244,12 +284,34 @@ export async function analyzeWeatherImpactOnCommodities(
  * Get all commodities currently in storage
  */
 async function getCommoditiesInStorage(storageUnitId: string) {
-  const commodities = await prisma.commodity.findMany({
+  // First try to get commodities with quantity > 0
+  let commodities = await prisma.commodity.findMany({
     where: {
       storageUnitId,
-      quantity: { gt: 0 },
+      quantity: { gt: 0 },  // Only active commodities with quantity > 0
     },
   })
+  
+  console.log(`[Weather Advisory] Found ${commodities.length} active commodities (quantity > 0) in storage unit ${storageUnitId}`)
+  
+  // If no active commodities, get ALL commodities regardless of quantity
+  if (commodities.length === 0) {
+    commodities = await prisma.commodity.findMany({
+      where: {
+        storageUnitId,
+      },
+    })
+    console.log(`[Weather Advisory] Found ${commodities.length} total commodities (all quantities) in storage unit ${storageUnitId}`)
+    
+    if (commodities.length > 0) {
+      console.log('[Weather Advisory] Commodities found:', commodities.map(c => ({ 
+        name: c.commodityName, 
+        quantity: c.quantity,
+        unit: c.unit 
+      })))
+    }
+  }
+  
   return commodities
 }
 

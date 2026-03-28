@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     const storageUnits = await prisma.storageUnit.findMany({
       where,
       include: {
-        commodities: {
+        Commodity: {
           where: {
             quantity: { gt: 0 } // Only active commodities
           }

@@ -85,13 +85,6 @@ export async function GET(request: NextRequest) {
       where: { id: auth.userId },
       select: {
         location: true,
-        location_data: {
-          select: {
-            latitude: true,
-            longitude: true,
-            county: true
-          }
-        }
       }
     })
 
@@ -104,26 +97,20 @@ export async function GET(request: NextRequest) {
     let longitude: number
     let locationName: string
 
-    if (user.location_data) {
-      latitude = user.location_data.latitude
-      longitude = user.location_data.longitude
-      locationName = user.location_data.county || user.location || 'Unknown'
-    } else {
-      // Fallback to default Kenya coordinates if no location data
-      const defaultLocations: Record<string, { lat: number; lon: number }> = {
-        'Nairobi': { lat: -1.2921, lon: 36.8219 },
-        'Nakuru': { lat: -0.3031, lon: 36.0800 },
-        'Kisumu': { lat: -0.1022, lon: 34.7617 },
-        'Mombasa': { lat: -4.0435, lon: 39.6682 },
-        'Eldoret': { lat: 0.5143, lon: 35.2698 }
-      }
-
-      const userLocation = user.location || 'Nairobi'
-      const coords = defaultLocations[userLocation] || defaultLocations['Nairobi']
-      latitude = coords.lat
-      longitude = coords.lon
-      locationName = userLocation
+    // Fallback to default Kenya coordinates based on user location string
+    const defaultLocations: Record<string, { lat: number; lon: number }> = {
+      'Nairobi': { lat: -1.2921, lon: 36.8219 },
+      'Nakuru': { lat: -0.3031, lon: 36.0800 },
+      'Kisumu': { lat: -0.1022, lon: 34.7617 },
+      'Mombasa': { lat: -4.0435, lon: 39.6682 },
+      'Eldoret': { lat: 0.5143, lon: 35.2698 }
     }
+
+    const userLocation = user.location || 'Nairobi'
+    const coords = defaultLocations[userLocation] || defaultLocations['Nairobi']
+    latitude = coords.lat
+    longitude = coords.lon
+    locationName = userLocation
 
     // Fetch weather data from Open-Meteo API
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=Africa/Nairobi`

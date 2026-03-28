@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     const storageUnit = await prisma.storageUnit.findUnique({
       where: { id: storageUnitId },
       include: {
-        farmer: true,
+        User: true,
       },
     })
 
@@ -75,19 +75,42 @@ export async function GET(request: NextRequest) {
     let longitude = parseFloat(searchParams.get('longitude') || '')
     let location = searchParams.get('location') || storageUnit.location
 
-    // If coordinates not provided, use storage unit location
+    // Kenya locations mapping for weather forecast
+    const kenyaLocations: Record<string, { lat: number; lon: number }> = {
+      'Nairobi': { lat: -1.2921, lon: 36.8219 },
+      'Nakuru': { lat: -0.3031, lon: 36.0800 },
+      'Kisumu': { lat: -0.1022, lon: 34.7617 },
+      'Mombasa': { lat: -4.0435, lon: 39.6682 },
+      'Eldoret': { lat: 0.5143, lon: 35.2698 },
+      'Kisii': { lat: -0.6915, lon: 34.7732 },
+      'Kericho': { lat: -0.3667, lon: 35.2833 },
+      'Naivasha': { lat: -0.7167, lon: 36.4333 },
+      'Voi': { lat: -3.3975, lon: 38.5733 },
+      'Machakos': { lat: -2.7265, lon: 37.2653 },
+    }
+
+    // If coordinates not provided, try to use storage unit location
     if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
       if (storageUnit.latitude && storageUnit.longitude) {
+        // Use explicit coordinates from storage unit
         latitude = storageUnit.latitude
         longitude = storageUnit.longitude
       } else {
-        return NextResponse.json(
-          {
-            error:
-              'Storage unit location coordinates not found. Please update storage unit with coordinates.',
-          },
-          { status: 400 }
-        )
+        // Try to map location name to coordinates
+        const coords = kenyaLocations[location] || kenyaLocations[Object.keys(kenyaLocations)[0]]
+        if (coords) {
+          latitude = coords.lat
+          longitude = coords.lon
+          console.log(`[Crop Advisory] Mapped location "${location}" to coordinates: ${latitude}, ${longitude}`)
+        } else {
+          return NextResponse.json(
+            {
+              error: `Storage unit location "${location}" not recognized. Please update storage unit with specific coordinates or use a known Kenya location.`,
+              availableLocations: Object.keys(kenyaLocations),
+            },
+            { status: 400 }
+          )
+        }
       }
     }
 

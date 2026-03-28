@@ -21,6 +21,8 @@ interface StorageReading {
   temperature: number
   humidity: number
   recordedAt: string
+  status?: 'normal' | 'warning' | 'danger'
+  status_reasons?: string[]
 }
 
 interface StorageUnit {
@@ -28,6 +30,8 @@ interface StorageUnit {
   name: string
   location: string
   capacity: number
+  latitude?: number | null
+  longitude?: number | null
   createdAt: string
   commodities: Commodity[]
   readings: StorageReading[]
@@ -65,6 +69,11 @@ export default function StorageUnitDetailPage() {
   const [sensorReading, setSensorReading] = useState<SensorReading | null>(null)
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date())
   const [sensorDeviceId, setSensorDeviceId] = useState<string | null>(null)
+  const [isEditingLocation, setIsEditingLocation] = useState(false)
+  const [locationForm, setLocationForm] = useState({
+    latitude: '',
+    longitude: '',
+  })
 
   const fetchUnit = async () => {
     if (!token || !id) return
@@ -74,7 +83,12 @@ export default function StorageUnitDetailPage() {
       })
       if (res.ok) {
         const data = await res.json()
-        setUnit(data.storageUnit ?? data)
+        const unitData = data.storageUnit ?? data
+        setUnit(unitData)
+        setLocationForm({
+          latitude: unitData.latitude ? String(unitData.latitude) : '',
+          longitude: unitData.longitude ? String(unitData.longitude) : '',
+        })
       } else if (res.status === 404) router.push('/dashboard/storage-units')
     } catch (err) {
       console.error(err)
@@ -206,6 +220,41 @@ export default function StorageUnitDetailPage() {
     }
   }
 
+  const handleUpdateLocation = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!locationForm.latitude || !locationForm.longitude) {
+      alert('Please enter both latitude and longitude')
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/storage-units/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          latitude: Number(locationForm.latitude),
+          longitude: Number(locationForm.longitude),
+        }),
+      })
+      if (res.ok) {
+        setIsEditingLocation(false)
+        await fetchUnit()
+        alert('✅ Coordinates updated successfully!')
+      } else {
+        const data = await res.json()
+        alert(`❌ Error: ${data.error}`)
+      }
+    } catch (err) {
+      console.error(err)
+      alert('❌ Failed to update coordinates')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="px-6 py-6 lg:px-8">
@@ -229,7 +278,7 @@ export default function StorageUnitDetailPage() {
     )
   }
 
-  const latestReading = unit.StorageReading?.[0]
+  const latestReading = unit.readings?.[0]
   const displayedReading = sensorReading ?? latestReading
   const displayedReadingTimestamp = displayedReading
     ? ('timestamp' in displayedReading ? displayedReading.timestamp : displayedReading.recordedAt)
@@ -254,6 +303,15 @@ export default function StorageUnitDetailPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">{unit.name}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">{unit.location}</p>
+            {unit.latitude && unit.longitude ? (
+              <p className="text-xs text-muted-foreground mt-1">
+                📍 {unit.latitude.toFixed(4)}, {unit.longitude.toFixed(4)}
+              </p>
+            ) : (
+              <p className="text-xs text-warning font-medium mt-1">
+                ⚠️ Coordinates not set - weather advisory unavailable
+              </p>
+            )}
             <p className="text-xs text-muted-foreground mt-1">
               Sensor data updated: {lastRefreshed.toLocaleTimeString()} • Auto-refreshes every 10s
             </p>
@@ -274,6 +332,76 @@ export default function StorageUnitDetailPage() {
               Add Sensor
             </Link>
           </div>
+        </div>
+
+        {/* Location Coordinates Section */}
+        <div className="mb-6 card-elevated rounded-lg p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-foreground">Storage Location</h3>
+            {!isEditingLocation && (
+              <button
+                onClick={() => setIsEditingLocation(true)}
+                className="text-xs text-primary hover:underline"
+              >
+                Edit Coordinates
+              </button>
+            )}
+          </div>
+          {isEditingLocation ? (
+            <form onSubmit={handleUpdateLocation} className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Latitude</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={locationForm.latitude}
+                    onChange={(e) => setLocationForm((p) => ({ ...p, latitude: e.target.value }))}
+                    placeholder="e.g. -1.2921"
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Example: -1.2921 (South), 0.1234 (North)</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Longitude</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={locationForm.longitude}
+                    onChange={(e) => setLocationForm((p) => ({ ...p, longitude: e.target.value }))}
+                    placeholder="e.g. 36.6892"
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Example: 36.6892 (East), 20.1234 (West)</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button type="submit" disabled={submitting} className="btn-primary text-sm disabled:opacity-50">
+                  {submitting ? 'Saving...' : 'Save Coordinates'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingLocation(false)}
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="text-sm text-foreground">
+              {unit.latitude && unit.longitude ? (
+                <>
+                  <p>Latitude: <strong>{unit.latitude.toFixed(6)}</strong></p>
+                  <p>Longitude: <strong>{unit.longitude.toFixed(6)}</strong></p>
+                </>
+              ) : (
+                <p className="text-warning">No coordinates set. Click "Edit Coordinates" to add them.</p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Quick Stats */}
@@ -338,7 +466,7 @@ export default function StorageUnitDetailPage() {
           )}
           {displayedReading && (
             <div className="mt-3 space-y-2">
-              {displayedReading.status_reasons.map((reason, i) => (
+              {(displayedReading.status_reasons || []).map((reason, i) => (
                 <p
                   key={i}
                   className={`text-sm font-medium ${
@@ -476,7 +604,7 @@ export default function StorageUnitDetailPage() {
         </div>
 
         {/* Recent Readings */}
-        {unit.StorageReading.length > 0 && (
+        {unit.readings && unit.readings.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-foreground mb-4">Recent Readings</h2>
             <div className="card-elevated rounded-lg overflow-hidden">
@@ -489,7 +617,7 @@ export default function StorageUnitDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {unit.StorageReading.slice(0, 10).map((r) => (
+                  {unit.readings.slice(0, 10).map((r) => (
                     <tr key={r.id} className="border-b border-border last:border-0">
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1 font-medium ${r.temperature > 28 ? 'text-danger' : r.temperature > 24 ? 'text-warning' : 'text-primary'}`}>

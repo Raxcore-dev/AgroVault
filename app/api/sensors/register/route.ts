@@ -137,32 +137,51 @@ export async function GET(request: NextRequest) {
   if (user instanceof NextResponse) return user
 
   try {
+    // Fetch sensors without heavy includes first
     const sensors = await prisma.sensor.findMany({
       where: { StorageUnit: { farmerId: user.userId } },
-      include: {
-        StorageUnit: {
-          select: {
-            id: true,
-            name: true,
-            location: true,
-          },
-        },
-        StorageReading: {
-          orderBy: { recordedAt: 'desc' },
-          take: 1,
-          select: {
-            id: true,
-            temperature: true,
-            humidity: true,
-            status: true,
-            recordedAt: true,
-          },
-        },
+      select: {
+        id: true,
+        name: true,
+        deviceId: true,
+        deviceType: true,
+        status: true,
+        createdAt: true,
+        storageUnitId: true,
       },
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ sensors })
+    // Fetch storage unit info and latest readings separately
+    const sensorDetails = await Promise.all(
+      sensors.map(async (sensor) => {
+        const [storageUnit, latestReading] = await Promise.all([
+          prisma.storageUnit.findUnique({
+            where: { id: sensor.storageUnitId },
+            select: { id: true, name: true, location: true },
+          }),
+          prisma.storageReading.findFirst({
+            where: { storageUnitId: sensor.storageUnitId },
+            orderBy: { recordedAt: 'desc' },
+            select: {
+              id: true,
+              temperature: true,
+              humidity: true,
+              status: true,
+              recordedAt: true,
+            },
+          }),
+        ])
+
+        return {
+          ...sensor,
+          StorageUnit: storageUnit,
+          StorageReading: latestReading ? [latestReading] : [],
+        }
+      })
+    )
+
+    return NextResponse.json({ sensors: sensorDetails })
   } catch (error: any) {
     console.error('[SensorList] Error:', error.message)
     return NextResponse.json(
