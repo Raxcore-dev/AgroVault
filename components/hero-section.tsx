@@ -20,77 +20,86 @@ export function HeroSection({ initialCounty }: HeroSectionProps) {
   const [showChat, setShowChat] = useState(false)
 
   return (
-    <section className="relative overflow-hidden pt-24 pb-16 md:pt-32 md:pb-24 bg-background">
-      {/* Background Decorative Element */}
-      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-1/2 h-full bg-primary/5 rounded-full blur-3xl -z-10" />
-      
-      {/* Content Container */}
-      <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-          <div className="flex-1 max-w-2xl text-left">
-            {/* Main Heading */}
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-6 animate-in slide-in-from-left-4 duration-700">
-              <span className="text-foreground">Tech-Powered </span>
-              <span className="text-primary leading-tight">Post-Harvest Solutions </span>
-              <span className="text-foreground">for Every African Farmer</span>
-            </h1>
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-black">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <NextImage
+          src="/hero-bg.png"
+          alt="Modern African Agricultural Landscape"
+          fill
+          className="object-cover opacity-60"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
+      </div>
 
-            {/* Subtitle */}
-            <p className="text-lg sm:text-xl text-muted-foreground mb-10 leading-relaxed max-w-xl animate-in fade-in duration-1000">
-              Kenya's premier platform empowering both smallholder and commercial farmers with intelligent drying, monitoring, storage, and market access tools.
-            </p>
+      {/* Hero Content */}
+      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Main Heading Showcase */}
+          <div className="relative inline-block mb-10 group">
+             <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-amber-500/50 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+             <div className="relative px-8 py-10 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl space-y-8 animate-in zoom-in-95 duration-700">
+                <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-white leading-[0.9]">
+                  <span className="block">PROTECTING</span>
+                  <span className="block bg-gradient-to-r from-primary to-amber-400 bg-clip-text text-transparent">YOUR HARVEST</span>
+                </h1>
 
-            {/* Search Section */}
-            <div className="mb-8 animate-in slide-in-from-bottom-4 duration-700">
-              <CountySearch
-                selectedCounty={selectedCounty}
-                onCountySelect={setSelectedCounty}
-              />
-            </div>
-
-            {/* AI Call to Action */}
-            <button 
-              onClick={() => setShowChat(true)}
-              className="text-sm font-semibold text-primary/80 hover:text-primary transition-colors flex items-center gap-2 mb-12"
-            >
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              Ask Rax AI for market advice
-            </button>
-          </div>
-
-          {/* New Hero Image */}
-          <div className="flex-1 relative w-full aspect-square max-w-[500px] lg:max-w-none animate-in zoom-in-95 duration-1000">
-            <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-2xl -z-10 translate-x-4 translate-y-4" />
-            <div className="relative h-full w-full rounded-lg overflow-hidden border border-border">
-              <Image
-                src="/hero.png"
-                alt="AgroVault: Empowering African Farmers"
-                fill
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-6">
-                <p className="text-white font-medium text-sm">
-                  Empowering smallholder and commercial farmers across Africa.
+                <p className="text-xl sm:text-2xl text-white/80 font-medium max-w-2xl mx-auto leading-tight italic">
+                  Africa's premier platform empowering both smallholder and commercial farmers with intelligent drying, monitoring, storage, and market access tools.
                 </p>
-              </div>
-            </div>
+
+                {/* Integrated Search Section */}
+                <div className="max-w-xl mx-auto flex flex-col gap-6">
+                  <CountySearch
+                    selectedCounty={selectedCounty}
+                    onCountySelect={setSelectedCounty}
+                  />
+
+                  {/* AI Interaction */}
+                  <div className="flex items-center justify-center gap-6">
+                    <button 
+                      onClick={() => setShowChat(true)}
+                      className="group/btn flex items-center gap-3 text-sm font-bold text-white transition-all hover:text-primary"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover/btn:bg-primary/20 transition-colors">
+                        <Brain className="h-5 w-5 text-primary" />
+                      </div>
+                      Ask Rax AI for advice
+                    </button>
+                    
+                    <div className="h-1 w-1 rounded-full bg-white/20" />
+
+                    <div className="flex items-center gap-2">
+                       <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                       <span className="text-xs font-bold text-white/50 uppercase tracking-widest">Live in 47 Counties</span>
+                    </div>
+                  </div>
+                </div>
+             </div>
           </div>
         </div>
-
-        {/* AI Chat Widget */}
-        {showChat && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="absolute inset-0" onClick={() => setShowChat(false)} />
-            <div className="relative animate-in zoom-in-95 duration-200">
-              <RaxChatWidget
-                county={selectedCounty || undefined}
-                onClose={() => setShowChat(false)}
-              />
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Scroll Indicator */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce hidden sm:block">
+        <div className="h-10 w-6 rounded-full border-2 border-white/20 flex justify-center p-1">
+          <div className="h-2 w-1 bg-white/50 rounded-full" />
+        </div>
+      </div>
+
+      {/* AI Chat Widget */}
+      {showChat && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="absolute inset-0" onClick={() => setShowChat(false)} />
+          <div className="relative animate-in zoom-in-95 duration-300 shadow-2xl">
+            <RaxChatWidget
+              county={selectedCounty || undefined}
+              onClose={() => setShowChat(false)}
+            />
+          </div>
+        </div>
+      )}
     </section>
   )
 }
