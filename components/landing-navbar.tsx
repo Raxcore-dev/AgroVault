@@ -17,40 +17,45 @@ export function LandingNavbar() {
   ]
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/">
-            <Logo size="sm" />
-          </Link>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-white/10 shadow-sm transition-all duration-300">
+      <nav className="container mx-auto px-4 sm:px-6 lg:px-10">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo Section */}
+          <div className="flex items-center gap-10">
+             <Link href="/" className="hover:opacity-90 transition-opacity">
+               <Logo size="sm" />
+             </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+             {/* Desktop Navigation */}
+             <div className="hidden lg:flex items-center gap-8">
+               {navLinks.map((link) => (
+                 <Link
+                   key={link.href}
+                   href={link.href}
+                   className="text-[13px] font-bold uppercase tracking-widest text-black/60 hover:text-primary transition-all duration-200"
+                 >
+                   {link.label}
+                 </Link>
+               ))}
+             </div>
           </div>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" asChild>
-              <Link href="/login">Login</Link>
-            </Button>
-            <Button asChild className="bg-primary hover:bg-primary/90">
-              <Link href="/register">Sign Up</Link>
+          <div className="hidden md:flex items-center gap-4">
+            <Link 
+              href="/login" 
+              className="text-[13px] font-bold uppercase tracking-widest text-black/80 hover:text-primary transition-all duration-200 px-4"
+            >
+              Login
+            </Link>
+            <Button asChild className="bg-black hover:bg-primary text-white rounded-none h-11 px-8 text-[12px] font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-lg">
+              <Link href="/register">Join AgroVault</Link>
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-muted-foreground hover:text-foreground"
+            className="lg:hidden p-2 text-black hover:text-primary transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -64,23 +69,23 @@ export function LandingNavbar() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-in slide-in-from-top-2">
-            <div className="flex flex-col gap-4">
+          <div className="lg:hidden py-6 border-t border-black/5 animate-in slide-in-from-top-2 bg-white/95 backdrop-blur-2xl">
+            <div className="flex flex-col gap-6 px-4">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2"
+                  className="text-sm font-bold uppercase tracking-widest text-black/60 hover:text-primary transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                <Button variant="outline" asChild className="w-full">
+              <div className="flex flex-col gap-3 pt-6 border-t border-black/5">
+                <Button variant="outline" asChild className="w-full h-12 rounded-none uppercase tracking-widest font-bold text-xs">
                   <Link href="/login">Login</Link>
                 </Button>
-                <Button asChild className="w-full bg-primary hover:bg-primary/90">
+                <Button asChild className="w-full h-12 rounded-none bg-black hover:bg-primary text-white uppercase tracking-widest font-bold text-xs">
                   <Link href="/register">Sign Up</Link>
                 </Button>
               </div>
